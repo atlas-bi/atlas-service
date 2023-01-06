@@ -5,6 +5,7 @@ import * as validator from '@authenio/samlify-xsd-schema-validator';
 import fs from 'fs'
 
 
+
 samlify.setSchemaValidator(validator);
 
   const spData = {
@@ -55,3 +56,4 @@ export async function getIdp() {
 export function metadata() {
   return sp.getMetadata()
 }
+

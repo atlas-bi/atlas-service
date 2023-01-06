@@ -5,11 +5,16 @@ import { Form, Link, NavLink, Outlet, useLoaderData } from "@remix-run/react";
 import { getNoteListItems } from "~/models/note.server";
 import { requireUserId } from "~/session.server";
 import { useUser } from "~/utils";
+import { authorize} from "~/session.server";
+
 
 export async function loader({ request }: LoaderArgs) {
-  const userId = await requireUserId(request);
-  const noteListItems = await getNoteListItems({ userId });
-  return json({ noteListItems });
+  return  authorize(request, async ({ user, session }) => {
+    // here we can get the data for this route and return it
+    console.log(user);
+      const noteListItems = await getNoteListItems( user.id );
+      return json({ noteListItems });
+  });
 }
 
 export default function NotesPage() {

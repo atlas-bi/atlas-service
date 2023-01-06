@@ -1,9 +1,18 @@
 import { Link } from "@remix-run/react";
 
-import { useOptionalUser } from "~/utils";
+import { useUser } from "~/utils";
+import { requireUserId , authorize} from "~/session.server";
+
+export async function loader({ request }: LoaderArgs) {
+  return  authorize(request, async ({ user, session }) => {
+    // here we can get the data for this route and return it
+    console.log(user)
+    return null
+  });
+}
 
 export default function Index() {
-  const user = useOptionalUser();
+  const user = useUser();
   return (
     <main className="relative min-h-screen bg-white sm:flex sm:items-center sm:justify-center">
       <div className="relative sm:pb-16 sm:pt-8">

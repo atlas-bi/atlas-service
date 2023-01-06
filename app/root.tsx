@@ -10,10 +10,10 @@ import {
 } from "@remix-run/react";
 
 import { getUser } from "./session.server";
-import tailwindStylesheetUrl from "./styles/tailwind.css";
+import appStyles from "./styles/main.css";
 
 export const links: LinksFunction = () => {
-  return [{ rel: "stylesheet", href: tailwindStylesheetUrl }];
+  return [{ rel: "stylesheet", href: appStyles }];
 };
 
 export const meta: MetaFunction = () => ({

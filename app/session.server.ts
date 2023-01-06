@@ -3,6 +3,7 @@ import invariant from "tiny-invariant";
 
 import type { User } from "~/models/user.server";
 import { getUserById } from "~/models/user.server";
+import { getIdp, sp} from "~/saml.server";
 
 invariant(process.env.SESSION_SECRET, "SESSION_SECRET must be set");
 
@@ -44,6 +45,40 @@ export async function getUser(request: Request) {
 
   throw await logout(request);
 }
+
+
+export let authorize: Policy<{
+  user: User;
+  session: Session;
+}> = async (request, callback) => {
+  let session = await getSession(request);
+  const redirectTo: string = new URL(request.url).pathname
+  try {
+
+    let  user  = await getUser(request);
+
+    // send back to login page if the user doesn't exist.
+    if (!user) {
+      const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
+      throw redirect(`/login?${searchParams}`);
+    }
+
+    // potentially check user for required groups here.
+
+    return await callback({ user, session });
+  } catch {
+    // destroy session and try to login
+    const idp = await getIdp()
+    const {id, context} = sp.createLoginRequest(idp, 'redirect');
+    const url = new URL(request.url);
+    const pathname = url.searchParams.get("redirectTo") || "/"
+    return redirect(context+"&RelayState="+pathname, {
+      headers: {
+        "Set-Cookie": await sessionStorage.destroySession(session),
+      },
+    });
+  }
+};
 
 export async function requireUserId(
   request: Request,

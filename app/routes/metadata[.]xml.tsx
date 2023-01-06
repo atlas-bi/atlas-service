@@ -1,4 +1,3 @@
-
 import { metadata } from "~/saml.server";
 
 export async function loader({ params }: LoaderArgs) {

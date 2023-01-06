@@ -2,7 +2,7 @@ import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
 import {  createUserSession } from "~/session.server";
 import {sp, getIdp} from "~/saml.server";
 import { redirect } from "@remix-run/node";
-import { createUser, getUserByEmail } from "~/models/user.server";
+import { getOrCreateUser, updateUserProps } from "~/models/user.server";
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
@@ -18,9 +18,15 @@ export const action: ActionFunction = async ({ request }) => {
           const expiration = extract.conditions?.notOnOrAfter
 
           // get or create user
-          let user = await getUserByEmail(email)
+          let user = await getOrCreateUser(email)
 
-          if (!user)  user = await createUser(email)
+          // update user info
+          await updateUserProps(
+            email,
+            extract.attributes?.firstName,
+            extract.attributes?.lastName,
+            extract.attributes?.groups
+          )
 
           return createUserSession({
             request:request,
@@ -36,4 +42,9 @@ export const action: ActionFunction = async ({ request }) => {
   return redirect('/')
 
 }
+}
+
+export async function loader({ request }: LoaderArgs) {
+  // get request... send back to home page, we are here by accident.
+  return redirect('/')
 }
