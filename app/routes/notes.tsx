@@ -4,22 +4,19 @@ import { Form, Link, NavLink, Outlet, useLoaderData } from "@remix-run/react";
 
 import { getNoteListItems } from "~/models/note.server";
 import { requireUserId } from "~/session.server";
-import { useUser } from "~/utils";
-import { authorize} from "~/session.server";
-
+import { authorize } from "~/session.server";
 
 export async function loader({ request }: LoaderArgs) {
-  return  authorize(request, async ({ user, session }) => {
+  return authorize(request, undefined,  async ({ user, session }) => {
     // here we can get the data for this route and return it
-    console.log(user);
-      const noteListItems = await getNoteListItems( user.id );
-      return json({ noteListItems });
+    const noteListItems = await getNoteListItems(user.id);
+    return json({user,  noteListItems });
   });
 }
 
 export default function NotesPage() {
-  const data = useLoaderData<typeof loader>();
-  const user = useUser();
+  const {user, noteListItems} = useLoaderData<typeof loader>();
+  // console.log(user)
   return (
     <div className="flex h-full min-h-screen flex-col">
       <header className="flex items-center justify-between bg-slate-800 p-4 text-white">
@@ -45,11 +42,11 @@ export default function NotesPage() {
 
           <hr />
 
-          {data.noteListItems.length === 0 ? (
+          {noteListItems.length === 0 ? (
             <p className="p-4">No notes yet</p>
           ) : (
             <ol>
-              {data.noteListItems.map((note) => (
+              {noteListItems.map((note) => (
                 <li key={note.id}>
                   <NavLink
                     className={({ isActive }) =>

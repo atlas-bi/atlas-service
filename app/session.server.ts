@@ -3,10 +3,9 @@ import invariant from "tiny-invariant";
 
 import type { User } from "~/models/user.server";
 import { getUserById } from "~/models/user.server";
-import { getIdp, sp} from "~/saml.server";
+import { getIdp, sp } from "~/saml.server";
 
 invariant(process.env.SESSION_SECRET, "SESSION_SECRET must be set");
-
 
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
@@ -32,7 +31,6 @@ export async function getUserId(
   const session = await getSession(request);
   const userId = session.get(USER_SESSION_KEY);
 
-
   return userId;
 }
 
@@ -46,38 +44,46 @@ export async function getUser(request: Request) {
   throw await logout(request);
 }
 
-
 export let authorize: Policy<{
   user: User;
   session: Session;
-}> = async (request, callback) => {
+}> = async (request, groups = undefined, callback) => {
   let session = await getSession(request);
-  const redirectTo: string = new URL(request.url).pathname
+  const redirectTo: string = new URL(request.url).pathname;
+  let user = await getUser(request);
   try {
-
-    let  user  = await getUser(request);
-
     // send back to login page if the user doesn't exist.
     if (!user) {
       const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
-      throw redirect(`/login?${searchParams}`);
+      throw redirect(`/?${searchParams}`);
     }
 
     // potentially check user for required groups here.
-
-    return await callback({ user, session });
   } catch {
     // destroy session and try to login
-    const idp = await getIdp()
-    const {id, context} = sp.createLoginRequest(idp, 'redirect');
-    const url = new URL(request.url);
-    const pathname = url.searchParams.get("redirectTo") || "/"
-    return redirect(context+"&RelayState="+pathname, {
-      headers: {
-        "Set-Cookie": await sessionStorage.destroySession(session),
-      },
-    });
+    // try again, in case the saml server is broken. Will
+    // redirect to /login to use ldap auth as a fallback.
+    try {
+      const idp = await getIdp();
+      const { id, context } = sp.createLoginRequest(idp, "redirect");
+      const url = new URL(request.url);
+      const pathname = url.searchParams.get("redirectTo") || "/";
+      return redirect(context + "&RelayState=" + pathname, {
+        headers: {
+          "Set-Cookie": await sessionStorage.destroySession(session),
+        },
+      });
+    } catch {
+      session.flash("loginError", `Could not authenticate you from SAML.`);
+
+      throw redirect("/login", {
+        headers: {
+          "Set-Cookie": await sessionStorage.commitSession(session),
+        },
+      });
+    }
   }
+  return await callback({ user, session });
 };
 
 export async function requireUserId(
@@ -112,14 +118,16 @@ export async function createUserSession({
   expiration: string;
   redirectTo: string;
 }) {
-  const expirationDate = expiration ? new Date(expiration) : new Date() + 60 * 60 * 24 * 7
-  const maxAge =  expirationDate.getTime() - new Date().getTime();
+  const expirationDate = expiration
+    ? new Date(expiration)
+    : new Date(new Date().getTime() + 60 * 60 * 24 * 7);
+  const maxAge = expirationDate.getTime() - new Date().getTime();
   const session = await getSession(request);
   session.set(USER_SESSION_KEY, userId);
   return redirect(redirectTo, {
     headers: {
       "Set-Cookie": await sessionStorage.commitSession(session, {
-        maxAge: maxAge
+        maxAge: maxAge,
       }),
     },
   });

@@ -12,13 +12,13 @@ export function getNote({
 }) {
   return prisma.note.findFirst({
     select: { id: true, body: true, title: true },
-    where: { id, userId },
+    where: { id: Number(id), userId },
   });
 }
 
 export function getNoteListItems({ userId }: { userId: User["id"] }) {
   return prisma.note.findMany({
-    where: { userId },
+    where: { userId: userId },
     select: { id: true, title: true },
     orderBy: { updatedAt: "desc" },
   });

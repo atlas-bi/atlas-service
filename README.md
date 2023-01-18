@@ -7,7 +7,7 @@
 - [x] SAML2 single sign on
 - [ ] LDAP/database user information fetching
 - [ ] Potentially a more robust users > director mapping
-- [ ] Email integration  
+- [ ] Email integration
 - [ ] Sending emails to confirm ticket statuses
 - [ ] Sending emails with ticket updates <- maybe only send when entered and when completed?
 - [ ] Accepting email replies and appending to request conversation
@@ -15,11 +15,11 @@
 - [ ] Renovate the ranking query
 - [ ] Request due date/estimated duration <- do we have this now and are we sure we want this?
 - [ ] Button to share request
- 
 
 **Atlas Integration**
 
 - From atlas
+
   - [ ] Request changes to a report
   - [ ] Open report queue
   - [ ] See report queue in user profile
@@ -30,13 +30,12 @@
   - [ ] See related reports when viewing ticket
   - [ ] Link to report profile, or other way to get to usage faster
   - [ ] On closes requests add some sort of “health” to see what type of requests are most useful
- 
+
 **Requests**
 
 - [ ] Request history tracking
 - [ ] Remove unused fields from form, make request process easier
 - [ ] Better git integration
- 
 
 **UI**
 
@@ -51,11 +50,11 @@
 - [ ] Doc Review
 - [ ] Code Review
 - [ ] Waiting for information (hold)
- 
 
 **Request form Details**
 
 - Request types
+
   - [ ] New report
   - [ ] Modify report
   - [ ] Problem
@@ -81,6 +80,9 @@
 - [ ] Description
 - [ ] Notes (added by developer)
 
+## Notes
+
+- currently requiring Node 16 for remix-image > ... > node-gyp + better sqlite3
 
 ## Development
 
@@ -111,6 +113,33 @@ The database seed script creates a new user with some data you can use to get st
 - Email: `rachel@remix.run`
 - Password: `racheliscool`
 
+### Testing
+
+#### Start a Saml IDP
+
+For development/demoing you can start up a simple SAML IPD server from https://github.com/mcguinness/saml-idp.
+
+1. clone [the repo](https://github.com/mcguinness/saml-idp) somewhere.
+2. cd to the repo.
+3. generate a cert using their sample code `openssl req -x509 -new -newkey rsa:2048 -nodes -subj '/C=US/ST=California/L=San Francisco/O=JankyCo/CN=Test Identity Provider' -keyout idp-private-key.pem -out idp-public-cert.pem -days 7300 `
+4. Start up the IDP server `node ./bin/run.js --acsUrl http://localhost:3000/auth/asc --audience http://localhost:3000/login`
+
+🎉 Nice!
+
+#### Start a LDAP Server
+
+```bash
+ docker run -p 389:1389 $(pwd)/test/ldap/config:/ldifs  -e LDAP_CUSTOM_LDIF_DIR=/ldifs --name openldap bitnami/openldap:latest 
+```
+
+### Create a .env file
+
+Next, copy the `.env.example` file into `.env`.
+
+Update `SAML_PRIVATE_KEY` and `SAML_ENC_PRIVATE_KEY` to wherever you saved your `.pem` generated in the previous step. Easiest to copy the `.pem` into this folder.. but whatever floats your boat.
+
+Consider changing the database url as well.
+
 
 ### Relevant code:
 
@@ -123,7 +152,6 @@ This is a pretty simple note-taking app, but it's a good example of how you can 
 ## Deployment
 
 This Remix Stack comes with two GitHub Actions that handle automatically deploying your app to production and staging environments.
-
 
 ## GitHub Actions
 

@@ -6,5 +6,5 @@ import { redirect } from "@remix-run/node";
    this point to logout if we wanna
 */
 export const action: ActionFunction = async ({ request }) => {
- return await logout(request)
-}
+  return await logout(request);
+};
