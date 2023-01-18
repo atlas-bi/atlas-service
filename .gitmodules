@@ -1,3 +1,0 @@
-[submodule "saml-idp"]
-	path = test/saml-idp
-	url = https://github.com/mcguinness/saml-idp.git
