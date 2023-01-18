@@ -4,6 +4,8 @@ data.ms/
 /build
 /public/build
 .env
+idp-private-key.pem
+idp-public-cert.pem
 
 /cypress/screenshots
 /cypress/videos
