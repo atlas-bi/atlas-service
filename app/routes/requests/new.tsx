@@ -14,7 +14,7 @@ export async function loader({ request }: LoaderArgs) {
   return authorize(request, undefined, async ({ user, session }) => {
     // here we can get the data for this route and return it
     const requestTypes = await getRequestTypes();
-     return json({ requestTypes, user });
+    return json({ requestTypes, user });
   });
 }
 
@@ -24,19 +24,19 @@ export async function action({ request }: ActionArgs) {
 
   const formData = await request.formData();
 
-  const name = formData.get('name')
-  const requestedFor = formData.get('requestedFor')
-  const type = formData.get('type')
-  const recipients = formData.get('recipients')
-  const excel = formData.get('excel')
-  const initiative = formData.get('initiative')
-  const regulatory = formData.get('regulatory')
-  const devNotes = formData.get('devNotes')
-  const description = formData.get('description')
-  const purpose = formData.get('purpose')
-  const criteria = formData.get('criteria')
-  const parameters = formData.get('parameters')
-  const schedule = formData.get('schedule')
+  const name = formData.get("name");
+  const requestedFor = formData.get("requestedFor");
+  const type = formData.get("type");
+  const recipients = formData.get("recipients");
+  const excel = formData.get("excel");
+  const initiative = formData.get("initiative");
+  const regulatory = formData.get("regulatory");
+  const devNotes = formData.get("devNotes");
+  const description = formData.get("description");
+  const purpose = formData.get("purpose");
+  const criteria = formData.get("criteria");
+  const parameters = formData.get("parameters");
+  const schedule = formData.get("schedule");
 
   let errors = {};
   if (typeof name !== "string" || name.length === 0) {
@@ -98,7 +98,6 @@ export default function NewRequestPage() {
   const scheduleRef = React.useRef<HTMLTextAreaElement>(null);
 
   React.useEffect(() => {
-
     if (actionData?.errors?.name) {
       nameRef.current?.focus();
     } else if (actionData?.errors?.requestedFor) {
@@ -107,25 +106,28 @@ export default function NewRequestPage() {
       typeRef.current?.focus();
     } else if (actionData?.errors?.description) {
       descriptionRef.current?.focus();
-    }else if (actionData?.errors?.purpose) {
+    } else if (actionData?.errors?.purpose) {
       purposeRef.current?.focus();
-    }else if (actionData?.errors?.criteria) {
+    } else if (actionData?.errors?.criteria) {
       criteriaRef.current?.focus();
-    }else if (actionData?.errors?.parameters) {
+    } else if (actionData?.errors?.parameters) {
       parametersRef.current?.focus();
-    }else if (actionData?.errors?.schedule) {
+    } else if (actionData?.errors?.schedule) {
       scheduleRef.current?.focus();
-    }else if (actionData?.errors?.recipients) {
+    } else if (actionData?.errors?.recipients) {
       recipientsRef.current?.focus();
     }
   }, [actionData]);
 
-  const resetInput = function(input) {
-    input.classList.remove('is-danger')
-    input.closest('div.field').querySelector('p.help').classList.add('is-hidden')
-    input.removeAttribute('aria-invalid')
-    input.removeAttribute('aria-errormessage')
-  }
+  const resetInput = function (input) {
+    input.classList.remove("is-danger");
+    input
+      .closest("div.field")
+      .querySelector("p.help")
+      .classList.add("is-hidden");
+    input.removeAttribute("aria-invalid");
+    input.removeAttribute("aria-errormessage");
+  };
   return (
     <Form method="post" className="form">
       <div className="field">
@@ -144,9 +146,9 @@ export default function NewRequestPage() {
             type="text"
             placeholder="should search.. default to me"
             onInput={(event: React.InputEvent<HTMLInputElement>) => {
-                let input = event.target as HTMLInputElement;
-                resetInput(input);
-              }}
+              let input = event.target as HTMLInputElement;
+              resetInput(input);
+            }}
           />
         </div>
         {actionData?.errors?.requestedFor && (
@@ -158,22 +160,28 @@ export default function NewRequestPage() {
         <label className="label">Type</label>
         <div className="control is-expanded">
           <div className="select is-fullwidth">
-
-          <select name="type"
-            ref={typeRef}
-            aria-invalid={actionData?.errors?.type ? true : undefined}
-            aria-errormessage={
-              actionData?.errors?.type ? "is-danger" : undefined
-            }
-            className={`select ${
-              actionData?.errors?.type ? "is-danger" : undefined
-            }`}>
-            {requestTypes && requestTypes.map((type) => <option key={type.id}>{type.name}</option>)}
-          </select>
-        </div>
-      </div> {actionData?.errors?.type && (
+            <select
+              name="type"
+              ref={typeRef}
+              aria-invalid={actionData?.errors?.type ? true : undefined}
+              aria-errormessage={
+                actionData?.errors?.type ? "is-danger" : undefined
+              }
+              className={`select ${
+                actionData?.errors?.type ? "is-danger" : undefined
+              }`}
+            >
+              {requestTypes &&
+                requestTypes.map((type) => (
+                  <option key={type.id}>{type.name}</option>
+                ))}
+            </select>
+          </div>
+        </div>{" "}
+        {actionData?.errors?.type && (
           <p className="help is-danger">{actionData.errors.type}</p>
-        )}</div>
+        )}
+      </div>
 
       <div className="field">
         <label className="label">Name</label>
@@ -191,9 +199,9 @@ export default function NewRequestPage() {
             type="text"
             placeholder="Text input"
             onInput={(event: React.InputEvent<HTMLInputElement>) => {
-                let input = event.target as HTMLInputElement;
-                resetInput(input);
-              }}
+              let input = event.target as HTMLInputElement;
+              resetInput(input);
+            }}
           />
         </div>
         {actionData?.errors?.name && (
@@ -209,9 +217,9 @@ export default function NewRequestPage() {
             className="textarea"
             placeholder="Textarea"
             onInput={(event: React.InputEvent<HTMLInputElement>) => {
-                let input = event.target as HTMLInputElement;
-                resetInput(input);
-              }}
+              let input = event.target as HTMLInputElement;
+              resetInput(input);
+            }}
           ></textarea>
         </div>
       </div>
@@ -230,9 +238,9 @@ export default function NewRequestPage() {
             }`}
             placeholder="Textarea"
             onInput={(event: React.InputEvent<HTMLInputElement>) => {
-                let input = event.target as HTMLInputElement;
-                resetInput(input);
-              }}
+              let input = event.target as HTMLInputElement;
+              resetInput(input);
+            }}
           ></textarea>
         </div>
         {actionData?.errors?.description && (
@@ -255,9 +263,9 @@ export default function NewRequestPage() {
             }`}
             placeholder="Textarea"
             onInput={(event: React.InputEvent<HTMLInputElement>) => {
-                let input = event.target as HTMLInputElement;
-                resetInput(input);
-              }}
+              let input = event.target as HTMLInputElement;
+              resetInput(input);
+            }}
           ></textarea>
         </div>
         {actionData?.errors?.purpose && (
@@ -280,9 +288,9 @@ export default function NewRequestPage() {
             }`}
             placeholder="Textarea"
             onInput={(event: React.InputEvent<HTMLInputElement>) => {
-                let input = event.target as HTMLInputElement;
-                resetInput(input);
-              }}
+              let input = event.target as HTMLInputElement;
+              resetInput(input);
+            }}
           ></textarea>
         </div>
         {actionData?.errors?.criteria && (
@@ -304,9 +312,9 @@ export default function NewRequestPage() {
             }`}
             placeholder="Textarea"
             onInput={(event: React.InputEvent<HTMLInputElement>) => {
-                let input = event.target as HTMLInputElement;
-                resetInput(input);
-              }}
+              let input = event.target as HTMLInputElement;
+              resetInput(input);
+            }}
           ></textarea>
         </div>
         {actionData?.errors?.parameters && (
@@ -328,9 +336,9 @@ export default function NewRequestPage() {
             }`}
             placeholder="Textarea"
             onInput={(event: React.InputEvent<HTMLInputElement>) => {
-                let input = event.target as HTMLInputElement;
-                resetInput(input);
-              }}
+              let input = event.target as HTMLInputElement;
+              resetInput(input);
+            }}
           ></textarea>
         </div>
         {actionData?.errors?.schedule && (
@@ -353,9 +361,9 @@ export default function NewRequestPage() {
             type="text"
             placeholder="should search for people when you type"
             onInput={(event: React.InputEvent<HTMLInputElement>) => {
-                let input = event.target as HTMLInputElement;
-                resetInput(input);
-              }}
+              let input = event.target as HTMLInputElement;
+              resetInput(input);
+            }}
           />
         </div>
         {actionData?.errors?.recipients && (
@@ -375,7 +383,7 @@ export default function NewRequestPage() {
       <div className="field">
         <div className="control">
           <label className="checkbox">
-            <input type="checkbox" ref={regulatoryRef} name="regulatory"/>
+            <input type="checkbox" ref={regulatoryRef} name="regulatory" />
             Regulatory
           </label>
         </div>
@@ -383,7 +391,7 @@ export default function NewRequestPage() {
       <div className="field">
         <div className="control">
           <label className="checkbox">
-            <input type="checkbox" ref={initiativeRef} name="initiative"/>
+            <input type="checkbox" ref={initiativeRef} name="initiative" />
             Supports an Initiative
           </label>
         </div>

@@ -1699,6 +1699,7 @@ displayName: Tereshkova
 dn: cn=admins,ou=users,dc=example,dc=org
 cn: admins
 objectClass: groupOfNames
+# User group membership
 member: cn=user1,ou=users,dc=example,dc=org
 member: cn=user2,ou=users,dc=example,dc=org
 member: cn=user3,ou=users,dc=example,dc=org
@@ -1708,6 +1709,7 @@ member: cn=user4,ou=users,dc=example,dc=org
 dn: cn=readers,ou=users,dc=example,dc=org
 cn: readers
 objectClass: groupOfNames
+# User group membership
 member: cn=user1,ou=users,dc=example,dc=org
 member: cn=user2,ou=users,dc=example,dc=org
 member: cn=user3,ou=users,dc=example,dc=org

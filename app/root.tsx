@@ -10,7 +10,7 @@ import {
 } from "@remix-run/react";
 import { useLoaderData } from "@remix-run/react";
 
-import { getUser ,getSession, sessionStorage } from "./session.server";
+import { getUser, getSession, sessionStorage } from "./session.server";
 import appStyles from "./styles/main.css";
 
 import Nav from "./components/Nav";
@@ -30,27 +30,23 @@ export const meta: MetaFunction = () => ({
   viewport: "width=device-width,initial-scale=1",
 });
 
-
 export async function loader({ request }: LoaderArgs) {
-  const session = await getSession(
-    request
-  );
+  const session = await getSession(request);
   const message = session.get("globalMessage") || null;
 
   // return json({user: await getUser(request), message})
-  return json(
-    { message,
-      headers: {
-        // only necessary with cookieSessionStorage
-        "Set-Cookie": await sessionStorage.commitSession(session),
-      },
+  return json({
+    message,
+    headers: {
+      // only necessary with cookieSessionStorage
+      "Set-Cookie": await sessionStorage.commitSession(session),
+    },
     user: await getUser(request),
-  })
-};
-
+  });
+}
 
 export default function App() {
-  const {user} = useLoaderData()
+  const { user } = useLoaderData();
   return (
     <html lang="en">
       <head>
@@ -59,9 +55,9 @@ export default function App() {
       </head>
       <body className="main">
         {user && <Nav />}
-          <Outlet />
-          <ScrollRestoration />
-          <Scripts />
+        <Outlet />
+        <ScrollRestoration />
+        <Scripts />
         <LiveReload />
       </body>
     </html>

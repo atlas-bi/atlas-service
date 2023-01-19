@@ -7,15 +7,15 @@ import { requireUserId } from "~/session.server";
 import { authorize } from "~/session.server";
 
 export async function loader({ request }: LoaderArgs) {
-  return authorize(request, undefined,  async ({ user, session }) => {
+  return authorize(request, undefined, async ({ user, session }) => {
     // here we can get the data for this route and return it
     const noteListItems = await getNoteListItems(user.id);
-    return json({user,  noteListItems });
+    return json({ user, noteListItems });
   });
 }
 
 export default function NotesPage() {
-  const {user, noteListItems} = useLoaderData<typeof loader>();
+  const { user, noteListItems } = useLoaderData<typeof loader>();
   // console.log(user)
   return (
     <div className="flex h-full min-h-screen flex-col">

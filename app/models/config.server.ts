@@ -4,21 +4,24 @@ import { prisma } from "~/db.server";
 
 export type { Note } from "@prisma/client";
 
-export async function getRequestTypes(){
+export async function getRequestTypes() {
   return await prisma.requestType.findMany({
-    select: { id: true, name: true},
+    select: { id: true, name: true },
   });
 }
 
-export async function getRequestCategories(){
+export async function getRequestCategories() {
   return await prisma.requestCategory.findMany({
-    select: { id: true, name: true},
+    select: { id: true, name: true },
   });
 }
 
-export async function createRequestType({name, userId}: Pick<RequestType, "name"> & {
+export async function createRequestType({
+  name,
+  userId,
+}: Pick<RequestType, "name"> & {
   userId: User["id"];
-})  {
+}) {
   return await prisma.requestType.create({
     data: {
       name,
@@ -27,14 +30,16 @@ export async function createRequestType({name, userId}: Pick<RequestType, "name"
           id: userId,
         },
       },
-    }
+    },
   });
 }
 
-
-export async function createRequestCategory({name, userId}: Pick<RequestCategory, "name"> & {
+export async function createRequestCategory({
+  name,
+  userId,
+}: Pick<RequestCategory, "name"> & {
   userId: User["id"];
-})  {
+}) {
   return await prisma.requestCategory.create({
     data: {
       name,
@@ -43,20 +48,19 @@ export async function createRequestCategory({name, userId}: Pick<RequestCategory
           id: userId,
         },
       },
-    }
+    },
   });
 }
 
-
-export async function deleteRequestType( id : Pick<RequestType, "id">)  {
+export async function deleteRequestType(id: Pick<RequestType, "id">) {
   return await prisma.requestType.delete({
-    where: {id: id}
+    where: { id: id },
   });
 }
 
-export async function deleteRequestCategory( id : Pick<RequestType, "id">)  {
+export async function deleteRequestCategory(id: Pick<RequestType, "id">) {
   return await prisma.requestCategory.delete({
-    where: {id: id}
+    where: { id: id },
   });
 }
 

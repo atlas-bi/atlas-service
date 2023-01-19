@@ -20,7 +20,7 @@ export const action: ActionFunction = async ({ request }) => {
       const expiration = extract.conditions?.notOnOrAfter;
 
       // get or create user
-      let user = await getOrCreateUser(email);
+      // let user = await getOrCreateUser(email);
 
       // update user info
       await updateUserProps(

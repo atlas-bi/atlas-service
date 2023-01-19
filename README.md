@@ -86,7 +86,17 @@
 
 ## Development
 
-Build with RemixJs
+### Create a .env file
+
+Next, copy the `.env.example` file into `.env`.
+
+Update `SAML_PRIVATE_KEY` and `SAML_ENC_PRIVATE_KEY` to wherever you saved your `.pem` generated in the previous step. Easiest to copy the `.pem` into this folder.. but whatever floats your boat.
+
+Consider changing the database url as well.
+
+### Build with RemixJs
+
+[Install `meilisearch`](https://docs.meilisearch.com/learn/getting_started/quick_start.html#setup-and-installation)
 
 - Initial setup:
 
@@ -106,48 +116,7 @@ Build with RemixJs
   npm run dev
   ```
 
-This starts your app in development mode, rebuilding assets on file changes.
-
-The database seed script creates a new user with some data you can use to get started:
-
-- Email: `rachel@remix.run`
-- Password: `racheliscool`
-
-### Testing
-
-#### Start a Saml IDP
-
-For development/demoing you can start up a simple SAML IPD server from https://github.com/mcguinness/saml-idp.
-
-1. clone [the repo](https://github.com/mcguinness/saml-idp) somewhere.
-2. cd to the repo.
-3. generate a cert using their sample code `openssl req -x509 -new -newkey rsa:2048 -nodes -subj '/C=US/ST=California/L=San Francisco/O=JankyCo/CN=Test Identity Provider' -keyout idp-private-key.pem -out idp-public-cert.pem -days 7300 `
-4. Start up the IDP server `node ./bin/run.js --acsUrl http://localhost:3000/auth/asc --audience http://localhost:3000/login`
-
-🎉 Nice!
-
-#### Start a LDAP Server
-
-```bash
- docker run -p 389:1389 $(pwd)/test/ldap/config:/ldifs  -e LDAP_CUSTOM_LDIF_DIR=/ldifs --name openldap bitnami/openldap:latest 
-```
-
-### Create a .env file
-
-Next, copy the `.env.example` file into `.env`.
-
-Update `SAML_PRIVATE_KEY` and `SAML_ENC_PRIVATE_KEY` to wherever you saved your `.pem` generated in the previous step. Easiest to copy the `.pem` into this folder.. but whatever floats your boat.
-
-Consider changing the database url as well.
-
-
-### Relevant code:
-
-This is a pretty simple note-taking app, but it's a good example of how you can build a full stack app with Prisma and Remix. The main functionality is creating users, logging in and out, and creating and deleting notes.
-
-- creating users, and logging in and out [./app/models/user.server.ts](./app/models/user.server.ts)
-- user sessions, and verifying them [./app/session.server.ts](./app/session.server.ts)
-- creating, and deleting notes [./app/models/note.server.ts](./app/models/note.server.ts)
+This starts your app in development mode, starts a SAML IDP, LDAP server, Quirrel, and Meilisearch, rebuilding assets on file changes.
 
 ## Deployment
 

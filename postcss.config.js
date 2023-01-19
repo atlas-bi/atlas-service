@@ -5,9 +5,8 @@ module.exports = {
     require("@fullhuman/postcss-purgecss")({
       content: ["./app/**/*.{ts,tsx,jsx,js}"],
       safelist: {
-  
-      greedy: [/svg$/, /icon$/]
-    }
+        greedy: [/svg$/, /icon$/],
+      },
     }),
     require("cssnano")({
       preset: "default",
