@@ -24,8 +24,8 @@ jobs:
 
       - name: ⎔ Setup
         run: |
-          apt-get update
-          apt-get install dh-make devscripts -y
+          sudo apt-get update
+          sudo apt-get install dh-make devscripts -y
 
       - name: 🔬 Lint
         run: |
