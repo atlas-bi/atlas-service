@@ -39,10 +39,10 @@ jobs:
           find . -type f -name "*" -exec sed -i'' -e "s/<version>/$VERSION/g" {} +
 
           # build
-          debuild --no-tgz-check -us -uc
+          debuild --no-tgz-check --no-lintian -us -uc
 
           # lint
-          lintian
+          lintian --fail-on error
         env:
           VERSION: 1.1.1
 
