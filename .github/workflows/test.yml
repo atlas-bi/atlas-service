@@ -1,8 +1,9 @@
-name: 🚀 Deploy
+name: 🧪 Test
 on:
   push:
     branches:
-      - main
+      - master
+      - alpha
       - dev
   pull_request: {}
 
@@ -11,6 +12,38 @@ permissions:
   contents: read
 
 jobs:
+  apt:
+    name: 🔥 Lintian
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛑 Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.11.0
+
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v3
+
+      - name: ⎔ Setup
+        run: |
+          apt-get update
+          apt-get install dh-make devscripts -y
+
+      - name: 🔬 Lint
+        run: |
+          # create an install
+          cp -r "atlas-requests-<version>" "atlas-requests-$VERSION"
+          cd "atlas-requests-$VERSION"
+
+          # update version
+          find . -type f -name "*" -exec sed -i'' -e "s/<version>/$VERSION/g" {} +
+
+          # build
+          debuild --no-tgz-check -us -uc
+
+          # lint
+          lintian
+        env:
+          VERSION: 1.1.1
+
   lint:
     name: ⬣ ESLint
     runs-on: ubuntu-latest
