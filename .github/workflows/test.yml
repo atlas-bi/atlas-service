@@ -29,6 +29,8 @@ jobs:
 
       - name: 🔬 Lint
         run: |
+          cd packages
+
           # create an install
           cp -r "atlas-requests-<version>" "atlas-requests-$VERSION"
           cd "atlas-requests-$VERSION"
