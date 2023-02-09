@@ -1,3 +1,8 @@
+.lighthouseci/
+packages/atlas-requests*.*
+packages/assert.sh
+packages/atlas-requests-[0-9]*.[0-9]*.[0-9]*
+
 .DS_Store
 node_modules
 data.ms/

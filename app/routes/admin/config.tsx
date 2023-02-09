@@ -12,6 +12,7 @@ import {
   getRequestCategories,
   createRequestCategory,
   deleteRequestCategory,
+  setRequestCategoryDefault,
 } from "~/models/config.server";
 import { getUser } from "~/session.server";
 
@@ -76,6 +77,20 @@ export async function action({ request }: ActionArgs) {
       await deleteRequestCategory(parseInt(values.id));
       break;
     }
+    case "addRequestCategoryDefault": {
+      const categoryId = values.categoryDefault;
+      console.log(values);
+      let errors = {};
+      if (typeof categoryId !== "string" || categoryId.length === 0) {
+        errors.categoryDefault = "Category is required";
+      }
+
+      if (Object.keys(errors).length > 0) {
+        console.log("leaving early", Object.keys(errors).length, errors);
+        return json({ errors: errors }, { status: 400 });
+      }
+      await setRequestCategoryDefault(Number(categoryId));
+    }
     default: {
       console.log(`Unknown action ${_action}`);
       break;
@@ -96,6 +111,8 @@ export default function Index() {
   const formTypeAddRef = React.useRef();
   const formCategoryAddRef = React.useRef();
   const categoryNameRef = React.useRef();
+  const formCategoryDefaultRef = React.useRef();
+  const categoryDefaultRef = React.useRef();
 
   let transition = useTransition();
 
@@ -106,6 +123,11 @@ export default function Index() {
   let isAddingCategory =
     transition.state === "submitting" &&
     transition.submission.formData.get("_action") === "addRequestCategory";
+
+  let isAddingCategoryDefault =
+    transition.state === "submitting" &&
+    transition.submission.formData.get("_action") ===
+      "addRequestCategoryDefault";
 
   React.useEffect(() => {
     if (!isAddingType) {
@@ -136,7 +158,7 @@ export default function Index() {
   };
 
   return (
-    <>
+    <div className="container">
       <h1 className="title is-1">Site Configuration</h1>
       <h2 className="is-2 title">Request Types</h2>
 
@@ -245,11 +267,59 @@ export default function Index() {
           {isAddingCategory ? "saving.." : "save"}
         </button>
       </Form>
-
+      <h2 className="title is-2">Default Category</h2>
+      <Form method="post" className="form" ref={formCategoryDefaultRef}>
+        <div className="field">
+          <label className="label">Default Category for New Requests</label>
+          <div className="control">
+            <select
+              name="categoryDefault"
+              ref={categoryDefaultRef}
+              aria-invalid={
+                actionData?.errors?.categoryDefault ? true : undefined
+              }
+              aria-errormessage={
+                actionData?.errors?.categoryDefault ? "is-danger" : undefined
+              }
+              className={`select ${
+                actionData?.errors?.categoryDefault ? "is-danger" : undefined
+              }`}
+              onInput={(event: React.InputEvent<HTMLInputElement>) => {
+                let input = event.target as HTMLInputElement;
+                resetInput(input);
+              }}
+            >
+              <option value="">None</option>
+              {requestCategories &&
+                requestCategories.map((category) => (
+                  <option
+                    selected={category.isDefault && "true"}
+                    key={category.id}
+                    value={category.id}
+                  >
+                    {category.name}
+                  </option>
+                ))}
+            </select>
+          </div>
+          {actionData?.errors?.categoryDefault && (
+            <p className="help is-danger">
+              {actionData.errors.categoryDefault}
+            </p>
+          )}
+        </div>
+        <button
+          className="button"
+          name="_action"
+          value="addRequestCategoryDefault"
+        >
+          {isAddingCategoryDefault ? "saving.." : "save"}
+        </button>
+      </Form>
       <p className="content">
         other config: - category to auto asign to new tickets - default request
         type - what groups should admin users have/who is admin?
       </p>
-    </>
+    </div>
   );
 }

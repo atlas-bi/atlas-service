@@ -23,7 +23,7 @@ export const action: ActionFunction = async ({ request }) => {
       // let user = await getOrCreateUser(email);
 
       // update user info
-      await updateUserProps(
+      let user = await updateUserProps(
         email,
         extract.attributes?.firstName,
         extract.attributes?.lastName,

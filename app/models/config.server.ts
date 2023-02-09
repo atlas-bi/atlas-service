@@ -12,7 +12,7 @@ export async function getRequestTypes() {
 
 export async function getRequestCategories() {
   return await prisma.requestCategory.findMany({
-    select: { id: true, name: true },
+    select: { id: true, name: true, isDefault: true },
   });
 }
 
@@ -48,6 +48,25 @@ export async function createRequestCategory({
           id: userId,
         },
       },
+    },
+  });
+}
+
+export async function setRequestCategoryDefault(
+  id: Pick<RequestCategory, "id">
+) {
+  await prisma.requestCategory.updateMany({
+    data: {
+      isDefault: false,
+    },
+  });
+
+  return await prisma.requestCategory.update({
+    where: {
+      id,
+    },
+    data: {
+      isDefault: true,
     },
   });
 }

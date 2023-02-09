@@ -1,0 +1,93 @@
+#!/bin/sh
+# python3 -m pip install colorama tqdm requests -q --no-warn-script-location
+
+VERSION=<version>
+EXTERNAL_URL=${EXTERNAL_URL:-$HOSTNAME}
+NAME="Atlas Requests"
+NODE_ENV=producion
+APP=atlas-requests
+BASE_DIR="/usr/lib/$APP"
+INSTALL_DIR="$BASE_DIR/app"
+USER_DIR="/etc/$APP"
+DATABASE_NAME=atlas_requests
+DATABASE_USER=atlas_requests
+
+. $BASE_DIR/functions.sh
+
+color
+name
+
+cd "$BASE_DIR"
+
+fmt_blue "Updating npm"
+npm install -g npm@latest dotenv-cli --loglevel silent
+
+fmt_blue "Downloading $NAME"
+wget "https://github.com/atlas-bi/$APP/archive/refs/tags/v$VERSION.tar.gz" -q --show-progress -O app.tar.gz
+tar -f "app.tar.gz" -xz  -C .
+rm "app.tar.gz"
+echo $APP-* | xargs -i mv {} "app"
+
+fmt_blue "Verifying secrets"
+build_secrets
+
+fmt_blue "Loading environment"
+install_configuration
+load_configuration
+
+fmt_blue "Setting Up Database"
+postgres_init
+
+cd "$INSTALL_DIR"
+
+fmt_blue "Installing packages"
+npm remove @authenio/samlify-xsd-schema-validator --loglevel silent --no-fund --no-audit
+npm install --loglevel silent --no-fund --no-audit
+
+fmt_blue "Building site"
+npm run build
+
+fmt_blue "Applying database migrations"
+npx prisma migrate deploy
+
+fmt_blue "Cleaning up install"
+npm install --omit=dev --loglevel silent --no-fund --no-audit
+
+# stop services if running
+fmt_blue "Stopping services"
+# stop_services
+
+fmt_blue "Installing Meilisearch"
+wget -O - https://install.meilisearch.com -q --show-progress | sh
+mv ./meilisearch /usr/bin/
+
+cd $BASE_DIR
+fmt_blue "Configuring Nginx"
+nginx_init
+# python3 -c "from installers import build_nginx_configuration;build_nginx_configuration(\"/etc/$APP/config.ini\")"
+
+if [ "$(pidof systemd)" != "" ]; then
+  fmt_blue "Setting up services"
+  services
+fi
+
+cd $INSTALL_DIR
+fmt_blue "Starting services"
+start_services
+
+chown -R www-data "$INSTALL_DIR"
+
+
+# install database migrations
+# fmt_blue "Installing database migrations"
+# export FLASK_ENV=production && export FLASK_DEBUG=0 && export FLASK_APP=web && .venv/bin/flask db upgrade && .venv/bin/flask cli seed
+
+# fmt_blue "Adding admin user"
+# postgres_default_user
+
+echo ""
+fmt_green "Thanks for installing Atlas Requests!"
+echo ""
+fmt_green "Read the full install guide at https://www.atlas.bi/docs/requests/"
+
+recommendations

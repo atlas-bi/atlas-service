@@ -1,0 +1,34 @@
+#!/bin/sh
+APP=atlas-requests
+BASE_DIR="/usr/lib/$APP"
+USER_DIR="/etc/$APP"
+
+if ! which node > /dev/null; then
+  error "Node is not installed. Please install node and try again. See https://learnubuntu.com/install-node/ for help."
+fi
+
+if ! which npm > /dev/null; then
+  error "Npm is not installed. Please install node and try again. See https://learnubuntu.com/install-node/ for help."
+fi
+
+# remove old install
+if [ -d "$BASE_DIR" ]; then
+    cd "${BASE_DIR:?}" || exit; rm -rf *
+fi
+
+# create user settings dir
+if [ ! -d "$USER_DIR" ]; then
+  mkdir -p "$USER_DIR"
+fi
+
+# # create log directory
+# mkdir -p "/var/log/$APP"
+
+# # create log files
+# touch "/var/log/$APP/supervisord.log"
+# touch "/var/log/$APP/error.log"
+# touch "/var/log/$APP/access.log"
+
+# chown -R www-data /var/log/$APP
+
+### proceed with install ###

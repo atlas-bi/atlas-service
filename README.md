@@ -5,7 +5,7 @@
 - [ ] User-friendly, atlas style
 - [ ] Search for all requests and request history
 - [x] SAML2 single sign on
-- [ ] LDAP/database user information fetching
+- [x] LDAP/database user information fetching
 - [ ] Potentially a more robust users > director mapping
 - [ ] Email integration
 - [ ] Sending emails to confirm ticket statuses
@@ -15,6 +15,15 @@
 - [ ] Renovate the ranking query
 - [ ] Request due date/estimated duration <- do we have this now and are we sure we want this?
 - [ ] Button to share request
+- [ ] Create tickets for other users
+- [ ] Ticket filtering
+- [ ] see if someone else is reading the same ticket
+- [ ] see if someone else is already replying to a ticket
+- [ ] option for other users to "watch" a ticket
+- [ ] option for ticket tagging
+- [ ] option for adding attachments
+- [ ] option to take a screen shot directly
+- [ ] allow multiple people to be assigned to a single ticket
 
 **Atlas Integration**
 
@@ -116,7 +125,15 @@ Consider changing the database url as well.
   npm run dev
   ```
 
-This starts your app in development mode, starts a SAML IDP, LDAP server, Quirrel, and Meilisearch, rebuilding assets on file changes.
+This starts your app in development mode, starts a few tools needed for development, several of which use docker:
+
+- SAML IDP server (accessible @ http://localhost:7000)
+- LDAP server
+- Quirrel job scheduler (accessible @ http://localhost:9181)
+- Meilisearch (accessible @ http://localhost:7700)
+- static file watchers
+- SMTP4Dev SMPT/IMAP email server (accessible @ http://localhost:3030)
+- website (accessible @ http://localhost:3000)
 
 ## Deployment
 
@@ -168,3 +185,7 @@ This project uses ESLint for linting. That is configured in `.eslintrc.js`.
 ### Formatting
 
 We use [Prettier](https://prettier.io/) for auto-formatting in this project. It's recommended to install an editor plugin (like the [VSCode Prettier plugin](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)) to get auto-formatting on save. There's also a `npm run format` script you can run to format all files in the project.
+
+## Alternate Tools
+
+- jitbit.com

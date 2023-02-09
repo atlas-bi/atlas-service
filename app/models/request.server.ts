@@ -1,54 +1,76 @@
-import type { User, Note } from "@prisma/client";
+import type { User, Request } from "@prisma/client";
+
+import smtpQueue from "~/queues/smtp.server";
 
 import { prisma } from "~/db.server";
 
-export type { Note } from "@prisma/client";
+export type { Request } from "@prisma/client";
 
-export function getNote({
+export function getRequest({
   id,
   userId,
-}: Pick<Note, "id"> & {
+}: Pick<Request, "id"> & {
   userId: User["id"];
 }) {
-  return prisma.note.findFirst({
-    select: { id: true, body: true, title: true },
-    where: { id, userId },
+  return prisma.request.findFirst({
+    select: { id: true, name: true },
+    where: { creatorId: userId },
   });
 }
 
-export function getNoteListItems({ userId }: { userId: User["id"] }) {
-  return prisma.note.findMany({
+export function getRequestListItems({ userId }: { userId: User["id"] }) {
+  return prisma.request.findMany({
     where: { userId },
-    select: { id: true, title: true },
+    select: { id: true, name: true },
     orderBy: { updatedAt: "desc" },
   });
 }
 
-export function createNote({
-  body,
-  title,
+export async function createRequest({
+  name,
   userId,
-}: Pick<Note, "body" | "title"> & {
+}: Pick<Request, "name"> & {
   userId: User["id"];
 }) {
-  return prisma.note.create({
+  const defaultCategory = await prisma.requestCategory.findFirst({
+    where: { isDefault: true },
+    select: { id: true },
+  });
+  const request = await prisma.request.create({
     data: {
-      title,
-      body,
-      user: {
+      name,
+      creator: {
         connect: {
           id: userId,
         },
       },
+      requester: {
+        connect: {
+          id: userId,
+        },
+      },
+      category: {
+        connect: {
+          id: defaultCategory.id,
+        },
+      },
+      type: {
+        connect: {
+          id: 2,
+        },
+      },
     },
   });
+
+  await smtpQueue.enqueue(null); //"me","message");
+  return request;
 }
 
-export function deleteNote({
+export function deleteRequest({
   id,
   userId,
-}: Pick<Note, "id"> & { userId: User["id"] }) {
-  return prisma.note.deleteMany({
+}: Pick<Request, "id"> & { userId: User["id"] }) {
+  return prisma.request.deleteMany({
     where: { id, userId },
   });
 }
