@@ -1,5 +1,43 @@
 #!/bin/sh
 
+NAME="Atlas Requests"
+APP_NAME=atlas-requests
+BASE_DIR="/usr/lib/$APP_NAME"
+
+NODE_ENV=producion
+
+USER=www-data
+
+export VERSION="<version>"
+
+# website
+HOSTNAME=localhost
+EXTERNAL_URL=${EXTERNAL_URL:-$HOSTNAME}
+PORT=3010
+
+# postgres
+PG_HOSTNAME=localhost
+PG_PORT=5432
+PG_DATABASE=atlas_requests
+PG_USER=atlas_requests
+
+# redis
+REDIS_HOSTNAME=localhost
+REDIS_PORT=6379
+
+# directories
+INSTALL_DIR="$BASE_DIR/app"
+USER_DIR="/etc/$APP_NAME"
+
+# files
+CONFIG="$USER_DIR/config"
+SECRETS="$USER_DIR/secrets.json"
+
+# service names
+WEB_SERVICE=atlas_requests_web.service
+QUIRREL_SERVICE=atlas_requests_querrel.service
+SEARCH_SERVICE=atlas_requests_search.service
+
 color() {
   RED=$(printf '\033[31m')
   GREEN=$(printf '\033[32m')
@@ -50,10 +88,27 @@ name() {
 
 }
 
+postgres_ready() {
+    wget http://$PG_HOSTNAME:$PG_PORT/ --max-redirect 0 --tries=1 2>&1 | grep 'connected'
+}
+
+postgres_online() {
+  x=0
+  until postgres_ready; do
+    >&2 fmt_yellow 'Waiting for PostgreSQL to become available...'
+
+    x=$(( x + 1 ))
+
+    if [ "$x" -gt 3 ]; then
+      fmt_error 'Failed to start PostgreSQL'
+      break
+    fi
+    sleep 1
+  done
+}
+
 install_configuration(){
   # install default configuration if missing
-  CONFIG="$USER_DIR/config"
-
   if [ ! -e $CONFIG ]
   then
     if [ ! -d "$USER_DIR" ]; then
@@ -68,57 +123,39 @@ install_configuration(){
     sed -i -e "s/MEILI_DB_PAT=.*//g" $CONFIG > /dev/null
     sed -i -e "s/MEILI_ENV=.*//g" $CONFIG > /dev/null
     sed -i -e "s/HOSTNAME=.*//g" $CONFIG > /dev/null
+    sed -i -e "s/REDIS_URL=.*//g" $CONFIG > /dev/null
   fi
 }
 
 load_configuration(){
-  SECRETS="$USER_DIR/secrets.json"
-  CONFIG=$(cat "$USER_DIR/config")
 
-  DATABASE_PASS=$(cat $SECRETS | jq .PG_PASS --raw-output)
-  SESSION_SECRET=$(cat $SECRETS | jq .SESSION_SECRET --raw-output)
-  PASSPHRASES=$(cat $SECRETS | jq .PASSPHRASES --raw-output)
-  MEILI_MASTER_KEY=$(cat $SECRETS | jq .MEILI_MASTER_KEY --raw-output)
+  DATABASE_PASS=$(jq .PG_PASS "$SECRETS" --raw-output)
+  SESSION_SECRET=$(jq .SESSION_SECRET "$SECRETS" --raw-output)
+  PASSPHRASES=$(jq .PASSPHRASES "$SECRETS" --raw-output)
+  MEILI_MASTER_KEY=$(jq .MEILI_MASTER_KEY "$SECRETS" --raw-output)
 
   cat <<EOT > $INSTALL_DIR/.env
-$CONFIG
-DATABASE_URL="postgresql://$DATABASE_USER:$DATABASE_PASS@localhost:5432/$DATABASE_NAME"
+$(cat "$CONFIG")
+DATABASE_URL="postgresql://$PG_USER:$DATABASE_PASS@$PG_HOSTNAME:$PG_PORT/$PG_DATABASE"
 SESSION_SECRET=$SESSION_SECRET
 PASSPHRASES=$PASSPHRASES
 MEILI_ENV=production
 MEILI_DB_PAT=$INSTALL_DIR/data.js/
 MEILI_MASTER_KEY=$MEILI_MASTER_KEY
+HOSTNAME=$HOSTNAME:$PORT
+REDIS_URL=redis://$REDIS_HOSTNAME:$REDIS_PORT/0
 EOT
 
 }
 
 stop_services(){
-  # BASE_DIR="/usr/lib/atlas-requests"
-  # INSTALL_DIR="$BASE_DIR/app"
-
   if [ "$(pidof systemd)" != "" ]; then
     systemctl stop nginx
     systemctl stop atlas_requests_web.service
     systemctl stop atlas_requests_querrel.service
     systemctl stop atlas_requests_search.service
   else
-
-
-    # try with supervisorctl
-    if [ -e "$INSTALL_DIR/.venv/bin/supervisorctl" ]; then
-        "$INSTALL_DIR/.venv/bin/supervisorctl" -c "$BASE_DIR/supervisord.conf" stop all && sleep 3
-    fi
-
-    # stop any supervisord process
-    if [ -e "$BASE_DIR/supervisord.pid" ]; then
-      kill -15 "$(cat "$BASE_DIR/supervisord.pid")" && sleep 3s
-      if [ -x "$(pgrep supervisord)" ];  then
-          pkill supervisord 2>/dev/null
-      fi
-    fi
-
     /etc/init.d/nginx stop
-
   fi
 }
 
@@ -129,13 +166,13 @@ start_services(){
       systemctl start nginx
       systemctl is-active nginx | grep "inactive" && echo "${RED}!!!Failed to reload Nginx!!!${RESET}" && (exit 1)
 
-      systemctl enable atlas_requests_web.service
-      systemctl enable atlas_requests_runner.service
-      systemctl enable atlas_requests_scheduler.service
+      systemctl enable "$WEB_SERVICE"
+      systemctl enable "$QUIRREL_SERVICE"
+      systemctl enable "$SEARCH_SERVICE"
 
-      systemctl start atlas_requests_web.service
-      systemctl start atlas_requests_runner.service
-      systemctl start atlas_requests_scheduler.service
+      systemctl start "$WEB_SERVICE"
+      systemctl start "$QUIRREL_SERVICE"
+      systemctl start "$SEARCH_SERVICE"
 
       fmt_green "Starting Redis!"
       fmt_blue "Starting redis server"
@@ -153,81 +190,72 @@ start_services(){
     /etc/init.d/nginx start
     fmt_yellow "Starting postgres"
     /etc/init.d/postgresql start
+    postgres_online
     fmt_yellow "Starting meilisearch"
-    cd "$INSTALL_DIR"; dotenv meilisearch &
+    cd "$INSTALL_DIR" || exit 1; dotenv meilisearch &
     fmt_yellow "Starting quirrel"
-    cd "$INSTALL_DIR"; dotenv node node_modules/quirrel/dist/cjs/src/api/main.js &
+    cd "$INSTALL_DIR" || exit 1; dotenv node node_modules/quirrel/dist/cjs/src/api/main.js &
     fmt_yellow "Starting web"
-    cd "$INSTALL_DIR"; PORT=3010; npm start &
+    # shellcheck disable=SC2034
+    cd "$INSTALL_DIR"|| exit 1; PORT=3010; npm start &
 
   fi
 }
 
 get_pass() {
-  echo $(date | base64)
+  date | base64
 }
 
 build_secrets(){
-  # make sure secrets file exists
-  #SECRETS=/etc/atlas-requests/secrets.json
-  SECRETS="$USER_DIR/secrets.json"
   touch "$SECRETS"
 
-  SECRET_JSON=$(cat "$SECRETS" | jq -e . >/dev/null 2>&1 && echo $(cat "$SECRETS" | jq .) || echo "{}")
+  SECRET_JSON=$(jq -e . "$SECRETS" >/dev/null 2>&1 && jq . "$SECRETS" || echo "{}")
 
-  # if the file is blank, set it to something jsonish.
   if [ -z "$SECRET_JSON" ]; then
     SECRET_JSON="{}"
   fi
 
-  if ! $(echo $SECRET_JSON | jq 'has("PG_PASS")'); then
-    SECRET_JSON=$(echo $SECRET_JSON | jq -r --arg PASS "$(get_pass)" '. + {PG_PASS:$PASS}')
+  # shellcheck disable=SC2091
+  if ! $(echo "$SECRET_JSON" | jq 'has("PG_PASS")'); then
+    SECRET_JSON=$(echo "$SECRET_JSON" | jq -r --arg PASS "$(get_pass)" '. + {PG_PASS:$PASS}')
   fi
 
-  if ! $(echo $SECRET_JSON | jq 'has("SESSION_SECRET")'); then
-    SECRET_JSON=$(echo $SECRET_JSON | jq -r --arg PASS "$(get_pass)" '. + {SESSION_SECRET:$PASS}')
+  # shellcheck disable=SC2091
+  if ! $(echo "$SECRET_JSON" | jq 'has("SESSION_SECRET")'); then
+    SECRET_JSON=$(echo "$SECRET_JSON" | jq -r --arg PASS "$(get_pass)" '. + {SESSION_SECRET:$PASS}')
   fi
 
-  if ! $(echo $SECRET_JSON | jq 'has("PASSPHRASES")'); then
-    SECRET_JSON=$(echo $SECRET_JSON | jq -r --arg PASS "$(get_pass)" '. + {PASSPHRASES:$PASS}')
+  # shellcheck disable=SC2091
+  if ! $(echo "$SECRET_JSON" | jq 'has("PASSPHRASES")'); then
+    SECRET_JSON=$(echo "$SECRET_JSON" | jq -r --arg PASS "$(get_pass)" '. + {PASSPHRASES:$PASS}')
   fi
 
-  if ! $(echo $SECRET_JSON | jq 'has("MEILI_MASTER_KEY")'); then
-    SECRET_JSON=$(echo $SECRET_JSON | jq -r --arg PASS "$(get_pass)" '. + {MEILI_MASTER_KEY:$PASS}')
+  # shellcheck disable=SC2091
+  if ! $(echo "$SECRET_JSON" | jq 'has("MEILI_MASTER_KEY")'); then
+    SECRET_JSON=$(echo "$SECRET_JSON" | jq -r --arg PASS "$(get_pass)" '. + {MEILI_MASTER_KEY:$PASS}')
   fi
 
-  echo $SECRET_JSON > "$USER_DIR/secrets.json"
+  echo "$SECRET_JSON" > "$SECRETS"
 }
 
 postgres_init(){
 
-    # ensure pg is running
     /etc/init.d/postgresql start 1>/dev/null
+    postgres_online
 
-    #  call function by "postgres_init $BASE_DIR"
-    PASS=$(jq .PG_PASS < "$USER_DIR/secrets.json")
+    PASS=$(jq .PG_PASS "$SECRETS")
 
     # setup user
-    if [ ! "$( su - postgres -c "psql -tAc \"SELECT 1 FROM pg_roles where pg_roles.rolname = '$DATABASE_USER'\"" )" = '1' ]; then
-        su - postgres -c "psql --command \"CREATE USER $DATABASE_USER WITH PASSWORD '$PASS';\""
+    if [ ! "$( su - postgres -c "psql -tAc \"SELECT 1 FROM pg_roles where pg_roles.rolname = '$PG_USER'\"" )" = '1' ]; then
+        su - postgres -c "psql --command \"CREATE USER $PG_USER WITH PASSWORD '$PASS';\""
     else
-        su - postgres -c "psql --command \"ALTER USER $DATABASE_USER WITH PASSWORD '$PASS';\"" 1>/dev/null
+        su - postgres -c "psql --command \"ALTER USER $PG_USER WITH PASSWORD '$PASS';\"" 1>/dev/null
     fi
 
-    if [ ! "$( su - postgres -c "psql -tAc \"SELECT 1 FROM pg_database WHERE datname='$DATABASE_NAME'\"" )" = '1' ]; then
-        su - postgres -c "createdb -O $DATABASE_USER $DATABASE_NAME"
+    if [ ! "$( su - postgres -c "psql -tAc \"SELECT 1 FROM pg_database WHERE datname='$PG_DATABASE'\"" )" = '1' ]; then
+        su - postgres -c "createdb -O $PG_USER $PG_DATABASE"
     fi
 }
-
-#postgres_default_user(){
-
-    # # ensure pg is running
-    # /etc/init.d/postgresql start 1>/dev/null
-
-    # if [ ! "$( su - postgres -c "psql -d atlas_requests -tAc \"SELECT 1 FROM atlas_requests.public.user WHERE account_name='admin'\" " )" = '1' ]; then
-    #     su - postgres -c "psql -d atlas_requests -c \"INSERT INTO atlas_requests.public.user (account_name, full_name, first_name) VALUES ('admin', 'admin','admin')\""
-    # fi
-#}
 
 recommendations(){
 
@@ -250,63 +278,62 @@ EOF
 }
 
 services(){
-  cat <<EOT > /etc/systemd/system/atlas_requests_web.service
+  cat <<EOT > "/etc/systemd/system/$WEB_SERVICE"
 [Unit]
 Description=Atlas Requests / Web
 After=network.target
 
 [Service]
-User=www-data
-Group=www-data
-WorkingDirectory=/usr/lib/atlas-requests/app
-Environment="NODE_ENV=production,PORT=3010"
+User=$USER
+Group=$USER
+WorkingDirectory=$INSTALL_DIR
+Environment="NODE_ENV=$NODE_ENV,PORT=$PORT"
 ExecStart=npm start
 
 [Install]
 WantedBy=multi-user.target
 EOT
-  cat <<EOT > /etc/systemd/system/atlas_requests_querrel.service
+  cat <<EOT > "/etc/systemd/system/$QUIRREL_SERVICE"
 [Unit]
 Description=Atlas Requests / Querrel
 After=network.target
 
 [Service]
-User=www-data
-Group=www-data
-WorkingDirectory=/usr/lib/atlas-requests/app
-Environment="PATH=/usr/lib/atlas-requests/app/.venv/bin"
-ExecStart=/usr/lib/atlas-requests/app/.venv/bin/gunicorn --worker-class=gevent --workers 1 --threads 30 --timeout 999999999 --access-logfile /var/log/atlas-requests/access.log --error-logfile /var/log/atlas-requests/error.log --capture-output --bind  unix:runner.sock --umask 007 runner:app
+User=$USER
+Group=$USER
+WorkingDirectory=$INSTALL_DIR
+ExecStart=dotenv node node_modules/quirrel/dist/cjs/src/api/main.js
 
 [Install]
 WantedBy=multi-user.target
 EOT
-  cat <<EOT > /etc/systemd/system/atlas_requests_search.service
+  cat <<EOT > "/etc/systemd/system/$SEARCH_SERVICE"
 [Unit]
-Description=Atlas Requets Meilisearch
-After=systemd-user-sessions.service
+Description=Atlas Requets / Meilisearch
+After=network.target
 
 [Service]
-Type=simple
-ExecStart=/usr/bin/meilisearch --http-addr 127.0.0.1:7700 --env production --master-key Y0urVery-S3cureAp1K3y
+User=$USER
+Group=$USER
+WorkingDirectory=$INSTALL_DIR
+ExecStart=dotenv meilisearch
 
 [Install]
 WantedBy=default.target
 EOT
 }
+
 nginx_init(){
-  CONFIG=$INSTALL_DIR/.env
 
-  HOSTNAME=$(cat $SECRETS | jq .SESSION_SECRET --raw-output) || hostname
-
-  cat <<EOT > /etc/nginx/sites-enabled/atlas-requests
+  cat <<EOT > /etc/nginx/sites-enabled/$APP_NAME
 server {
   listen 80;
-  server_name $HOSTNAME localhost 127.0.0.1;
+  server_name $EXTERNAL_URL localhost 127.0.0.1;
 
   location / {
       access_log   off;
       include proxy_params;
-      proxy_pass http://localhost:3010;
+      proxy_pass http://$HOSTNAME:$PORT;
   }
 }
 EOT

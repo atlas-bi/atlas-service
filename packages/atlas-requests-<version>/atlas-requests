@@ -4,8 +4,8 @@
 set -Eeuo pipefail
 trap cleanup SIGINT SIGTERM ERR EXIT
 
-APP="atlas-requests"
-DATABASE="atlas_requests"
+# shellcheck disable=SC1091
+. usr/lib/atlas-requests/functions.sh
 
 color() {
   RED=$(printf '\033[31m')
@@ -38,13 +38,6 @@ fmt_yellow() {
 
 color
 
-BASE_DIR="/usr/lib/$APP"
-INSTALL_DIR="$BASE_DIR/app"
-USER_DIR="/etc/$APP"
-BACKUP_DIR="$USER_DIR/backup"
-LOG_DIR="/var/log/$APP"
-EXTERNAL_URL=${EXTERNAL_URL:-$HOSTNAME}
-
 HIST_DATE=$(date +"%s_%Y_%m_%d")
 
 mkdir -p "$BACKUP_DIR"
@@ -52,49 +45,46 @@ mkdir -p "$BACKUP_DIR"
 backup(){
     # backup old install, if there was an old install
     if [ -d "$BASE_DIR" ]; then
+
         fmt_blue "Creating backup of previous install"
         # make a db dump
-        su - postgres -c "pg_dump $DATABASE" > "$BASE_DIR/$DATABASE_$HIST_DATE.sql"
+        su - postgres -c "pg_dump $DATABASE" > "$BASE_DIR/${DATABASE}_${HIST_DATE}.sql"
 
         # copy config
-        if [ -e "$USER_DIR/config.ini" ]; then
-            cp "$USER_DIR/config.ini" "$BASE_DIR/config.ini"
+        if [ -e "$USER_DIR/config" ]; then
+            cp "$USER_DIR/config" "$BASE_DIR/config"
         fi
 
-        # copy nginx
-        if [ -e "/etc/nginx/sites-enabled/$APP" ]; then
-            cp "/etc/nginx/sites-enabled/$APP" "$BASE_DIR/$APP.nginx"
-        fi
-
-        tar -czf "$BACKUP_DIR/$DATABASE_backup_$HIST_DATE.tar.gz" --exclude='*.sock' -C "$BASE_DIR" . --warning=no-file-changed  1>/dev/null
-        fmt_blue "Backup saved to $BACKUP_DIR/$DATABASE_backup_$HIST_DATE.tar.gz"
+        tar -czf "$BACKUP_DIR/${DATABASE}_backup_${HIST_DATE}.tar.gz" --exclude='*.sock' -C "$BASE_DIR" . --warning=no-file-changed  1>/dev/null
+        fmt_blue "Backup saved to $BACKUP_DIR/${DATABASE}_backup_${HIST_DATE}.tar.gz"
 
         # removed copied files
-        rm "$BASE_DIR/config.ini"
-        rm "$BASE_DIR/$DATABASE_$HIST_DATE.sql"
+        rm "$BASE_DIR/config"
+        rm "$BASE_DIR/${DATABASE}_${HIST_DATE}.sql"
     fi
 }
 
 configure(){
-    . $BASE_DIR/functions.sh
-
     fmt_blue "Configuring Atlas requests."
     fmt_yellow "Stopping services"
 
     stop_services
 
     fmt_yellow "Verifying secrets"
-    cd "$BASE_DIR"
-    python3 -c "from installers import build_secrets; build_secrets()"
+    build_secrets
 
     fmt_yellow "Updating configuration"
 
     install_configuration
-
-    python3 -c "from installers import build_web_configuration; build_web_configuration(\"$INSTALL_DIR\", \"/etc/$APP/config.ini\")"
+    load_configuration
 
     fmt_yellow "Configuring Nginx"
-    python3 -c "from installers import build_nginx_configuration;build_nginx_configuration(\"/etc/$APP/config.ini\")"
+    nginx_init
+
+    if [ "$(pidof systemd)" != "" ]; then
+      fmt_yellow "Setting up services"
+      services
+    fi
 
     fmt_yellow "Starting services"
     start_services
@@ -105,28 +95,27 @@ configure(){
 usage() {
   cat << EOF
 
-${BOLD}Usage: $(basename "${BASH_SOURCE[0]}") [-h, -b, -c]
+${BOLD}Usage: $(basename "${BASH_SOURCE[0]}") [-h, -b, -c, -u]
 
-${BLUE}Atlas Automation requests cli application.${RESET}
+${BLUE}Atlas Requests cli application.${RESET}
 
 Available options:
 
     -h, --help        Print this help and exit
-    -b, --backup      Create a backup of Atlas requests
-    -c, --configure   Reconfigure Atlas requests
+    -b, --backup      Create a backup of Atlas Requests
+    -c, --configure   Reconfigure Atlas Requests
+    -u, --upgrade     Upgrade Atlas Requests
 
-Additional Altas requests Help
+Additional Altas Requests Help
 
 ${YELLOW}${BOLD}Where are user configuration options?${RESET}
 
-    Changes to user configuration are made in ${BLUE}/etc/$APP/config.ini${RESET}.
+    Changes to user configuration are made in ${BLUE}/etc/$APP/config${RESET}.
     Run ${BLUE}$APP -c${RESET} to reconfigure the app.
 
 ${YELLOW}${BOLD}Where are log messages?${RESET}
 
     ${BLUE}Nginx${RESET} /var/log/nginx/error.log
-    ${BLUE}Atlas${RESET} /var/log/$APP/error.log
-
 
 EOF
   exit
@@ -149,14 +138,15 @@ die() {
 
 parse_params() {
   while :; do
+    # shellcheck disable=SC2317
     case "${1-}" in
     -h | --help) usage;break ;;
     -b | --backup) backup;break ;;
     -u | --upgrade) upgrade;break ;;
 #    --no-color) NO_COLOR=1 ;;
     -c | --configure) configure;break ;; # example flag
-    -?*) die "${RED}${BOLD}Unknown option: $1. Run $(basename ${BASH_SOURCE[0]}) -h for help.${RESET}";break ;;
-    *)  die "${RED}${BOLD}Missing arguments. Run $(basename ${BASH_SOURCE[0]}) -h for help.${RESET}";break ;;
+    -?*) die "${RED}${BOLD}Unknown option: $1. Run $(basename "${BASH_SOURCE[0]}") -h for help.${RESET}";break ;;
+    *)  die "${RED}${BOLD}Missing arguments. Run $(basename "${BASH_SOURCE[0]}") -h for help.${RESET}";break ;;
     esac
     shift
   done

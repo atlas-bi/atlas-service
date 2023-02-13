@@ -40,7 +40,7 @@ apt-get update && apt-get install -y yarn \
 cd /atlas; \
 
 # set the version
-VERSION=0.0.1-rc.4; \
+VERSION=1.0.0-rc.1; \
 
 # uninstall old verions
 apt-get remove atlas-requests -y 2>/dev/null; \
