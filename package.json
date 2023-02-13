@@ -162,5 +162,6 @@
     "**/*.{ts,css,less,scss,js,json,md,yaml,html}": [
       "npm run format"
     ]
-  }
+  },
+  "version": "1.0.0-rc.1"
 }
