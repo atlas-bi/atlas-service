@@ -1,6 +1,4 @@
-
 # Ubuntu Build
-
 
 ```sh
 apt-get update
@@ -15,6 +13,7 @@ copy files to ppa repo
 ```
 
 ## To run in local docker
+
 ```sh
 # change into the packages directory.
 cd packages
@@ -76,6 +75,6 @@ EXPORT EXTERNAL_URL='https://google.com'; sudo apt install atlas-requests
 ## Where the files should end up
 
 `usr/bin/atlas-requests` > cli application
-`usr/lib/atlas-requests`  > install directory for webapp
+`usr/lib/atlas-requests` > install directory for webapp
 `etc/atlas-requests` > config directory
 `var/log/atlas-requests` > log directory

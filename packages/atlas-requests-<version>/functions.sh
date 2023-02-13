@@ -154,7 +154,7 @@ start_services(){
     fmt_yellow "Starting postgres"
     /etc/init.d/postgresql start
     fmt_yellow "Starting meilisearch"
-    dotenv meilisearch &
+    cd "$INSTALL_DIR"; dotenv meilisearch &
     fmt_yellow "Starting quirrel"
     cd "$INSTALL_DIR"; dotenv node node_modules/quirrel/dist/cjs/src/api/main.js &
     fmt_yellow "Starting web"
