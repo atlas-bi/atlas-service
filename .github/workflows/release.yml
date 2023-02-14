@@ -19,8 +19,16 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Setup Poetry
-        uses: snok/install-poetry@v1
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: 📥 Download deps
+        uses: bahmutov/npm-install@v1
+        with:
+          useLockFile: false
 
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v3
