@@ -5,21 +5,31 @@
     "main",
     "next",
     "next-major",
-    {"name": "beta", "prerelease": true},
-    {"name": "alpha", "prerelease": true},
-    {"name": "dev", "prerelease": "rc"}],
+    { "name": "beta", "prerelease": true },
+    { "name": "alpha", "prerelease": true },
+    { "name": "dev", "prerelease": "rc" }
+  ],
   "plugins": [
     "@semantic-release/commit-analyzer",
-    ["@semantic-release/release-notes-generator",{
-      "preset": "conventionalcommits",
-    }],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "config": "./node_modules/cz-conventional-changelog"
+      }
+    ],
     "@semantic-release/changelog",
-    ["@semantic-release/npm", {
-      "publish": "false"
-    }],
-    ["@semantic-release/git", {
-      "assets": ["package.json", "CHANGELOG.md"]
-    }],
+    [
+      "@semantic-release/npm",
+      {
+        "publish": "false"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["package.json", "CHANGELOG.md"]
+      }
+    ],
     "@semantic-release/github"
   ]
 }
