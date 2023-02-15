@@ -2,7 +2,7 @@
  * @type {import('@remix-run/dev').AppConfig}
  */
 module.exports = {
-    // cacheDirectory: "./node_modules/.cache/remix",
-    ignoredRouteFiles: ['**/.*', '**/*.css', '**/*.test.{js,jsx,ts,tsx}'],
-    serverDependenciesToBundle: ['simple-ldap-search', 'react-markdown'],
+  // cacheDirectory: "./node_modules/.cache/remix",
+  ignoredRouteFiles: ['**/.*', '**/*.css', '**/*.test.{js,jsx,ts,tsx}'],
+  serverDependenciesToBundle: ['simple-ldap-search', 'react-markdown'],
 };

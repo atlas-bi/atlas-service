@@ -1,179 +1,177 @@
 name: 🧪 Test
 on:
-    push:
-        branches:
-            - master
-            - alpha
-            - dev
-    pull_request: {}
+  push:
+    branches:
+      - master
+      - alpha
+      - dev
+  pull_request: {}
 
 permissions:
-    actions: write
-    contents: read
+  actions: write
+  contents: read
 
 jobs:
-    apt:
-        name: 🔥 Lintian
-        runs-on: ubuntu-latest
-        steps:
-            - name: 🛑 Cancel Previous Runs
-              uses: styfle/cancel-workflow-action@0.11.0
+  apt:
+    name: 🔥 Lintian
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛑 Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.11.0
 
-            - name: ⬇️ Checkout repo
-              uses: actions/checkout@v3
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v3
 
-            - name: ⎔ Setup
-              run: |
-                  sudo apt-get update
-                  sudo apt-get install dh-make devscripts -y
+      - name: ⎔ Setup
+        run: |
+          sudo apt-get update
+          sudo apt-get install dh-make devscripts -y
 
-            - name: 🔬 Lint
-              run: |
-                  cd packages
+      - name: 🔬 Lint
+        run: |
+          cd packages
 
-                  # create an install
-                  cp -r "atlas-requests-<version>" "atlas-requests-$VERSION"
-                  cd "atlas-requests-$VERSION"
+          # create an install
+          cp -r "atlas-requests-<version>" "atlas-requests-$VERSION"
+          cd "atlas-requests-$VERSION"
 
-                  # update version
-                  find . -type f -name "*" -exec sed -i'' -e "s/<version>/$VERSION/g" {} +
+          # update version
+          find . -type f -name "*" -exec sed -i'' -e "s/<version>/$VERSION/g" {} +
 
-                  # build
-                  debuild --no-tgz-check --no-lintian -us -uc
+          # build
+          debuild --no-tgz-check --no-lintian -us -uc
 
-                  # lint
-                  lintian --fail-on error
-              env:
-                  VERSION: 1.1.1
+          # lint
+          lintian --fail-on error
+        env:
+          VERSION: 1.1.1
 
-    shell:
-        name: ✓ ShellCheck
-        runs-on: ubuntu-latest
-        steps:
-            - name: 🛑 Cancel Previous Runs
-              uses: styfle/cancel-workflow-action@0.11.0
+  shell:
+    name: ✓ ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛑 Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.11.0
 
-            - name: ⬇️ Checkout repo
-              uses: actions/checkout@v3
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v3
 
-            - name: ⎔ Setup ShellCheck
-              run: sudo apt-get update; sudo apt-get install -y shellcheck
-              with:
-                  node-version: 16
+      - name: ⎔ Setup ShellCheck
+        run: sudo apt-get update; sudo apt-get install -y shellcheck
 
-            - name: 🔬 Lint
-              run: |
-                  cd packages
-                  shellcheck  **/*.sh
-                  shellcheck **/atlas-requests
-    lint:
-        name: ⬣ ESLint
-        runs-on: ubuntu-latest
-        steps:
-            - name: 🛑 Cancel Previous Runs
-              uses: styfle/cancel-workflow-action@0.11.0
+      - name: 🔬 Lint
+        run: |
+          cd packages
+          shellcheck  **/*.sh
+          shellcheck **/atlas-requests
+  lint:
+    name: ⬣ ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛑 Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.11.0
 
-            - name: ⬇️ Checkout repo
-              uses: actions/checkout@v3
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v3
 
-            - name: ⎔ Setup node
-              uses: actions/setup-node@v3
-              with:
-                  node-version: 16
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
 
-            - name: 📥 Download deps
-              uses: bahmutov/npm-install@v1
-              with:
-                  useLockFile: false
+      - name: 📥 Download deps
+        uses: bahmutov/npm-install@v1
+        with:
+          useLockFile: false
 
-            - name: 🔬 Lint
-              run: npm run lint
+      - name: 🔬 Lint
+        run: npm run lint
 
-    typecheck:
-        name: ʦ TypeScript
-        runs-on: ubuntu-latest
-        steps:
-            - name: 🛑 Cancel Previous Runs
-              uses: styfle/cancel-workflow-action@0.11.0
+  typecheck:
+    name: ʦ TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛑 Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.11.0
 
-            - name: ⬇️ Checkout repo
-              uses: actions/checkout@v3
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v3
 
-            - name: ⎔ Setup node
-              uses: actions/setup-node@v3
-              with:
-                  node-version: 16
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
 
-            - name: 📥 Download deps
-              uses: bahmutov/npm-install@v1
-              with:
-                  useLockFile: false
+      - name: 📥 Download deps
+        uses: bahmutov/npm-install@v1
+        with:
+          useLockFile: false
 
-            - name: 🔎 Type check
-              run: npm run typecheck --if-present
+      - name: 🔎 Type check
+        run: npm run typecheck --if-present
 
-    vitest:
-        name: ⚡ Vitest
-        runs-on: ubuntu-latest
-        steps:
-            - name: 🛑 Cancel Previous Runs
-              uses: styfle/cancel-workflow-action@0.11.0
+  vitest:
+    name: ⚡ Vitest
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛑 Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.11.0
 
-            - name: ⬇️ Checkout repo
-              uses: actions/checkout@v3
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v3
 
-            - name: ⎔ Setup node
-              uses: actions/setup-node@v3
-              with:
-                  node-version: 16
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
 
-            - name: 📥 Download deps
-              uses: bahmutov/npm-install@v1
-              with:
-                  useLockFile: false
+      - name: 📥 Download deps
+        uses: bahmutov/npm-install@v1
+        with:
+          useLockFile: false
 
-            - name: ⚡ Run vitest
-              run: npm run test -- --coverage
+      - name: ⚡ Run vitest
+        run: npm run test -- --coverage
 
-    cypress:
-        name: ⚫️ Cypress
-        runs-on: ubuntu-latest
-        steps:
-            - name: 🛑 Cancel Previous Runs
-              uses: styfle/cancel-workflow-action@0.11.0
+  cypress:
+    name: ⚫️ Cypress
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛑 Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.11.0
 
-            - name: ⬇️ Checkout repo
-              uses: actions/checkout@v3
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v3
 
-            - name: 🏄 Copy test env vars
-              run: cp .env.example .env
+      - name: 🏄 Copy test env vars
+        run: cp .env.example .env
 
-            - name: ⎔ Setup node
-              uses: actions/setup-node@v3
-              with:
-                  node-version: 16
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
 
-            - name: 📥 Download deps
-              uses: bahmutov/npm-install@v1
-              with:
-                  useLockFile: false
+      - name: 📥 Download deps
+        uses: bahmutov/npm-install@v1
+        with:
+          useLockFile: false
 
-            - name: 🐳 Docker compose
-              # the sleep is just there to give time for postgres to get started
-              run: docker-compose up -d && sleep 3
-              env:
-                  DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/postgres'
+      - name: 🐳 Docker compose
+        # the sleep is just there to give time for postgres to get started
+        run: docker-compose up -d && sleep 3
+        env:
+          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/postgres'
 
-            - name: 🛠 Setup Database
-              run: npx prisma migrate reset --force
+      - name: 🛠 Setup Database
+        run: npx prisma migrate reset --force
 
-            - name: ⚙️ Build
-              run: npm run build
+      - name: ⚙️ Build
+        run: npm run build
 
-            - name: 🌳 Cypress run
-              uses: cypress-io/github-action@v5
-              with:
-                  start: npm run start:mocks
-                  wait-on: 'http://localhost:8811'
-              env:
-                  PORT: '8811'
+      - name: 🌳 Cypress run
+        uses: cypress-io/github-action@v5
+        with:
+          start: npm run start:mocks
+          wait-on: 'http://localhost:8811'
+        env:
+          PORT: '8811'
