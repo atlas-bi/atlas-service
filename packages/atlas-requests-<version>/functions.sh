@@ -124,6 +124,8 @@ install_configuration(){
     sed -i -e "s/MEILI_ENV=.*//g" $CONFIG > /dev/null
     sed -i -e "s/HOSTNAME=.*//g" $CONFIG > /dev/null
     sed -i -e "s/REDIS_URL=.*//g" $CONFIG > /dev/null
+    sed -i -e "s/SAML/#SAML/g" $CONFIG > /dev/null
+    sed -i -e "s/LDAP/#LDAP/g" $CONFIG > /dev/null
   fi
 }
 
