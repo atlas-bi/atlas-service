@@ -1,5 +1,5 @@
 {
-    "name": "app-dd24",
+    "name": "atlas-requests",
     "private": true,
     "sideEffects": false,
     "scripts": {
@@ -175,5 +175,5 @@
             "npm run format"
         ]
     },
-    "version": "1.0.0-rc.1"
+  "version": "1.0.0-rc.2"
 }
