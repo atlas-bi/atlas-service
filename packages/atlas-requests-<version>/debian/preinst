@@ -1,14 +1,22 @@
 #!/bin/sh
-APP=atlas-requests
-BASE_DIR="/usr/lib/$APP"
-USER_DIR="/etc/$APP"
+APP_NAME=atlas-requests
+BASE_DIR="/usr/lib/$APP_NAME"
+USER_DIR="/etc/$APP_NAME"
+RED=$(printf '\033[31m')
+RESET=$(printf '\033[0m')
 
 if ! which node > /dev/null; then
-  error "Node is not installed. Please install node and try again. See https://learnubuntu.com/install-node/ for help."
+  echo
+  echo "${RED}Error: Node is not installed. Please install node and try again. See https://learnubuntu.com/install-node/ for help.${RESET}"
+  echo
+  exit 1
 fi
 
 if ! which npm > /dev/null; then
-  error "Npm is not installed. Please install node and try again. See https://learnubuntu.com/install-node/ for help."
+  echo
+  echo "${RED}Error: Npm is not installed. Please install node and try again. See https://learnubuntu.com/install-node/ for help.${RESET}"
+  echo
+  exit 1
 fi
 
 # remove old install
@@ -20,15 +28,5 @@ fi
 if [ ! -d "$USER_DIR" ]; then
   mkdir -p "$USER_DIR"
 fi
-
-# # create log directory
-# mkdir -p "/var/log/$APP"
-
-# # create log files
-# touch "/var/log/$APP/supervisord.log"
-# touch "/var/log/$APP/error.log"
-# touch "/var/log/$APP/access.log"
-
-# chown -R www-data /var/log/$APP
 
 ### proceed with install ###

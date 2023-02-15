@@ -1,13 +1,12 @@
-import type { LoaderFunction } from "remix";
-import { imageLoader, MemoryCache } from "remix-image/server";
-import { sharpTransformer } from "remix-image-sharp";
+import type { ActionArgs, LoaderFunction } from '@remix-run/node';
+import { sharpTransformer } from 'remix-image-sharp';
+import { MemoryCache, imageLoader } from 'remix-image/server';
 
 const config = {
-  selfUrl: "http://localhost:3000",
-  cache: new MemoryCache(),
-  transformer: sharpTransformer,
+    selfUrl: 'http://localhost:3000',
+    cache: new MemoryCache(),
+    transformer: sharpTransformer,
 };
 
-export const loader: LoaderFunction = ({ request }) => {
-  return imageLoader(config, request);
-};
+export const loader: LoaderFunction = ({ request }: ActionArgs) =>
+    imageLoader(config, request);

@@ -29,5 +29,5 @@ Depends: apt-utils,
          postgresql-contrib,
          redis-server,
          jq
-Description: Atlas Requests
-  Atlas Requests is a report service request portal.
+Description: Atlas Requests is a report service request portal.
+ Thanks for installing. Documentation available at https://atlas.bi

@@ -1,5 +1,6 @@
-atlas-requests (<version>) released; urgency=medium
+atlas-requests (<version>) jammy; urgency=medium
 
-  * Initial release
+  * Changelog can be found at
+    https://github.com/atlas-bi/atlas-requests/blob/master/CHANGELOG.md
 
  -- Christopher Pickering <christopher@atlas.bi>  Tue, 7 Jan 2023 03:49:53 -0500
