@@ -1,3 +1,8 @@
+## 1.0.0-rc.4 (2023-02-20)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([5b8952a](https://github.com/atlas-bi/atlas-requests/commit/5b8952a))
+* feat(editor): started on new request form ([1637bad](https://github.com/atlas-bi/atlas-requests/commit/1637bad))
+
 ## 1.0.0-rc.3 (2023-02-15)
 
 * fix(install): fixed default config on install ([8eeb571](https://github.com/atlas-bi/atlas-requests/commit/8eeb571))
