@@ -21,7 +21,7 @@ import {
   getRequestTypes,
   setRequestCategoryDefault,
 } from '~/models/config.server';
-import { authorize, getUser } from '~/session.server';
+import { authorize, requireUser } from '~/session.server';
 
 type Errors = {
   typeName?: string;
@@ -44,7 +44,7 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 export async function action({ request }: ActionArgs) {
-  const user = await getUser(request);
+  const user = await requireUser(request);
   const userId = user.id;
 
   const formData = await request.formData();

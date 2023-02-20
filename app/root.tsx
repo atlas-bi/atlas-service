@@ -48,7 +48,7 @@ export async function loader({ request }: LoaderArgs) {
 export default function App() {
   const { user } = useLoaderData<typeof loader>();
   return (
-    <html lang="en">
+    <html lang="en" className={`${user ? 'has-navbar-fixed-top' : ''}`}>
       <head>
         <Meta />
         <Links />

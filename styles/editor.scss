@@ -1,55 +1,56 @@
-.other h2 {
-  font-size: 18px;
-  color: #444;
-  margin-bottom: 7px;
-}
+// .other h2 {
+//   font-size: 18px;
+//   color: #444;
+//   margin-bottom: 7px;
+// }
 
-.other a {
-  color: #777;
-  text-decoration: underline;
-  font-size: 14px;
-}
+// .other a {
+//   color: #777;
+//   text-decoration: underline;
+//   font-size: 14px;
+// }
 
-.other ul {
-  padding: 0;
-  margin: 0;
-  list-style-type: none;
-}
+// .other ul {
+//   padding: 0;
+//   margin: 0;
+//   list-style-type: none;
+// }
 
-.App {
-  font-family: sans-serif;
-  text-align: center;
-}
+// .App {
+//   font-family: sans-serif;
+//   text-align: center;
+// }
 
-h1 {
-  font-size: 24px;
-  color: #333;
-}
+// h1 {
+//   font-size: 24px;
+//   color: #333;
+// }
 
-.ltr {
-  text-align: left;
-}
+// .ltr {
+//   text-align: left;
+// }
 
-.rtl {
-  text-align: right;
-}
+// .rtl {
+//   text-align: right;
+// }
 
 .editor-container {
-  margin: 20px auto 20px auto;
-  border-radius: 2px;
-  max-width: 600px;
+  // margin: 20px auto 20px auto;
+  // border-radius: 2px;
+  border-radius: inherit;
+  // max-width: 600px;
   color: #000;
   position: relative;
   line-height: 20px;
   font-weight: 400;
   text-align: left;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
 }
 
 .editor-inner {
   background: #fff;
   position: relative;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
 }
 
 .editor-input {
@@ -60,7 +61,7 @@ h1 {
   position: relative;
   tab-size: 1;
   outline: 0;
-  padding: 15px 10px;
+  // padding: 15px 10px;
   caret-color: #444;
 }
 
@@ -70,7 +71,7 @@ h1 {
   position: absolute;
   text-overflow: ellipsis;
   top: 15px;
-  left: 10px;
+  left: 20px;
   font-size: 15px;
   user-select: none;
   display: inline-block;
@@ -335,11 +336,12 @@ pre::-webkit-scrollbar-thumb {
 
 .toolbar {
   display: flex;
+  flex-wrap: wrap;
   margin-bottom: 1px;
   background: #fff;
   padding: 4px;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
   vertical-align: middle;
 }
 

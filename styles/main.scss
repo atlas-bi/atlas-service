@@ -57,7 +57,7 @@ $family-monospace: 'Source Code Pro', monospace;
 $family-sans-serif: 'Inter', blinkmacsystemfont, -apple-system, 'Segoe UI',
   'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
   'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
-$title-family: 'Rasa', 'Georgia', 'Times New Roman', serif;
+$title-family: $family-sans-serif; //'Rasa', 'Georgia', 'Times New Roman', serif;
 $weight-normal: 500;
 $weight-light: 400;
 $weight-semibold: 600;
@@ -123,40 +123,48 @@ body {
     padding: 0 15px;
   }
 }
-.atlas-navbar {
-  padding: 16px 0;
 
-  .navbar-brand {
-    margin-left: 0 !important;
-    a {
-      padding-top: 0;
-      padding-bottom: 0;
+.thread-box {
+  @extend .box;
+  @extend .p-0;
+  @extend .ml-3;
+  shadow-box: unset;
+  filter: drop-shadow(0px 2px 2px $white-ter);
+  position: relative;
+  border: 1px solid $grey-lighter;
 
-      img {
-        max-height: 50px;
-        height: 50px;
-      }
-    }
+  &:after {
+    margin-left: 1px;
+    position: absolute;
+    top: 11px;
+    right: 100%;
+    left: -8px;
+    display: block;
+    width: 8px;
+    height: 16px;
+    pointer-events: none;
+    content: ' ';
+    clip-path: polygon(0 50%, 100% 0, 100% 100%);
+    background-image: linear-gradient($white, $white) !important;
   }
-  a.navbar-item {
-    &:hover {
-      color: $grey-darker;
-    }
-  }
-  .has-dropdown {
-    .navbar-link {
-      &:hover {
-        color: $grey-darker;
-      }
-    }
+  &:before {
+    margin-left: -1px;
+    position: absolute;
+    top: 11px;
+    right: 100%;
+    left: -8px;
+    display: block;
+    width: 8px;
+    height: 16px;
+    pointer-events: none;
+    content: ' ';
+    clip-path: polygon(0 50%, 100% 0, 100% 100%);
+    background-image: linear-gradient($grey-lighter, $grey-lighter) !important;
   }
 }
-
-@media screen and (min-width: $desktop) {
-  .atlas-navbar .navbar-start {
-    padding-top: 0 !important;
-  }
-}
+// .editor-container {
+//  @extend .has-background-white-ter
+// }
 
 @media screen and (min-width: $desktop) {
   .hide-desktop {
@@ -171,4 +179,11 @@ body {
 
 /* purgecss start ignore */
 @import 'editor';
+.editor-input {
+  @extend .has-background-white-bis;
+  @extend .p-3;
+  @extend .m-2;
+  border-radius: $radius;
+  border: 1px solid $grey-lighter;
+}
 /* purgecss end ignore */

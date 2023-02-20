@@ -29,7 +29,7 @@ export async function action({ request, params }: ActionArgs) {
 
   await deleteRequest({ userId, id: Number(params.requestId) });
 
-  return redirect('/requests');
+  return redirect('/');
 }
 
 export default function RequestDetailsPage() {

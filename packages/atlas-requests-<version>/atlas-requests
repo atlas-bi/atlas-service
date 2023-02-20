@@ -5,7 +5,7 @@ set -Eeuo pipefail
 trap cleanup SIGINT SIGTERM ERR EXIT
 
 # shellcheck disable=SC1091
-. usr/lib/atlas-requests/functions.sh
+. /usr/lib/atlas-requests/functions.sh
 
 color() {
   RED=$(printf '\033[31m')

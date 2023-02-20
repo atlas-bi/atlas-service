@@ -1,46 +1,15 @@
-.other h2 {
-  color: #444;
-  font-size: 18px;
-  margin-bottom: 7px;
-}
-.other a {
-  color: #777;
-  font-size: 14px;
-  text-decoration: underline;
-}
-.other ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-}
-.App {
-  font-family: sans-serif;
-  text-align: center;
-}
-h1 {
-  color: #333;
-  font-size: 24px;
-}
-.ltr {
-  text-align: left;
-}
-.rtl {
-  text-align: right;
-}
 .editor-container {
-  border-radius: 2px;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+  border-radius: inherit;
   color: #000;
   font-weight: 400;
   line-height: 20px;
-  margin: 20px auto;
-  max-width: 600px;
   position: relative;
   text-align: left;
 }
 .editor-inner {
   background: #fff;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
   position: relative;
 }
 .editor-input {
@@ -49,7 +18,6 @@ h1 {
   font-size: 15px;
   min-height: 150px;
   outline: 0;
-  padding: 15px 10px;
   position: relative;
   resize: none;
   -moz-tab-size: 1;
@@ -60,7 +28,7 @@ h1 {
   color: #999;
   display: inline-block;
   font-size: 15px;
-  left: 10px;
+  left: 20px;
   overflow: hidden;
   pointer-events: none;
   position: absolute;
@@ -200,9 +168,10 @@ h1 {
 }
 .toolbar {
   background: #fff;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
   display: flex;
+  flex-wrap: wrap;
   margin-bottom: 1px;
   padding: 4px;
   vertical-align: middle;

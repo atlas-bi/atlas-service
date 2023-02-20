@@ -1,8 +1,8 @@
+// import {$getRoot, $getSelection} from 'lexical';
 import { CodeHighlightNode, CodeNode } from '@lexical/code';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 import { ListItemNode, ListNode } from '@lexical/list';
 import { TRANSFORMERS } from '@lexical/markdown';
-import { AutoFocusPlugin } from '@lexical/react/LexicalAutoFocusPlugin';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
@@ -10,22 +10,35 @@ import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
+import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table';
+import type { EditorState } from 'lexical';
+import { type MutableRefObject, type RefObject, forwardRef } from 'react';
 
 import AutoLinkPlugin from '../plugins/AutoLinkPlugin';
 import CodeHighlightPlugin from '../plugins/CodeHighlightPlugin';
 import ListMaxIndentLevelPlugin from '../plugins/ListMaxIndentLevelPlugin';
 import ToolbarPlugin from '../plugins/ToolbarPlugin';
 
-function Placeholder() {
-  return <div className="editor-placeholder">Enter some rich text...</div>;
+function PlaceholderBuilder() {
+  return <div className="editor-placeholder">'...'</div>;
 }
 
+// function onChange(editorState) {
+//   editorState.read(() => {
+//     // Read the contents of the EditorState here.
+//     const root = $getRoot();
+//     const selection = $getSelection();
+
+//     console.log(root, selection);
+//   });
+// }
+
 const exampleTheme = {
-  ltr: 'ltr',
-  rtl: 'rtl',
+  // ltr: 'ltr',
+  // rtl: 'rtl',
   placeholder: 'editor-placeholder',
   paragraph: 'editor-paragraph',
   quote: 'editor-quote',
@@ -90,7 +103,6 @@ const exampleTheme = {
     variable: 'editor-tokenVariable',
   },
 };
-
 const editorConfig = {
   // The editor theme
   theme: exampleTheme,
@@ -117,27 +129,50 @@ const editorConfig = {
   ],
 };
 
-export default function Editor() {
-  return (
+interface changeCallbackType {
+  (editorState: EditorState): void;
+}
+
+const Editor = forwardRef(
+  (
+    {
+      onChange,
+      activeEditor,
+    }: {
+      onChange: changeCallbackType;
+      activeEditor: MutableRefObject<HTMLDivElement | undefined>;
+    },
+    ref,
+  ) => (
     <LexicalComposer initialConfig={editorConfig}>
       <div className="editor-container">
-        <ToolbarPlugin />
+        <div
+          className={`editor-toolbar ${
+            ref !== activeEditor ? 'is-hidden' : ''
+          }`}
+          ref={ref as RefObject<HTMLDivElement>}
+        >
+          <ToolbarPlugin />
+        </div>
         <div className="editor-inner">
           <RichTextPlugin
             contentEditable={<ContentEditable className="editor-input" />}
-            placeholder={<Placeholder />}
+            placeholder={<PlaceholderBuilder />}
             ErrorBoundary={LexicalErrorBoundary}
           />
           <HistoryPlugin />
-          <AutoFocusPlugin />
           <CodeHighlightPlugin />
           <ListPlugin />
           <LinkPlugin />
+          <OnChangePlugin onChange={onChange} />
           <AutoLinkPlugin />
           <ListMaxIndentLevelPlugin maxDepth={7} />
           <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
         </div>
       </div>
     </LexicalComposer>
-  );
-}
+  ),
+);
+
+Editor.displayName = 'editor';
+export default Editor;

@@ -3,6 +3,7 @@ APP_NAME=atlas-requests
 BASE_DIR="/usr/lib/$APP_NAME"
 USER_DIR="/etc/$APP_NAME"
 RED=$(printf '\033[31m')
+BLUE=$(printf '\033[34m')
 RESET=$(printf '\033[0m')
 
 if ! which node > /dev/null; then
@@ -21,7 +22,13 @@ fi
 
 # remove old install
 if [ -d "$BASE_DIR" ]; then
-    cd "${BASE_DIR:?}" || exit; rm -rf *
+    # attempt to make a backup
+    if which atlas-requests > /dev/null; then
+      echo "${BLUE}Creating backup${RESET}"
+      atlas-requests -b
+    fi
+
+    cd "${BASE_DIR:?}" || exit; rm -rf ./*
 fi
 
 # create user settings dir

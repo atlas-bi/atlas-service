@@ -69,11 +69,24 @@ fmt_blue "Starting services"
 start_services
 
 chown -R www-data "$INSTALL_DIR"
+mkdir -p "/var/www/.npm"
+chown -R www-data "/var/www/.npm"
 
 
 echo ""
 fmt_green "Thanks for installing Atlas Requests!"
 echo ""
 fmt_green "Read the full install guide at https://www.atlas.bi/docs/requests/"
+echo ""
+fmt_blue "Next Steps"
+
+cat <<EOF
+${YELLOW}
+1. Update user configuration file ${CONFIG}
+2. Reconfigure ${NAME}
+
+    ${BLUE}atlas-requests -c${RESET}
+
+EOF
 
 recommendations

@@ -35,7 +35,7 @@ apt-get install -y nodejs \
 cd /atlas; \
 
 # set the version
-VERSION=1.0.0-rc.4; \
+VERSION=1.0.0-rc.3; \
 
 # uninstall old verions
 apt-get remove atlas-requests -y 2>/dev/null; \

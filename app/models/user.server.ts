@@ -1,7 +1,7 @@
 import type { Group, User } from '@prisma/client';
 import { prisma } from '~/db.server';
 
-export type { User, Group } from '@prisma/client';
+// export type { User, Group } from '@prisma/client';
 
 export async function getUserById(id: User['id']) {
   return prisma.user.findUnique({ where: { id }, include: { groups: true } });
@@ -51,10 +51,6 @@ export async function updateUserProps(
   lastName: User['lastName'],
   groups: Group['name'][],
 ) {
-  // create group if not existing
-  // let groupDetails = []
-  // let x = await groups.forEach(async (group) => groupDetails.push(await getOrCreateGroup(group)))
-  // // console.log('x', groupDetails)
   await getOrCreateUser(email);
 
   const groupModels = await Promise.all(
@@ -84,7 +80,4 @@ export async function updateUserProps(
       },
     },
   });
-
-  // console.log(email, firstName, lastName);
-  // console.log(groups);
 }

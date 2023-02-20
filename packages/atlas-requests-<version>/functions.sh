@@ -4,7 +4,7 @@ NAME="Atlas Requests"
 APP_NAME=atlas-requests
 BASE_DIR="/usr/lib/$APP_NAME"
 
-NODE_ENV=producion
+export NODE_ENV=producion
 
 USER=www-data
 
@@ -12,7 +12,7 @@ export VERSION="<version>"
 
 # website
 HOSTNAME=localhost
-EXTERNAL_URL=${EXTERNAL_URL:-$HOSTNAME}
+EXTERNAL_URL=${EXTERNAL_URL:-hostname}
 PORT=3010
 
 # postgres
@@ -28,6 +28,8 @@ REDIS_PORT=6379
 # directories
 INSTALL_DIR="$BASE_DIR/app"
 USER_DIR="/etc/$APP_NAME"
+# shellcheck disable=SC2034
+BACKUP_DIR="$USER_DIR/backup"
 
 # files
 CONFIG="$USER_DIR/config"
@@ -289,7 +291,7 @@ After=network.target
 User=$USER
 Group=$USER
 WorkingDirectory=$INSTALL_DIR
-Environment="NODE_ENV=$NODE_ENV,PORT=$PORT"
+Environment="PORT=$PORT"
 ExecStart=npm start
 
 [Install]
@@ -315,8 +317,7 @@ Description=Atlas Requets / Meilisearch
 After=network.target
 
 [Service]
-User=$USER
-Group=$USER
+User=root
 WorkingDirectory=$INSTALL_DIR
 ExecStart=dotenv meilisearch
 

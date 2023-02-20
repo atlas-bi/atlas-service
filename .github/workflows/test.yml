@@ -64,6 +64,10 @@ jobs:
           cd packages
           shellcheck  **/*.sh
           shellcheck **/atlas-requests
+          shellcheck **/install
+          shellcheck **/postinst
+          shellcheck **/preinst
+
   lint:
     name: ⬣ ESLint
     runs-on: ubuntu-latest

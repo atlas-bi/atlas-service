@@ -114,7 +114,7 @@ export default function Login() {
     <div className="hero ">
       <div className="hero-body">
         <div className="columns is-centered mt-5">
-          <div className="column is-4 mt-5 box">
+          <div className="column is-half-tablet is-one-quarter-desktop is-one-fifth-fullhd mt-5 box">
             <Form method="post" className="form">
               <h1 className="title is-1">Atlas Requests</h1>
               <input type="hidden" value={redirectTo} name="redirectTo" />

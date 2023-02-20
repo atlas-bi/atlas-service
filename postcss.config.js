@@ -1,5 +1,7 @@
-import postcss from '@fullhuman/postcss-purgecss';
-import cssnano from 'cssnano';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const postcss = require('@fullhuman/postcss-purgecss');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const cssnano = require('cssnano');
 
 module.exports = {
   plugins: [

@@ -37,14 +37,14 @@ export async function getUserId(
   return userId;
 }
 
-export async function getUser(request: Request): Promise<User> {
+export async function getUser(request: Request): Promise<User | null> {
   const userId = await getUserId(request);
-  if (userId === undefined) throw await logout(request);
+  if (userId === undefined) return null;
 
   const user = await getUserById(userId);
   if (user) return user;
 
-  throw await logout(request);
+  return null;
 }
 
 type Policy<PolicyResult> = (
@@ -66,7 +66,12 @@ export const authorize: Policy<{
     // send back to login page if the user doesn't exist.
     if (!user) {
       const searchParams = new URLSearchParams([['redirectTo', redirectTo]]);
-      throw redirect(`/?${searchParams}`);
+
+      throw redirect(`/?${searchParams}`, {
+        headers: {
+          'Set-Cookie': await sessionStorage.destroySession(session),
+        },
+      });
     }
 
     // potentially check user for required groups here.
