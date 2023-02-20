@@ -264,7 +264,7 @@ postgres_init(){
 recommendations(){
 
   # recommend ufw
-  dpkg -s ufw 2>&1 | grep 'is not installed' >/dev/null && cat <<EOF
+  dpkg -s ufw 2>&1 | grep 'install ok installed' >/dev/null || cat <<EOF
 ${YELLOW}
 Sercure your server with ufw!
 
