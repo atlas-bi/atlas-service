@@ -166,6 +166,13 @@
 .editor-nested-listitem {
   list-style-type: none;
 }
+pre::-webkit-scrollbar {
+  background: transparent;
+  width: 10px;
+}
+pre::-webkit-scrollbar-thumb {
+  background: #999;
+}
 .toolbar {
   background: #fff;
   border-top-left-radius: inherit;

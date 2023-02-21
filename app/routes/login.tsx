@@ -70,7 +70,17 @@ export const action = async ({ request }: ActionArgs) => {
     return json({ errors: errors }, { status: 400 });
   }
 
-  const user = await verifyLogin(email, password as string);
+  const { user, error } = await verifyLogin(email, password as string);
+
+  if (error) {
+    const session = await getSession(request);
+    session.flash('loginError', error);
+    throw redirect('/login', {
+      headers: {
+        'Set-Cookie': await sessionStorage.commitSession(session),
+      },
+    });
+  }
 
   if (!user) {
     return json(
