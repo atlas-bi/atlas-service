@@ -1,3 +1,8 @@
+## 1.0.0-rc.6 (2023-02-21)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([1d2f449](https://github.com/atlas-bi/atlas-requests/commit/1d2f449))
+* feat(ldap): added ldap login error messages ([4e33aeb](https://github.com/atlas-bi/atlas-requests/commit/4e33aeb))
+
 ## 1.0.0-rc.5 (2023-02-20)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([a37bc25](https://github.com/atlas-bi/atlas-requests/commit/a37bc25))
