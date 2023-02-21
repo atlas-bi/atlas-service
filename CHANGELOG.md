@@ -1,3 +1,8 @@
+## 1.0.0-rc.5 (2023-02-20)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([a37bc25](https://github.com/atlas-bi/atlas-requests/commit/a37bc25))
+* fix(install): fixed -c option return code ([a783b7f](https://github.com/atlas-bi/atlas-requests/commit/a783b7f))
+
 ## 1.0.0-rc.4 (2023-02-20)
 
 - Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([5b8952a](https://github.com/atlas-bi/atlas-requests/commit/5b8952a))
