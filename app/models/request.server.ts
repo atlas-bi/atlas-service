@@ -4,15 +4,22 @@ import smtpQueue from '~/queues/smtp.server';
 
 export type { Request } from '@prisma/client';
 
-export function getRequest({
-  id,
-  userId,
-}: Pick<Request, 'id'> & {
-  userId: User['id'];
-}) {
-  return prisma.request.findFirst({
-    select: { id: true, name: true },
-    where: { creatorId: userId },
+export function getRequest({ id }: Pick<Request, 'id'>) {
+  return prisma.request.findUnique({
+    select: {
+      id: true,
+      name: true,
+
+      purpose: true,
+      schedule: true,
+      parameters: true,
+      criteria: true,
+      description: true,
+      exportToExcel: true,
+      supportsInitiative: true,
+      regulatory: true,
+    },
+    where: { id: id },
   });
 }
 
@@ -27,9 +34,31 @@ export function getRequestListItems({ userId }: { userId: User['id'] }) {
 export async function createRequest({
   name,
   userId,
-}: Pick<Request, 'name'> & {
+  purpose,
+  schedule,
+  parameters,
+  criteria,
+  description,
+  type,
+  excel,
+  initiative,
+  regulatory,
+}: Pick<
+  Request,
+  | 'name'
+  | 'purpose'
+  | 'schedule'
+  | 'parameters'
+  | 'criteria'
+  | 'description'
+  | 'regulatory'
+> & {
   userId: User['id'];
+  type: string;
+  excel: Request['exportToExcel'];
+  initiative: Request['supportsInitiative'];
 }) {
+  console.log(type);
   const defaultCategory = await prisma.requestCategory.findFirst({
     where: { isDefault: true },
     select: { id: true },
@@ -37,6 +66,14 @@ export async function createRequest({
   const request = await prisma.request.create({
     data: {
       name,
+      purpose,
+      schedule,
+      parameters,
+      criteria,
+      description,
+      exportToExcel: excel,
+      supportsInitiative: initiative,
+      regulatory,
       creator: {
         connect: {
           id: userId,
@@ -54,7 +91,7 @@ export async function createRequest({
       },
       type: {
         connect: {
-          id: 2,
+          id: type ? Number(type) : undefined,
         },
       },
     },

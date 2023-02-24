@@ -11459,6 +11459,9 @@ body {
   outline: 0;
   caret-color: #444;
 }
+.editor-input.readonly {
+  min-height: 43px;
+}
 
 .editor-placeholder {
   color: #999;

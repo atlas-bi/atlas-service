@@ -38,10 +38,9 @@ export async function action({ request }: ActionArgs) {
   const requestedFor = formData.get('requestedFor');
   const type = formData.get('type');
   const recipients = formData.get('recipients');
-  // const excel = formData.get('excel');
-  // const initiative = formData.get('initiative');
-  // const regulatory = formData.get('regulatory');
-  // const devNotes = formData.get('devNotes');
+  const excel = formData.get('excel');
+  const initiative = formData.get('initiative');
+  const regulatory = formData.get('regulatory');
   const description = formData.get('description');
   const purpose = formData.get('purpose');
   const criteria = formData.get('criteria');
@@ -118,7 +117,19 @@ export async function action({ request }: ActionArgs) {
     return json({ errors: errors }, { status: 400 });
   }
 
-  const thisRequest = await createRequest({ name, userId });
+  const thisRequest = await createRequest({
+    name,
+    userId,
+    purpose,
+    schedule,
+    parameters,
+    criteria,
+    description,
+    type,
+    excel,
+    initiative,
+    regulatory,
+  });
 
   return redirect(`/request/${thisRequest.id}`);
 }
@@ -211,12 +222,14 @@ export default function NewRequestPage() {
                       actionData?.errors?.type ? 'is-danger' : undefined
                     }
                     className={`select ${
-                      actionData?.errors?.type ? 'is-danger' : undefined
+                      actionData?.errors?.type ? 'is-danger' : ''
                     }`}
                   >
                     {requestTypes &&
                       requestTypes.map((type: RequestType) => (
-                        <option key={type.id}>{type.name}</option>
+                        <option key={type.id} value={type.id}>
+                          {type.name}
+                        </option>
                       ))}
                   </select>
                 </div>

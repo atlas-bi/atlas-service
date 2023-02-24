@@ -3,7 +3,7 @@ import { sharpTransformer } from 'remix-image-sharp';
 import { MemoryCache, imageLoader } from 'remix-image/server';
 
 const config = {
-  selfUrl: 'http://localhost:3000',
+  selfUrl: 'http://' + process.env.HOSTNAME,
   cache: new MemoryCache(),
   transformer: sharpTransformer,
 };

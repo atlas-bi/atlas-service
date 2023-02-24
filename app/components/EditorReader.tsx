@@ -3,59 +3,35 @@ import { CodeHighlightNode, CodeNode } from '@lexical/code';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 import { ListItemNode, ListNode } from '@lexical/list';
 import { TRANSFORMERS } from '@lexical/markdown';
-import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import {
+  type InitialEditorStateType,
+  LexicalComposer,
+} from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
-import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
-import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table';
-import type { EditorState } from 'lexical';
-import { type MutableRefObject, type RefObject, forwardRef } from 'react';
+import { forwardRef } from 'react';
 
 import AutoLinkPlugin from '../plugins/AutoLinkPlugin';
 import CodeHighlightPlugin from '../plugins/CodeHighlightPlugin';
-import ListMaxIndentLevelPlugin from '../plugins/ListMaxIndentLevelPlugin';
-import ToolbarPlugin from '../plugins/ToolbarPlugin';
 import { EditorTheme } from './EditorTheme';
 
-function PlaceholderBuilder() {
-  return <div className="editor-placeholder">...</div>;
-}
-
-// function onChange(editorState) {
-//   editorState.read(() => {
-//     // Read the contents of the EditorState here.
-//     const root = $getRoot();
-//     const selection = $getSelection();
-
-//     console.log(root, selection);
-//   });
-// }
-
-interface changeCallbackType {
-  (editorState: EditorState): void;
-}
-
-const Editor = forwardRef(
+const EditorReader = forwardRef(
   (
-    {
-      onChange,
-      activeEditor,
-    }: {
-      onChange: changeCallbackType;
-      activeEditor: MutableRefObject<HTMLDivElement | undefined>;
-    },
+    { initialEditorState }: { initialEditorState: InitialEditorStateType },
     ref,
   ) => {
     const editorConfig = {
       // The editor theme
       theme: EditorTheme,
       namespace: 'default',
+      editable: false,
+      editorState: initialEditorState,
 
       // Handling of errors during update
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,27 +56,18 @@ const Editor = forwardRef(
     return (
       <LexicalComposer initialConfig={editorConfig}>
         <div className="editor-container">
-          <div
-            className={`editor-toolbar ${
-              ref !== activeEditor ? 'is-hidden' : ''
-            }`}
-            ref={ref as RefObject<HTMLDivElement>}
-          >
-            <ToolbarPlugin />
-          </div>
           <div className="editor-inner">
             <RichTextPlugin
-              contentEditable={<ContentEditable className="editor-input" />}
-              placeholder={<PlaceholderBuilder />}
+              contentEditable={
+                <ContentEditable className="editor-input readonly" />
+              }
+              placeholder={null}
               ErrorBoundary={LexicalErrorBoundary}
             />
-            <HistoryPlugin />
             <CodeHighlightPlugin />
             <ListPlugin />
             <LinkPlugin />
-            <OnChangePlugin onChange={onChange} />
             <AutoLinkPlugin />
-            <ListMaxIndentLevelPlugin maxDepth={7} />
             <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
           </div>
         </div>
@@ -109,5 +76,5 @@ const Editor = forwardRef(
   },
 );
 
-Editor.displayName = 'editor';
-export default Editor;
+EditorReader.displayName = 'editorReader';
+export default EditorReader;

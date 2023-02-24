@@ -155,9 +155,9 @@ EOT
 stop_services(){
   if [ "$(pidof systemd)" != "" ]; then
     systemctl stop nginx
-    systemctl stop atlas_requests_web.service
-    systemctl stop atlas_requests_querrel.service
-    systemctl stop atlas_requests_search.service
+    systemctl stop "$WEB_SERVICE"
+    systemctl stop "$QUIRREL_SERVICE"
+    systemctl stop "$SEARCH_SERVICE"
   else
     /etc/init.d/nginx stop
   fi
@@ -262,6 +262,18 @@ postgres_init(){
 }
 
 recommendations(){
+
+  cat <<EOF
+  ${BLUE}
+Viewing Logs
+
+  journalctl -u "$WEB_SERVICE" -n 100 --no-pager
+  journalctl -u "$QUIRREL_SERVICE" -n 100 --no-pager
+  journalctl -u "$SEARCH_SERVICE" -n 100 --no-pager
+
+  journalctl -u nginx
+${RESET}
+EOF
 
   # recommend ufw
   dpkg -s ufw 2>&1 | grep 'install ok installed' >/dev/null || cat <<EOF
