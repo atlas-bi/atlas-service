@@ -1,3 +1,8 @@
+## 1.0.0-rc.7 (2023-02-24)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([827fc17](https://github.com/atlas-bi/atlas-requests/commit/827fc17))
+* feat(request page): started adding request page ([8f7ef15](https://github.com/atlas-bi/atlas-requests/commit/8f7ef15))
+
 ## 1.0.0-rc.6 (2023-02-21)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([1d2f449](https://github.com/atlas-bi/atlas-requests/commit/1d2f449))
