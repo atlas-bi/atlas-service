@@ -30,6 +30,18 @@ export async function verifyLogin(email: User['email'], password: string) {
       return { user: undefined, error: undefined };
     }
 
+    let profilePhoto = null;
+
+    if (process.env.LDAP_PHOTO_FIELD) {
+      try {
+        profilePhoto = Buffer.from(
+          ldapUser[process.env.LDAP_PHOTO_FIELD]
+            .split(' ')
+            .map((e: string) => parseInt(e)),
+        ).toString('base64');
+      } catch {}
+    }
+
     type Group = {
       cn: string;
       [key: string]: string;
@@ -46,6 +58,7 @@ export async function verifyLogin(email: User['email'], password: string) {
           ? ldapUser[process.env.LDAP_LASTNAME]
           : undefined,
         ldapUser.groups?.map((group: Group) => group.cn),
+        profilePhoto,
       ),
     };
   } catch (err) {

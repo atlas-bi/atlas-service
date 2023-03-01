@@ -1,3 +1,5 @@
+import { faPencil } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { RequestType, User } from '@prisma/client';
 import {
   type ActionArgs,
@@ -23,7 +25,10 @@ export async function loader({ request }: LoaderArgs) {
       // here we can get the data for this route and return it
       const requestTypes = await getRequestTypes();
 
-      return json({ requestTypes, user });
+      const url = new URL(request.url);
+      const defaultType = url.searchParams.get('type');
+
+      return json({ requestTypes, user, defaultType });
     },
   );
 }
@@ -135,7 +140,8 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function NewRequestPage() {
-  const { requestTypes } = useLoaderData<typeof loader>();
+  const { requestTypes, user, defaultType } = useLoaderData<typeof loader>();
+
   const actionData = useActionData<typeof action>();
 
   const requestedForRef = React.useRef<HTMLInputElement>(null);
@@ -201,16 +207,26 @@ export default function NewRequestPage() {
     input.removeAttribute('aria-errormessage');
   };
 
+  const selectedType =
+    requestTypes.filter((rt: RequestType) => rt.name === defaultType)[0] ||
+    requestTypes[0];
+
   return (
     <div className="container">
       <Form method="post" className="form">
         <div className="columns">
           <div className="column">
-            <div className="title is-3">
-              New Report [ this should by type, and be reselectable ]
+            <h3 className="title is-3 mb-1">{selectedType.name}</h3>
+            <hr className="my-0" />
+            <div className="mt-1 mb-5 is-size-6">
+              Not what you're looking for?{' '}
+              <span className="is-clickable has-text-link">
+                Choose a different type.
+              </span>
             </div>
+            <input type="hidden" name="type" value={selectedType.id} />
 
-            <div className="field">
+            {/*<div className="field">
               <label className="label">Type</label>
               <div className="control is-expanded">
                 <div className="select is-fullwidth">
@@ -237,7 +253,7 @@ export default function NewRequestPage() {
               {actionData?.errors?.type && (
                 <p className="help is-danger">{actionData.errors.type}</p>
               )}
-            </div>
+            </div>*/}
 
             <div className="thread-box">
               <div className="field p-2">
@@ -371,35 +387,90 @@ export default function NewRequestPage() {
           </div>
 
           <div className="column is-one-third">
-            <div className="field">
-              <label className="label">Requested For</label>
-              <div className="control">
-                <input
-                  ref={requestedForRef}
-                  name="requestedFor"
-                  aria-invalid={
-                    actionData?.errors?.requestedFor ? true : undefined
-                  }
-                  aria-errormessage={
-                    actionData?.errors?.requestedFor ? 'is-danger' : undefined
-                  }
-                  className={`input ${
-                    actionData?.errors?.requestedFor ? 'is-danger' : undefined
-                  }`}
-                  type="text"
-                  placeholder="should search.. default to me"
-                  onInput={(event: React.SyntheticEvent<HTMLInputElement>) => {
-                    const input = event.target as HTMLInputElement;
-                    resetInput(input);
-                  }}
-                />
-              </div>
+            <div className="field ">
+              <label className="label has-text-grey is-flex is-justify-content-space-between mb-4">
+                <span>Requester</span>
+                <span className="icon mr-2">
+                  <FontAwesomeIcon icon={faPencil} />
+                </span>
+              </label>
+
+              <input
+                type="hidden"
+                ref={requestedForRef}
+                name="requestedFor"
+                value={user.userId}
+                onInput={(event: React.SyntheticEvent<HTMLInputElement>) => {
+                  const input = event.target as HTMLInputElement;
+                  resetInput(input);
+                }}
+              />
+
+              {user.profilePhoto && (
+                <>
+                  <article className="media">
+                    <div className="media-left">
+                      <figure className="image is-20x20">
+                        <img
+                          decoding="async"
+                          loading="lazy"
+                          alt="profile"
+                          className="remix-image is-rounded profile"
+                          src={`data:image/png;base64,${user.profilePhoto}`}
+                        />
+                      </figure>
+                    </div>
+                    <div className="media-content my-auto">
+                      <strong>
+                        {user.firstName} {user.lastName}
+                      </strong>
+                    </div>
+                  </article>
+                </>
+              )}
+
               {actionData?.errors?.requestedFor && (
                 <p className="help is-danger">
                   {actionData.errors.requestedFor}
                 </p>
               )}
             </div>
+            <hr />
+
+            <div className="field">
+              <label className="label has-text-grey is-flex is-justify-content-space-between mb-4">
+                <span>Recipients</span>
+                <span className="icon mr-2">
+                  <FontAwesomeIcon icon={faPencil} />
+                </span>
+              </label>
+              <div className="control">
+                <input
+                  ref={recipientsRef}
+                  name="recipients"
+                  type="hidden"
+                  onInput={(event: React.SyntheticEvent<HTMLInputElement>) => {
+                    const input = event.target as HTMLInputElement;
+                    resetInput(input);
+                  }}
+                />
+              </div>
+              No one—
+              <span className="is-clickable has-text-link">add yourself</span>
+              {actionData?.errors?.recipients && (
+                <p className="help is-danger">{actionData.errors.recipients}</p>
+              )}
+            </div>
+            <hr />
+
+            <label className="label has-text-grey is-flex is-justify-content-space-between mb-4">
+              <span>Tags</span>
+              <span className="icon mr-2">
+                <FontAwesomeIcon icon={faPencil} />
+              </span>
+            </label>
+
+            <hr />
 
             <div className="field">
               <div className="control">
@@ -433,33 +504,6 @@ export default function NewRequestPage() {
                   Supports an Initiative
                 </label>
               </div>
-            </div>
-            <div className="field">
-              <label className="label">Recipients</label>
-              <div className="control">
-                <input
-                  ref={recipientsRef}
-                  name="recipients"
-                  aria-invalid={
-                    actionData?.errors?.recipients ? true : undefined
-                  }
-                  aria-errormessage={
-                    actionData?.errors?.recipients ? 'is-danger' : undefined
-                  }
-                  className={`input ${
-                    actionData?.errors?.recipients ? 'is-danger' : undefined
-                  }`}
-                  type="text"
-                  placeholder="should search for people when you type"
-                  onInput={(event: React.SyntheticEvent<HTMLInputElement>) => {
-                    const input = event.target as HTMLInputElement;
-                    resetInput(input);
-                  }}
-                />
-              </div>
-              {actionData?.errors?.recipients && (
-                <p className="help is-danger">{actionData.errors.recipients}</p>
-              )}
             </div>
           </div>
         </div>

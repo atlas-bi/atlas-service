@@ -14,6 +14,7 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 import remixImageStyles from 'remix-image/remix-image.css';
+import { getRequestTypes } from '~/models/config.server';
 
 import Nav from './components/Nav';
 import { getSession, getUser, sessionStorage } from './session.server';
@@ -33,15 +34,15 @@ export const meta: MetaFunction = () => ({
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request);
   const message = session.get('globalMessage') || null;
+  const requestTypes = await getRequestTypes();
 
-  // return json({user: await getUser(request), message})
   return json({
     message,
     headers: {
-      // only necessary with cookieSessionStorage
       'Set-Cookie': await sessionStorage.commitSession(session),
     },
     user: await getUser(request),
+    requestTypes,
   });
 }
 

@@ -54,7 +54,6 @@
   "dependencies": {
     "@authenio/samlify-node-xmllint": "^2.0.0",
     "@fontsource/inter": "^4.5.14",
-    "@fontsource/rasa": "^4.5.13",
     "@fortawesome/fontawesome-svg-core": "^6.2.1",
     "@fortawesome/free-brands-svg-icons": "^6.2.1",
     "@fortawesome/free-regular-svg-icons": "^6.2.1",

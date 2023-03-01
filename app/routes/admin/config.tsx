@@ -83,6 +83,7 @@ export async function action({ request }: ActionArgs) {
       break;
     }
     case 'deleteRequestType': {
+      console.log(values);
       await deleteRequestType({ id: Number(values.id) });
       break;
     }

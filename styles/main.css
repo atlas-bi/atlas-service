@@ -50,16 +50,6 @@
     url('./node_modules/@fontsource/inter/files/inter-all-700-normal.woff')
       format('woff');
 }
-@font-face {
-  font-family: 'Rasa';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 600;
-  src: url('./node_modules/@fontsource/rasa/files/rasa-latin-600-normal.woff2')
-      format('woff2'),
-    url('./node_modules/@fontsource/rasa/files/rasa-all-600-normal.woff')
-      format('woff');
-}
 /* purgecss end ignore */
 h1,
 h2,
@@ -530,10 +520,10 @@ code {
 }
 
 hr {
-  background-color: hsl(0, 0%, 96%);
+  background-color: hsl(0, 0%, 86%);
   border: none;
   display: block;
-  height: 2px;
+  height: 1px;
   margin: 1.5rem 0;
 }
 
@@ -11422,6 +11412,47 @@ body {
   ) !important;
 }
 
+.navbar-dropdown.is-boxed:after {
+  margin-left: 1px;
+  position: absolute;
+  top: -7px;
+  left: 16px;
+  display: block;
+  width: 16px;
+  height: 8px;
+  pointer-events: none;
+  content: ' ';
+  clip-path: polygon(0 100%, 50% 0, 100% 100%);
+  background-image: linear-gradient(
+    hsl(0, 0%, 100%),
+    hsl(0, 0%, 100%)
+  ) !important;
+}
+.navbar-dropdown.is-boxed.is-right:after {
+  left: unset;
+  right: 18px;
+}
+.navbar-dropdown.is-boxed:before {
+  margin-left: -1px;
+  position: absolute;
+  top: -8px;
+  left: 18px;
+  display: block;
+  width: 16px;
+  height: 8px;
+  pointer-events: none;
+  content: ' ';
+  clip-path: polygon(0 100%, 50% 0, 100% 100%);
+  background-image: linear-gradient(
+    hsl(0, 0%, 86%),
+    hsl(0, 0%, 86%)
+  ) !important;
+}
+.navbar-dropdown.is-boxed.is-right:before {
+  left: unset;
+  right: 18px;
+}
+
 @media screen and (min-width: 1024px) {
   .hide-desktop {
     display: none !important;
@@ -11430,6 +11461,19 @@ body {
 .icon.is-small > svg {
   height: 1em;
   width: 1em;
+}
+
+.has-text-gold {
+  color: gold;
+}
+
+figure.is-20x20 {
+  width: 20px;
+  height: 20px;
+}
+
+.profile {
+  border: 1px solid hsl(0, 0%, 86%);
 }
 
 /* purgecss start ignore */

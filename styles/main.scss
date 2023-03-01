@@ -41,18 +41,7 @@
   $fontDir: './node_modules/@fontsource/inter/files'
 );
 
-@import '../node_modules/@fontsource/rasa/scss/mixins';
-
-@include fontFace(
-  $fontName: Rasa,
-  $weight: 600,
-  $display: swap,
-  $unicodeMap: latin,
-  $fontDir: './node_modules/@fontsource/rasa/files'
-);
-
 /* purgecss end ignore */
-
 $family-monospace: 'Source Code Pro', monospace;
 $family-sans-serif: 'Inter', blinkmacsystemfont, -apple-system, 'Segoe UI',
   'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
@@ -78,6 +67,8 @@ $navbar-height: 4.25rem;
 $navbar-item-img-max-height: auto;
 $navbar-item-hover-background-color: transparent;
 $navbar-dropdown-item-hover-background-color: transparent;
+$hr-background-color: $grey-lighter;
+$hr-height: 1px;
 // $size-1: 2.5rem;
 // $size-2: 2rem;
 // $size-3: 1.5rem;
@@ -162,6 +153,47 @@ body {
     background-image: linear-gradient($grey-lighter, $grey-lighter) !important;
   }
 }
+
+.navbar-dropdown.is-boxed {
+  &:after {
+    margin-left: 1px;
+    position: absolute;
+    top: -7px;
+    left: 16px;
+    display: block;
+    width: 16px;
+    height: 8px;
+    pointer-events: none;
+    content: ' ';
+    clip-path: polygon(0 100%, 50% 0, 100% 100%);
+    background-image: linear-gradient($white, $white) !important;
+  }
+  &.is-right {
+    &:after {
+      left: unset;
+      right: 18px;
+    }
+  }
+  &:before {
+    margin-left: -1px;
+    position: absolute;
+    top: -8px;
+    left: 18px;
+    display: block;
+    width: 16px;
+    height: 8px;
+    pointer-events: none;
+    content: ' ';
+    clip-path: polygon(0 100%, 50% 0, 100% 100%);
+    background-image: linear-gradient($grey-lighter, $grey-lighter) !important;
+  }
+  &.is-right {
+    &:before {
+      left: unset;
+      right: 18px;
+    }
+  }
+}
 // .editor-container {
 //  @extend .has-background-white-ter
 // }
@@ -176,7 +208,16 @@ body {
   height: 1em;
   width: 1em;
 }
-
+.has-text-gold {
+  color: gold;
+}
+figure.is-20x20 {
+  width: 20px;
+  height: 20px;
+}
+.profile {
+  border: 1px solid $grey-lighter;
+}
 /* purgecss start ignore */
 @import 'editor';
 .editor-input {

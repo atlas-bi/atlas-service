@@ -1,11 +1,45 @@
-import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+import {
+  faMagnifyingGlass,
+  faWandMagicSparkles,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useRef, useState } from 'react';
+import type { RequestType } from '@prisma/client';
+import { Link, useLoaderData } from '@remix-run/react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'remix-image';
 
+import type { loader } from '../root';
+
 export default function Nav() {
+  const { requestTypes, user } = useLoaderData<typeof loader>();
+
   const navMenu = useRef<HTMLDivElement>(null);
+  const requestDropdownMenu = useRef<HTMLDivElement>(null);
+  const profileDropdownMenu = useRef<HTMLDivElement>(null);
   const [isMenuActive, setIsMenuActive] = useState(false);
+
+  const closeDropdowns = () => {
+    const dropdowns = document.querySelectorAll(
+      '.has-dropdown.is-active:not(.is-hoverable)',
+    );
+    dropdowns.forEach((el) => {
+      el.classList.remove('is-active');
+    });
+  };
+  useEffect(() => {
+    window.onclick = (e) => {
+      if (!(e.target as HTMLElement)?.closest('.dropdown-button')) {
+        closeDropdowns();
+      }
+    };
+    window.addEventListener('keydown', (event) => {
+      const e = event || window.event;
+      if (e.key === 'Esc' || e.key === 'Escape') {
+        closeDropdowns();
+      }
+    });
+  }, []);
+
   return (
     <div className="navbar has-shadow is-align-items-center is-transparent is-fixed-top">
       <div className="container">
@@ -95,31 +129,59 @@ export default function Nav() {
               <span className="hide-desktop">Mail</span>
             </div>
 
-            <a className="navbar-item" href="/request/new">
-              New Request
-            </a>
-            <a className="navbar-item" href="/admin/config">
-              Site Configuration
-            </a>
-            <div className="navbar-item is-hoverable is-boxed">
-              <div className="navbar-link is-arrowless">Stuff</div>
-              <div className="navbar-dropdown">
-                <hr className="navbar-divider hide-desktop" />
-                <a className="navbar-item" href="/initiatives">
-                  Initiatives
-                </a>
-                <a className="navbar-item" href="/collections">
-                  Collections
-                </a>
-                <a className="navbar-item" href="/terms">
-                  Terms
-                </a>
+            <div ref={requestDropdownMenu} className="navbar-item has-dropdown">
+              <button
+                className="button is-arrowless has-background-white-bis dropdown-button my-auto "
+                onClick={(e) => {
+                  closeDropdowns();
+                  requestDropdownMenu.current?.classList.toggle('is-active');
+                }}
+              >
+                <span className="icon mr-2 has-text-gold">
+                  <FontAwesomeIcon icon={faWandMagicSparkles} />
+                </span>
+                New Request
+              </button>
+
+              <div className="navbar-dropdown is-boxed">
+                {requestTypes &&
+                  requestTypes.map((rt: RequestType) => (
+                    <Link
+                      key={rt.id}
+                      className="navbar-item"
+                      to={`/request/new?type=${rt.name}`}
+                    >
+                      {rt.name}
+                    </Link>
+                  ))}
               </div>
             </div>
-
-            <div className="navbar-item is-hoverable is-boxed">
-              <div className="navbar-link is-arrowless">Profile</div>
-              <div className="navbar-dropdown">
+            <div
+              className="navbar-item has-dropdown"
+              ref={profileDropdownMenu}
+              onClick={(e) => {
+                // e.stopPropagation();
+                // e.preventDefault();
+                closeDropdowns();
+                profileDropdownMenu.current?.classList.toggle('is-active');
+              }}
+            >
+              <div className="navbar-link is-arrowless dropdown-button">
+                {user.profilePhoto ? (
+                  <figure className="image is-32x32">
+                    <img
+                      decoding="async"
+                      loading="lazy"
+                      alt="profile"
+                      className="remix-image is-rounded profile"
+                      src={`data:image/png;base64,${user.profilePhoto}`}
+                    />
+                  </figure>
+                ) : (
+                  'Profile'
+                )}
+              </div>
+              <div className="navbar-dropdown is-boxed is-right">
                 <a className="navbar-item" href="/users">
                   Your profile
                 </a>
@@ -129,6 +191,10 @@ export default function Nav() {
                 <hr className="navbar-divider" />
                 <a className="navbar-item" href="/users/settings">
                   Settings
+                </a>
+                <hr className="navbar-divider" />
+                <a className="navbar-item" href="/admin/config">
+                  Site Configuration
                 </a>
               </div>
             </div>

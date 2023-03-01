@@ -50,6 +50,7 @@ export async function updateUserProps(
   firstName: User['firstName'],
   lastName: User['lastName'],
   groups: Group['name'][],
+  profilePhoto: User['profilePhoto'],
 ) {
   await getOrCreateUser(email);
 
@@ -72,6 +73,7 @@ export async function updateUserProps(
     data: {
       firstName,
       lastName,
+      profilePhoto,
       groups: {
         connect: groupModels.map((group: Group) => ({
           id: Number(group.id),

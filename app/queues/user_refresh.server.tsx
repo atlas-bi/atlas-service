@@ -27,6 +27,7 @@ export default CronJob('/queues/user_refresh', '0 7 * * *', async () => {
   const FirstnameField: string = process.env.LDAP_FIRSTNAME || '';
   const LastnameField: string = process.env.LDAP_LASTNAME || '';
   const GroupNameField: string = process.env.LDAP_GROUP_NAME || '';
+  const ProfilePhotoField: string = process.env.LDAP_PHOTO_FIELD || '';
 
   const config = {
     url: process.env.LDAP_HOST,
@@ -58,6 +59,7 @@ export default CronJob('/queues/user_refresh', '0 7 * * *', async () => {
   attributes[FirstnameField] = '';
   attributes[LastnameField] = '';
   attributes[GroupNameField] = '';
+  attributes[ProfilePhotoField] = '';
 
   const users = await ldap.search(
     `(objectClass=${process.env.LDAP_USER_CLASS})`,
@@ -84,6 +86,7 @@ export default CronJob('/queues/user_refresh', '0 7 * * *', async () => {
                 group[GroupNameField as keyof typeof attributes],
             )
         : undefined,
+      user[ProfilePhotoField as keyof AttributeType],
     );
   });
 
