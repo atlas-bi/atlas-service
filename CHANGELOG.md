@@ -1,3 +1,8 @@
+## 1.0.0-rc.8 (2023-03-01)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([8736db4](https://github.com/atlas-bi/atlas-requests/commit/8736db4))
+* feat(request form): updated layout on request form ([3bc0b16](https://github.com/atlas-bi/atlas-requests/commit/3bc0b16))
+
 ## 1.0.0-rc.7 (2023-02-24)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([827fc17](https://github.com/atlas-bi/atlas-requests/commit/827fc17))
