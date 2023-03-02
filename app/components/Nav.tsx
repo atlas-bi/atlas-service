@@ -11,7 +11,7 @@ import Image from 'remix-image';
 import type { loader } from '../root';
 
 export default function Nav() {
-  const { requestTypes, user } = useLoaderData<typeof loader>();
+  const { navRequestTypes, user } = useLoaderData<typeof loader>();
 
   const navMenu = useRef<HTMLDivElement>(null);
   const requestDropdownMenu = useRef<HTMLDivElement>(null);
@@ -26,16 +26,28 @@ export default function Nav() {
       el.classList.remove('is-active');
     });
   };
+
+  const closePopouts = () => {
+    const popouts = document.querySelectorAll('.popout.is-active');
+    popouts.forEach((el) => {
+      el.classList.remove('is-active');
+    });
+  };
+
   useEffect(() => {
     window.onclick = (e) => {
       if (!(e.target as HTMLElement)?.closest('.dropdown-button')) {
         closeDropdowns();
+      }
+      if (!(e.target as HTMLElement)?.closest('.popout')) {
+        closePopouts();
       }
     };
     window.addEventListener('keydown', (event) => {
       const e = event || window.event;
       if (e.key === 'Esc' || e.key === 'Escape') {
         closeDropdowns();
+        closePopouts();
       }
     });
   }, []);
@@ -144,14 +156,14 @@ export default function Nav() {
               </button>
 
               <div className="navbar-dropdown is-boxed">
-                {requestTypes &&
-                  requestTypes.map((rt: RequestType) => (
+                {navRequestTypes &&
+                  navRequestTypes.map((rt: RequestType) => (
                     <Link
                       key={rt.id}
                       className="navbar-item"
-                      to={`/request/new?type=${rt.name}`}
+                      to={`/request/new?type=${rt.id}`}
                     >
-                      {rt.name}
+                      {rt.menuText || rt.name}
                     </Link>
                   ))}
               </div>
@@ -160,8 +172,6 @@ export default function Nav() {
               className="navbar-item has-dropdown"
               ref={profileDropdownMenu}
               onClick={(e) => {
-                // e.stopPropagation();
-                // e.preventDefault();
                 closeDropdowns();
                 profileDropdownMenu.current?.classList.toggle('is-active');
               }}

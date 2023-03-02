@@ -53,6 +53,7 @@ $weight-semibold: 600;
 $weight-bold: 700;
 $dimensions: 16 24 32 48 64 96 128 256;
 $body-size: 14px;
+$success: rgb(40, 151, 61);
 
 h1,
 h2,
@@ -80,6 +81,8 @@ $hr-height: 1px;
 $block-spacing: 1rem;
 
 @import '../node_modules/bulma/bulma';
+@import '../node_modules/bulma-switch/src/sass';
+@import '../node_modules/bulma-list/sass/bulma-list';
 
 html {
   height: 100%;
@@ -113,6 +116,10 @@ body {
   .main {
     padding: 0 15px;
   }
+}
+.button.is-success {
+  @extend .has-text-weight-semibold;
+  height: 2.2rem;
 }
 
 .thread-box {
@@ -194,6 +201,64 @@ body {
     }
   }
 }
+.editable {
+  @extend .input;
+  background-color: transparent;
+  border: 0px;
+  box-shadow: none;
+  &:focus,
+  &:active {
+    border: 0;
+    outline: none;
+    box-shadow: none;
+  }
+}
+.typeEditor {
+  .switch + label {
+    display: block;
+  }
+}
+
+.popout {
+  position: relative;
+  .popout-menu {
+    opacity: 0;
+    display: none;
+    border-radius: 6px;
+    border: 1px solid $grey-lighter;
+    box-shadow: $shadow;
+    transform: translateY(0);
+    position: absolute;
+    z-index: 20;
+    width: 300px;
+    left: 0;
+    background-color: $white;
+    .popout-content {
+      border-radius: inherit;
+      hr {
+        @extend .m-0;
+      }
+    }
+  }
+  &.is-active {
+    .popout-menu {
+      opacity: 1;
+      display: block;
+    }
+  }
+  .popout-trigger {
+    @extend .label;
+    @extend .has-text-grey;
+    @extend .is-flex;
+    @extend .is-justify-content-space-between;
+    @extend .mb-4;
+    &:hover {
+      @extend .has-text-link;
+      @extend .is-clickable;
+    }
+  }
+}
+
 // .editor-container {
 //  @extend .has-background-white-ter
 // }

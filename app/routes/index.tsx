@@ -23,24 +23,30 @@ export default function Index() {
   return (
     <div className="container ">
       hi {user.firstName}
+      {', '}
       you have some requests:
       {requests.length === 0 ? (
         <p className="p-4">No requests yet</p>
       ) : (
-        <ol>
+        <div
+          className="list has-hoverable-list-items  has-overflow-ellipsis"
+          style={{ '--length': 25 }}
+        >
           {requests.map((request: Request) => (
-            <li key={request.id}>
-              <NavLink
-                className={({ isActive }) =>
-                  `block border-b p-4 text-xl ${isActive ? 'bg-white' : ''}`
-                }
-                to={`/request/` + request.id.toString()}
-              >
-                📝 {request.name} {request.id}
+            <div className="list-item" key={request.id}>
+              <NavLink to={`/request/` + request.id.toString()}>
+                <div className="list-item-content">
+                  <div className="list-item-title">
+                    📝 {request.name} {request.id}
+                  </div>
+                  <div className="list-item-description">
+                    List item description fasdf sadf asdf asdfasdf
+                  </div>
+                </div>
               </NavLink>
-            </li>
+            </div>
           ))}
-        </ol>
+        </div>
       )}
     </div>
   );

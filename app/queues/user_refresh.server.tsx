@@ -72,6 +72,18 @@ export default CronJob('/queues/user_refresh', '0 7 * * *', async () => {
   ldap.destroy();
 
   users.forEach(async (user: AttributeType) => {
+    let profilePhoto = null;
+
+    if (process.env.LDAP_PHOTO_FIELD) {
+      try {
+        profilePhoto = Buffer.from(
+          user[process.env.LDAP_PHOTO_FIELD]
+            .split(' ')
+            .map((e: string) => parseInt(e)),
+        ).toString('base64');
+      } catch {}
+    }
+
     await updateUserProps(
       user[EmailField as keyof AttributeType],
       user[FirstnameField as keyof AttributeType],
@@ -86,7 +98,7 @@ export default CronJob('/queues/user_refresh', '0 7 * * *', async () => {
                 group[GroupNameField as keyof typeof attributes],
             )
         : undefined,
-      user[ProfilePhotoField as keyof AttributeType],
+      profilePhoto,
     );
   });
 

@@ -9,12 +9,13 @@ import {
   LiveReload,
   Meta,
   Outlet,
+  PrefetchPageLinks,
   Scripts,
   ScrollRestoration,
   useLoaderData,
 } from '@remix-run/react';
 import remixImageStyles from 'remix-image/remix-image.css';
-import { getRequestTypes } from '~/models/config.server';
+import { getRequestTypesLite } from '~/models/config.server';
 
 import Nav from './components/Nav';
 import { getSession, getUser, sessionStorage } from './session.server';
@@ -34,7 +35,7 @@ export const meta: MetaFunction = () => ({
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request);
   const message = session.get('globalMessage') || null;
-  const requestTypes = await getRequestTypes();
+  const navRequestTypes = await getRequestTypesLite();
 
   return json({
     message,
@@ -42,22 +43,30 @@ export async function loader({ request }: LoaderArgs) {
       'Set-Cookie': await sessionStorage.commitSession(session),
     },
     user: await getUser(request),
-    requestTypes,
+    navRequestTypes,
   });
 }
 
 export default function App() {
-  const { user } = useLoaderData<typeof loader>();
+  const { user, navRequestTypes } = useLoaderData<typeof loader>();
   return (
     <html lang="en" className={`${user ? 'has-navbar-fixed-top' : ''}`}>
       <head>
         <Meta />
         <Links />
+        {navRequestTypes &&
+          navRequestTypes.map((rt: RequestType) => (
+            <PrefetchPageLinks
+              key={rt.id}
+              page={`/request/new?type=${rt.name}`}
+            />
+          ))}
       </head>
       <body className="main">
         {user && <Nav />}
         <Outlet />
         <ScrollRestoration />
+
         <Scripts />
         <LiveReload />
       </body>

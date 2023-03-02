@@ -1,3 +1,5 @@
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { RequestCategory, RequestType, User } from '@prisma/client';
 import {
   type ActionArgs,
@@ -12,11 +14,13 @@ import {
   useTransition,
 } from '@remix-run/react';
 import * as React from 'react';
+import RequestTypeEditor from '~/components/RequestTypeEditor';
 import {
   createRequestCategory,
   createRequestType,
   deleteRequestCategory,
   deleteRequestType,
+  editRequestType,
   getRequestCategories,
   getRequestTypes,
   setRequestCategoryDefault,
@@ -35,10 +39,23 @@ export async function loader({ request, params }: LoaderArgs) {
     [process.env.ADMIN_GROUP],
     async ({ user, session }: { user: User; session: Session }) => {
       // should authorizeAdmin here...
+      const editorFields = [
+        { name: 'Description', id: 'showDescription' },
+        { name: 'Purpose', id: 'showPurpose' },
+        { name: 'Criteria', id: 'showCriteria' },
+        { name: 'Parameters', id: 'showParameters' },
+        { name: 'Schedule', id: 'showSchedule' },
+        { name: 'Requester', id: 'showRequester' },
+        { name: 'Recipients', id: 'showRecipients' },
+        { name: 'Tags', id: 'showTags' },
+        { name: 'Export to Excel', id: 'showExportToExcel' },
+        { name: 'Regulatory', id: 'showRegulatory' },
+        { name: 'Supports an Initiative', id: 'showSupportsInitiative' },
+      ];
 
       const requestTypes = await getRequestTypes();
       const requestCategories = await getRequestCategories();
-      return json({ requestTypes, requestCategories, user });
+      return json({ requestTypes, requestCategories, user, editorFields });
     },
   );
 }
@@ -53,18 +70,94 @@ export async function action({ request }: ActionArgs) {
   const errors: Errors = {};
 
   switch (_action) {
-    case 'addRequestType': {
+    case 'editRequestType': {
       if (typeof values.name !== 'string' || values.name.length === 0) {
-        errors.typeName = 'Name is required';
+        errors.typeEditorName = 'Name is required';
+        errors.id = Number(values.id);
       }
-
-      const name = values.name as string;
-
       if (Object.keys(errors).length > 0) {
-        console.log('leaving early', Object.keys(errors).length, errors);
-        return json(errors, { status: 400 });
+        return json({ errors }, { status: 400 });
       }
-      await createRequestType({ name, userId });
+
+      const {
+        id,
+        name,
+        description,
+        menuText,
+        showSupportsInitiative,
+        showRegulatory,
+        showExportToExcel,
+        showTags,
+        showRecipients,
+        showRequester,
+        showSchedule,
+        showParameters,
+        showCriteria,
+        showPurpose,
+        showDescription,
+      } = values;
+
+      await editRequestType({
+        id: Number(id),
+        name,
+        description,
+        menuText,
+        showSupportsInitiative: showSupportsInitiative === 'on',
+        showRegulatory: showRegulatory === 'on',
+        showExportToExcel: showExportToExcel === 'on',
+        showTags: showTags === 'on',
+        showRecipients: showRecipients === 'on',
+        showRequester: showRequester === 'on',
+        showSchedule: showSchedule === 'on',
+        showParameters: showParameters === 'on',
+        showCriteria: showCriteria === 'on',
+        showPurpose: showPurpose === 'on',
+        showDescription: showDescription === 'on',
+      });
+
+      break;
+    }
+    case 'createRequestType': {
+      if (typeof values.name !== 'string' || values.name.length === 0) {
+        errors.typeCreateName = 'Name is required';
+      }
+      if (Object.keys(errors).length > 0) {
+        return json({ errors }, { status: 400 });
+      }
+      const {
+        name,
+        description,
+        menuText,
+        showSupportsInitiative,
+        showRegulatory,
+        showExportToExcel,
+        showTags,
+        showRecipients,
+        showRequester,
+        showSchedule,
+        showParameters,
+        showCriteria,
+        showPurpose,
+        showDescription,
+      } = values;
+
+      await createRequestType({
+        name,
+        description,
+        menuText,
+        showSupportsInitiative: showSupportsInitiative === 'on',
+        showRegulatory: showRegulatory === 'on',
+        showExportToExcel: showExportToExcel === 'on',
+        showTags: showTags === 'on',
+        showRecipients: showRecipients === 'on',
+        showRequester: showRequester === 'on',
+        showSchedule: showSchedule === 'on',
+        showParameters: showParameters === 'on',
+        showCriteria: showCriteria === 'on',
+        showPurpose: showPurpose === 'on',
+        showDescription: showDescription === 'on',
+        userId: user.id,
+      });
 
       break;
     }
@@ -75,15 +168,13 @@ export async function action({ request }: ActionArgs) {
       const name = values.name as string;
 
       if (Object.keys(errors).length > 0) {
-        console.log('leaving early', Object.keys(errors).length, errors);
-        return json(errors, { status: 400 });
+        return json({ errors }, { status: 400 });
       }
       await createRequestCategory({ name, userId });
 
       break;
     }
     case 'deleteRequestType': {
-      console.log(values);
       await deleteRequestType({ id: Number(values.id) });
       break;
     }
@@ -100,8 +191,7 @@ export async function action({ request }: ActionArgs) {
       }
 
       if (Object.keys(errors).length > 0) {
-        console.log('leaving early', Object.keys(errors).length, errors);
-        return json(errors, { status: 400 });
+        return json({ errors }, { status: 400 });
       }
       await setRequestCategoryDefault({ id: Number(categoryId) });
       break;
@@ -117,7 +207,8 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function Index() {
-  const { requestTypes, requestCategories } = useLoaderData<typeof loader>();
+  const { requestTypes, requestCategories, editorFields } =
+    useLoaderData<typeof loader>();
 
   type ActionData = { errors?: Errors } | undefined | null;
   const actionData = useActionData<ActionData>();
@@ -129,11 +220,13 @@ export default function Index() {
   const formCategoryDefaultRef = React.useRef<HTMLFormElement>(null);
   const categoryDefaultRef = React.useRef<HTMLSelectElement>(null);
 
+  const [newTypeHidden, setNewTypeHidden] = React.useState(false);
+
   const transition = useTransition();
 
-  const isAddingType =
+  const isCreatingType =
     transition.state === 'submitting' &&
-    transition.submission.formData.get('_action') === 'addRequestType';
+    transition.submission.formData.get('_action') === 'createRequestType';
 
   const isAddingCategory =
     transition.state === 'submitting' &&
@@ -145,10 +238,10 @@ export default function Index() {
       'addRequestCategoryDefault';
 
   React.useEffect(() => {
-    if (!isAddingType) {
-      formTypeAddRef.current?.reset();
+    if (!isCreatingType) {
+      setNewTypeHidden(false);
     }
-  }, [isAddingType]);
+  }, [isCreatingType]);
 
   React.useEffect(() => {
     if (!isAddingCategory) {
@@ -181,58 +274,62 @@ export default function Index() {
       <h1 className="title is-1">Site Configuration</h1>
       <h2 className="is-2 title">Request Types</h2>
 
-      {requestTypes && (
-        <div className="field is-grouped is-grouped-multiline">
-          {requestTypes.map((rt: RequestType) => (
-            <div key={rt.id} className="control">
-              <div className="tags has-addons">
-                <span className="tag is-link">{rt.name}</span>
-                <Form method="post">
-                  <input type="hidden" name="id" value={rt.id} />
-                  <button
-                    name="_action"
-                    value="deleteRequestType"
-                    type="submit"
-                    aria-label="delete"
-                    className="tag button is-delete is-ghost"
-                  ></button>
-                </Form>
-              </div>
-            </div>
-          ))}
+      <div className="columns">
+        <div className="column is-narrow pr-0 has-text-right">
+          <label className="label py-3 my-0 mr-3">Name</label>
+          <label className="label py-2 my-0 mr-3">Description</label>
+          <label className="label py-2 my-0 mr-3">Menu Text</label>
+          {editorFields &&
+            editorFields.map((field) => (
+              <React.Fragment key={field.id}>
+                <label className="label py-2 my-0 mr-3" key={field.id}>
+                  {field.name}
+                </label>
+                <hr className="m-0" />
+              </React.Fragment>
+            ))}
         </div>
-      )}
+        {requestTypes.map((rt: RequestType) => (
+          <RequestTypeEditor key={rt.id} rt={rt} fields={editorFields} />
+        ))}
+        <div className="column auto">
+          <button
+            className="button"
+            type="button"
+            onClick={(event) => {
+              setNewTypeHidden(<RequestTypeEditor fields={editorFields} />);
+            }}
+          >
+            New!
+          </button>
+          {newTypeHidden}
+        </div>
+        {/*
+             <div className="column is-narrow px-0">
+                New Type
+                <span className="icon">
+                  <FontAwesomeIcon icon={faPlus} />
+                </span>
+                <input className="input" disabled />
+                <input className="input" disabled/>
+           
+        {editorFields &&
+              editorFields.map((field) => (
 
-      <Form method="post" className="form" ref={formTypeAddRef}>
-        <div className="field">
-          <label className="label">New Request Type</label>
-          <div className="control">
-            <input
-              name="name"
-              ref={typeNameRef}
-              aria-invalid={actionData?.errors?.typeName ? true : undefined}
-              aria-errormessage={
-                actionData?.errors?.typeName ? 'is-danger' : undefined
-              }
-              className={`input ${
-                actionData?.errors?.typeName ? 'is-danger' : undefined
-              }`}
-              type="text"
-              placeholder="name"
-              onInput={(event: React.SyntheticEvent<HTMLInputElement>) => {
-                const input = event.target as HTMLInputElement;
-                resetInput(input);
-              }}
-            />
-          </div>
-          {actionData?.errors?.typeName && (
-            <p className="help is-danger">{actionData?.errors?.typeName}</p>
-          )}
-        </div>
-        <button className="button" name="_action" value="addRequestType">
-          {isAddingType ? 'saving..' : 'save'}
-        </button>
-      </Form>
+                <div key={field.id} class="field">
+                      <input
+                        id={`${field.id}-new`}
+                        type="checkbox"
+                        name={`${field.id}-new`}
+                        className="switch is-rounded"
+                        disabled
+                      />
+                      <label for={`${field.id}-new`}></label>
+                      <hr className="m-0" />
+                    </div>
+                    ))}
+              </div>*/}
+      </div>
 
       {requestCategories && (
         <div className="field is-grouped is-grouped-multiline">
@@ -332,8 +429,12 @@ export default function Index() {
         </button>
       </Form>
       <p className="content">
+        <br />
         other config: - category to auto asign to new tickets - default request
+        <br />
         type - what groups should admin users have/who is admin?
+        <br />
+        who is an admin anyways?
       </p>
     </div>
   );

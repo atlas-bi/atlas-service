@@ -8,14 +8,17 @@ import {
   json,
   redirect,
 } from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { Form, Link, useActionData, useLoaderData } from '@remix-run/react';
 import type { EditorState } from 'lexical';
 import * as React from 'react';
-import { getRequestTypes } from '~/models/config.server';
+import { getRequestType, getRequestTypes } from '~/models/config.server';
 import { createRequest } from '~/models/request.server';
 import { authorize, requireUser } from '~/session.server';
 
 import Editor from '../../components/Editor';
+import { MiniUser } from '../../components/User';
+
+const { MeiliSearch } = require('meilisearch');
 
 export async function loader({ request }: LoaderArgs) {
   return authorize(
@@ -26,9 +29,19 @@ export async function loader({ request }: LoaderArgs) {
       const requestTypes = await getRequestTypes();
 
       const url = new URL(request.url);
-      const defaultType = url.searchParams.get('type');
 
-      return json({ requestTypes, user, defaultType });
+      const defaultType = Number(url.searchParams.get('type'));
+
+      const selectedType =
+        requestTypes.filter((rt: RequestType) => rt.id === defaultType)[0] ||
+        requestTypes[0];
+
+      return json({
+        requestTypes,
+        user,
+        selectedType,
+        ENV: { MEILISEARCH_URL: process.env.MEILISEARCH_URL },
+      });
     },
   );
 }
@@ -52,6 +65,8 @@ export async function action({ request }: ActionArgs) {
   const parameters = formData.get('parameters');
   const schedule = formData.get('schedule');
 
+  const requestType = await getRequestType({ id: Number(type) });
+
   const errors: {
     name?: string;
     requestedFor?: string;
@@ -63,57 +78,66 @@ export async function action({ request }: ActionArgs) {
     parameters?: string;
     schedule?: string;
   } = {};
+
   if (typeof name !== 'string' || name.length === 0) {
     errors.name = 'Name is required';
   }
-  if (typeof requestedFor !== 'string' || requestedFor.length === 0) {
+  if (
+    requestType.showRequestor &&
+    (typeof requestedFor !== 'string' || requestedFor.length === 0)
+  ) {
     errors.requestedFor = 'Requested for is required';
   }
 
-  if (typeof type !== 'string' || type.length === 0) {
-    errors.type = 'Type is required';
-  }
-  if (typeof recipients !== 'string' || recipients.length === 0) {
+  if (
+    requestType.showRecipients &&
+    (typeof recipients !== 'string' || recipients.length === 0)
+  ) {
     errors.recipients = 'Recipients are required';
   }
 
   if (
-    typeof description !== 'string' ||
-    description.length === 0 ||
-    (JSON.parse(description).root?.children.length === 1 &&
-      JSON.parse(description).root?.children[0].children.length === 0)
+    requestType.showDescription &&
+    (typeof description !== 'string' ||
+      description.length === 0 ||
+      (JSON.parse(description).root?.children.length === 1 &&
+        JSON.parse(description).root?.children[0].children.length === 0))
   ) {
     errors.description = 'Description is required';
   }
   if (
-    typeof purpose !== 'string' ||
-    purpose.length === 0 ||
-    (JSON.parse(purpose).root?.children.length === 1 &&
-      JSON.parse(purpose).root?.children[0].children.length === 0)
+    requestType.showPurpose &&
+    (typeof purpose !== 'string' ||
+      purpose.length === 0 ||
+      (JSON.parse(purpose).root?.children.length === 1 &&
+        JSON.parse(purpose).root?.children[0].children.length === 0))
   ) {
     errors.purpose = 'Purpose is required';
   }
   if (
-    typeof criteria !== 'string' ||
-    criteria.length === 0 ||
-    (JSON.parse(criteria).root?.children.length === 1 &&
-      JSON.parse(criteria).root?.children[0].children.length === 0)
+    requestType.showCriteria &&
+    (typeof criteria !== 'string' ||
+      criteria.length === 0 ||
+      (JSON.parse(criteria).root?.children.length === 1 &&
+        JSON.parse(criteria).root?.children[0].children.length === 0))
   ) {
     errors.criteria = 'Criteria is required';
   }
   if (
-    typeof parameters !== 'string' ||
-    parameters.length === 0 ||
-    (JSON.parse(parameters).root?.children.length === 1 &&
-      JSON.parse(parameters).root?.children[0].children.length === 0)
+    requestType.showParameters &&
+    (typeof parameters !== 'string' ||
+      parameters.length === 0 ||
+      (JSON.parse(parameters).root?.children.length === 1 &&
+        JSON.parse(parameters).root?.children[0].children.length === 0))
   ) {
     errors.parameters = 'Parameters is required';
   }
   if (
-    typeof schedule !== 'string' ||
-    schedule.length === 0 ||
-    (JSON.parse(schedule).root?.children.length === 1 &&
-      JSON.parse(schedule).root?.children[0].children.length === 0)
+    requestType.showSchedule &&
+    (typeof schedule !== 'string' ||
+      schedule.length === 0 ||
+      (JSON.parse(schedule).root?.children.length === 1 &&
+        JSON.parse(schedule).root?.children[0].children.length === 0))
   ) {
     errors.schedule = 'Schedule is required';
   }
@@ -140,7 +164,8 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function NewRequestPage() {
-  const { requestTypes, user, defaultType } = useLoaderData<typeof loader>();
+  const { requestTypes, user, selectedType, ENV } =
+    useLoaderData<typeof loader>();
 
   const actionData = useActionData<typeof action>();
 
@@ -169,7 +194,16 @@ export default function NewRequestPage() {
   const parametersEditor = React.useRef<HTMLDivElement>();
   const scheduleEditor = React.useRef<HTMLDivElement>();
 
+  const requesterPopout = React.useRef<HTMLDivElement>();
+
   const [activeEditor, setActiveEditor] = React.useState(descriptionEditor);
+
+  const [requesterSearchResults, setRequesterSearchResults] =
+    React.useState(null);
+
+  const [requester, setRequester] = React.useState(user);
+
+  const client = new MeiliSearch({ host: ENV.MEILISEARCH_URL });
 
   React.useEffect(() => {
     if (actionData?.errors?.name) {
@@ -207,16 +241,15 @@ export default function NewRequestPage() {
     input.removeAttribute('aria-errormessage');
   };
 
-  const selectedType =
-    requestTypes.filter((rt: RequestType) => rt.name === defaultType)[0] ||
-    requestTypes[0];
-
   return (
     <div className="container">
       <Form method="post" className="form">
         <div className="columns">
           <div className="column">
             <h3 className="title is-3 mb-1">{selectedType.name}</h3>
+            <div className="mt-1 mb-5 is-size-6">
+              {selectedType.description}
+            </div>
             <hr className="my-0" />
             <div className="mt-1 mb-5 is-size-6">
               Not what you're looking for?{' '}
@@ -283,102 +316,129 @@ export default function NewRequestPage() {
                   <p className="help is-danger">{actionData.errors.name}</p>
                 )}
               </div>
-              <label className="label pl-2">Description</label>
-              {actionData?.errors?.description && (
-                <p ref={descriptionWarningRef} className="pl-2 help is-danger">
-                  {actionData.errors.description}
-                </p>
+              {selectedType.showDescription && (
+                <>
+                  <label className="label pl-2">Description</label>
+                  {actionData?.errors?.description && (
+                    <p
+                      ref={descriptionWarningRef}
+                      className="pl-2 help is-danger"
+                    >
+                      {actionData.errors.description}
+                    </p>
+                  )}
+                  <Editor
+                    ref={descriptionEditor}
+                    activeEditor={activeEditor}
+                    onChange={(editorState: EditorState) => {
+                      setActiveEditor(descriptionEditor);
+                      descriptionWarningRef.current?.remove();
+                      if (descriptionRef.current)
+                        descriptionRef.current.value =
+                          JSON.stringify(editorState);
+                    }}
+                  />
+
+                  <input
+                    type="hidden"
+                    ref={descriptionRef}
+                    name="description"
+                  />
+                </>
               )}
-              <Editor
-                ref={descriptionEditor}
-                activeEditor={activeEditor}
-                onChange={(editorState: EditorState) => {
-                  // console.log(purposeEditor.current)
-                  setActiveEditor(descriptionEditor);
-                  descriptionWarningRef.current?.remove();
-                  if (descriptionRef.current)
-                    descriptionRef.current.value = JSON.stringify(editorState);
-                }}
-              />
 
-              <input type="hidden" ref={descriptionRef} name="description" />
+              {selectedType.showPurpose && (
+                <>
+                  <label className="label pl-2">Purpose</label>
+                  {actionData?.errors?.purpose && (
+                    <p ref={purposeWarningRef} className="pl-2 help is-danger">
+                      {actionData.errors.purpose}
+                    </p>
+                  )}
+                  <Editor
+                    ref={purposeEditor}
+                    activeEditor={activeEditor}
+                    onChange={(editorState: EditorState) => {
+                      setActiveEditor(purposeEditor);
+                      purposeWarningRef.current?.remove();
+                      if (purposeRef.current)
+                        purposeRef.current.value = JSON.stringify(editorState);
+                    }}
+                  />
 
-              <label className="label pl-2">Purpose</label>
-              {actionData?.errors?.purpose && (
-                <p ref={purposeWarningRef} className="pl-2 help is-danger">
-                  {actionData.errors.purpose}
-                </p>
+                  <input type="hidden" ref={purposeRef} name="purpose" />
+                </>
               )}
-              <Editor
-                ref={purposeEditor}
-                activeEditor={activeEditor}
-                onChange={(editorState: EditorState) => {
-                  setActiveEditor(purposeEditor);
-                  purposeWarningRef.current?.remove();
-                  if (purposeRef.current)
-                    purposeRef.current.value = JSON.stringify(editorState);
-                }}
-              />
+              {selectedType.showCriteria && (
+                <>
+                  <label className="label pl-2">Criteria</label>
+                  {actionData?.errors?.criteria && (
+                    <p ref={criteriaWarningRef} className="pl-2 help is-danger">
+                      {actionData.errors.criteria}
+                    </p>
+                  )}
+                  <Editor
+                    ref={criteriaEditor}
+                    activeEditor={activeEditor}
+                    onChange={(editorState: EditorState) => {
+                      setActiveEditor(criteriaEditor);
+                      criteriaWarningRef.current?.remove();
+                      if (criteriaRef.current)
+                        criteriaRef.current.value = JSON.stringify(editorState);
+                    }}
+                  />
 
-              <input type="hidden" ref={purposeRef} name="purpose" />
-
-              <label className="label pl-2">Criteria</label>
-              {actionData?.errors?.criteria && (
-                <p ref={criteriaWarningRef} className="pl-2 help is-danger">
-                  {actionData.errors.criteria}
-                </p>
+                  <input type="hidden" ref={criteriaRef} name="criteria" />
+                </>
               )}
-              <Editor
-                ref={criteriaEditor}
-                activeEditor={activeEditor}
-                onChange={(editorState: EditorState) => {
-                  setActiveEditor(criteriaEditor);
-                  criteriaWarningRef.current?.remove();
-                  if (criteriaRef.current)
-                    criteriaRef.current.value = JSON.stringify(editorState);
-                }}
-              />
+              {selectedType.showParameters && (
+                <>
+                  <label className="label pl-2">Parameters</label>
+                  {actionData?.errors?.parameters && (
+                    <p
+                      ref={parametersWarningRef}
+                      className="pl-2 help is-danger"
+                    >
+                      {actionData.errors.parameters}
+                    </p>
+                  )}
+                  <Editor
+                    ref={parametersEditor}
+                    activeEditor={activeEditor}
+                    onChange={(editorState: EditorState) => {
+                      setActiveEditor(parametersEditor);
+                      parametersWarningRef.current?.remove();
+                      if (parametersRef.current)
+                        parametersRef.current.value =
+                          JSON.stringify(editorState);
+                    }}
+                  />
 
-              <input type="hidden" ref={criteriaRef} name="criteria" />
-
-              <label className="label pl-2">Parameters</label>
-              {actionData?.errors?.parameters && (
-                <p ref={parametersWarningRef} className="pl-2 help is-danger">
-                  {actionData.errors.parameters}
-                </p>
+                  <input type="hidden" ref={parametersRef} name="parameters" />
+                </>
               )}
-              <Editor
-                ref={parametersEditor}
-                activeEditor={activeEditor}
-                onChange={(editorState: EditorState) => {
-                  setActiveEditor(parametersEditor);
-                  parametersWarningRef.current?.remove();
-                  if (parametersRef.current)
-                    parametersRef.current.value = JSON.stringify(editorState);
-                }}
-              />
+              {selectedType.showSchedule && (
+                <>
+                  <label className="pl-2 label">Schedule</label>
+                  {actionData?.errors?.schedule && (
+                    <p ref={scheduleWarningRef} className="pl-2 help is-danger">
+                      {actionData.errors.schedule}
+                    </p>
+                  )}
+                  <Editor
+                    ref={scheduleEditor}
+                    activeEditor={activeEditor}
+                    onChange={(editorState: EditorState) => {
+                      setActiveEditor(scheduleEditor);
+                      scheduleWarningRef.current?.remove();
+                      if (scheduleRef.current)
+                        scheduleRef.current.value = JSON.stringify(editorState);
+                    }}
+                  />
 
-              <input type="hidden" ref={parametersRef} name="parameters" />
-
-              <label className="pl-2 label">Schedule</label>
-              {actionData?.errors?.schedule && (
-                <p ref={scheduleWarningRef} className="pl-2 help is-danger">
-                  {actionData.errors.schedule}
-                </p>
+                  <input type="hidden" ref={scheduleRef} name="schedule" />
+                </>
               )}
-              <Editor
-                ref={scheduleEditor}
-                activeEditor={activeEditor}
-                onChange={(editorState: EditorState) => {
-                  setActiveEditor(scheduleEditor);
-                  scheduleWarningRef.current?.remove();
-                  if (scheduleRef.current)
-                    scheduleRef.current.value = JSON.stringify(editorState);
-                }}
-              />
-
-              <input type="hidden" ref={scheduleRef} name="schedule" />
-
               <hr className="mb-0 mx-2" />
               <button type="submit" className="button is-success m-2">
                 Save
@@ -386,125 +446,215 @@ export default function NewRequestPage() {
             </div>
           </div>
 
-          <div className="column is-one-third">
-            <div className="field ">
-              <label className="label has-text-grey is-flex is-justify-content-space-between mb-4">
-                <span>Requester</span>
-                <span className="icon mr-2">
-                  <FontAwesomeIcon icon={faPencil} />
-                </span>
-              </label>
-
-              <input
-                type="hidden"
-                ref={requestedForRef}
-                name="requestedFor"
-                value={user.userId}
-                onInput={(event: React.SyntheticEvent<HTMLInputElement>) => {
-                  const input = event.target as HTMLInputElement;
-                  resetInput(input);
-                }}
-              />
-
-              {user.profilePhoto && (
-                <>
-                  <article className="media">
-                    <div className="media-left">
-                      <figure className="image is-20x20">
-                        <img
-                          decoding="async"
-                          loading="lazy"
-                          alt="profile"
-                          className="remix-image is-rounded profile"
-                          src={`data:image/png;base64,${user.profilePhoto}`}
-                        />
-                      </figure>
-                    </div>
-                    <div className="media-content my-auto">
-                      <strong>
-                        {user.firstName} {user.lastName}
+          <div className="column is-one-quarter">
+            {selectedType.showRequester && (
+              <>
+                <div className="popout" ref={requesterPopout}>
+                  <label
+                    className="popout-trigger"
+                    onClick={(e) => {
+                      requesterPopout.current?.classList.toggle('is-active');
+                    }}
+                  >
+                    <span>Requester</span>
+                    <span className="icon mr-2">
+                      <FontAwesomeIcon icon={faPencil} />
+                    </span>
+                  </label>
+                  <div className="popout-menu">
+                    <div className="popout-content has-background-light">
+                      <strong className="py-2 px-3 is-block ">
+                        Request this on the behalf of
                       </strong>
+                      <hr />
+                      <div className="py-2 px-3 has-background-white">
+                        <input
+                          className="input"
+                          onChange={async (e) => {
+                            const searchInput = e.target;
+                            if (searchInput.value.length == 0) {
+                              setRequesterSearchResults(null);
+                            } else {
+                              const matches = await client
+                                .index('atlas-requests-users')
+                                .search(searchInput.value, { limit: 20 });
+
+                              if (matches.hits.length > 0) {
+                                setRequesterSearchResults(
+                                  <>
+                                    {matches.hits.map((user) => (
+                                      <MiniUser
+                                        key={user.id}
+                                        user={user}
+                                        onClick={() => {
+                                          setRequester(user);
+                                          setRequesterSearchResults(null);
+                                          searchInput.value = '';
+                                        }}
+                                        linkToUser={false}
+                                      />
+                                    ))}
+                                  </>,
+                                );
+                              } else {
+                                setRequesterSearchResults(
+                                  <strong className="py-2 px-3 is-block ">
+                                    No matches.
+                                  </strong>,
+                                );
+                              }
+                            }
+                          }}
+                        />
+                      </div>
+                      <hr />
+
+                      {requesterSearchResults || (
+                        <>
+                          <strong className="py-2 px-3 is-block ">
+                            Suggestions
+                          </strong>
+                          <hr />
+                          <MiniUser
+                            user={user}
+                            onClick={() => {
+                              setRequester(user);
+                              setRequesterSearchResults(null);
+                            }}
+                          />
+                          ... boss or others?
+                        </>
+                      )}
                     </div>
-                  </article>
-                </>
-              )}
+                  </div>
 
-              {actionData?.errors?.requestedFor && (
-                <p className="help is-danger">
-                  {actionData.errors.requestedFor}
-                </p>
-              )}
-            </div>
-            <hr />
-
-            <div className="field">
-              <label className="label has-text-grey is-flex is-justify-content-space-between mb-4">
-                <span>Recipients</span>
-                <span className="icon mr-2">
-                  <FontAwesomeIcon icon={faPencil} />
-                </span>
-              </label>
-              <div className="control">
-                <input
-                  ref={recipientsRef}
-                  name="recipients"
-                  type="hidden"
-                  onInput={(event: React.SyntheticEvent<HTMLInputElement>) => {
-                    const input = event.target as HTMLInputElement;
-                    resetInput(input);
-                  }}
-                />
-              </div>
-              No one—
-              <span className="is-clickable has-text-link">add yourself</span>
-              {actionData?.errors?.recipients && (
-                <p className="help is-danger">{actionData.errors.recipients}</p>
-              )}
-            </div>
-            <hr />
-
-            <label className="label has-text-grey is-flex is-justify-content-space-between mb-4">
-              <span>Tags</span>
-              <span className="icon mr-2">
-                <FontAwesomeIcon icon={faPencil} />
-              </span>
-            </label>
-
-            <hr />
-
-            <div className="field">
-              <div className="control">
-                <label className="checkbox">
-                  <input type="checkbox" ref={excelRef} name="excel" />
-                  Export To Excel
-                </label>
-              </div>
-            </div>
-
-            <div className="field">
-              <div className="control">
-                <label className="checkbox">
                   <input
-                    type="checkbox"
-                    ref={regulatoryRef}
-                    name="regulatory"
+                    type="hidden"
+                    ref={requestedForRef}
+                    name="requestedFor"
+                    value={requester.id}
+                    onInput={(
+                      event: React.SyntheticEvent<HTMLInputElement>,
+                    ) => {
+                      const input = event.target as HTMLInputElement;
+                      resetInput(input);
+                    }}
                   />
-                  Regulatory
+                  <MiniUser user={requester}>
+                    {requester.id !== user.id && (
+                      <span
+                        className="is-pulled-right has-text-link"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setRequester(user);
+                        }}
+                      >
+                        set back to me
+                      </span>
+                    )}
+                  </MiniUser>
+
+                  {actionData?.errors?.requestedFor && (
+                    <p className="help is-danger">
+                      {actionData.errors.requestedFor}
+                    </p>
+                  )}
+                </div>
+                <hr />
+              </>
+            )}
+
+            {selectedType.showRecipients && (
+              <>
+                <div className="field">
+                  <label className="label has-text-grey is-flex is-justify-content-space-between mb-4">
+                    <span>Recipients</span>
+                    <span className="icon mr-2">
+                      <FontAwesomeIcon icon={faPencil} />
+                    </span>
+                  </label>
+                  <div className="control">
+                    <input
+                      ref={recipientsRef}
+                      name="recipients"
+                      type="hidden"
+                      onInput={(
+                        event: React.SyntheticEvent<HTMLInputElement>,
+                      ) => {
+                        const input = event.target as HTMLInputElement;
+                        resetInput(input);
+                      }}
+                    />
+                  </div>
+                  No one—
+                  <span className="is-clickable has-text-link">
+                    add yourself
+                  </span>
+                  {actionData?.errors?.recipients && (
+                    <p className="help is-danger">
+                      {actionData.errors.recipients}
+                    </p>
+                  )}
+                </div>
+                <hr />
+              </>
+            )}
+            {selectedType.showTags && (
+              <>
+                <label className="label has-text-grey is-flex is-justify-content-space-between mb-4">
+                  <span>Tags</span>
+                  <span className="icon mr-2">
+                    <FontAwesomeIcon icon={faPencil} />
+                  </span>
                 </label>
-              </div>
-            </div>
-            <div className="field">
-              <div className="control">
-                <label className="checkbox">
-                  <input
-                    type="checkbox"
-                    ref={initiativeRef}
-                    name="initiative"
-                  />
-                  Supports an Initiative
-                </label>
-              </div>
-            </div>
+
+                <hr />
+              </>
+            )}
+            {selectedType.showExportToExcel && (
+              <>
+                <div className="field">
+                  <div className="control">
+                    <label className="checkbox">
+                      <input type="checkbox" ref={excelRef} name="excel" />
+                      Export To Excel
+                    </label>
+                  </div>
+                </div>
+              </>
+            )}
+            {selectedType.showRegulatory && (
+              <>
+                <div className="field">
+                  <div className="control">
+                    <label className="checkbox">
+                      <input
+                        type="checkbox"
+                        ref={regulatoryRef}
+                        name="regulatory"
+                      />
+                      Regulatory
+                    </label>
+                  </div>
+                </div>
+              </>
+            )}
+            {selectedType.showInitiative && (
+              <>
+                <div className="field">
+                  <div className="control">
+                    <label className="checkbox">
+                      <input
+                        type="checkbox"
+                        ref={initiativeRef}
+                        name="initiative"
+                      />
+                      Supports an Initiative
+                    </label>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </Form>
