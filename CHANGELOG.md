@@ -1,3 +1,8 @@
+## 1.0.0-rc.9 (2023-03-02)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([0e8eaa3](https://github.com/atlas-bi/atlas-requests/commit/0e8eaa3))
+* feat(new request): added user search to requester box ([1297604](https://github.com/atlas-bi/atlas-requests/commit/1297604))
+
 ## 1.0.0-rc.8 (2023-03-01)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([8736db4](https://github.com/atlas-bi/atlas-requests/commit/8736db4))
