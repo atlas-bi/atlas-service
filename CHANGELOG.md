@@ -1,3 +1,8 @@
+## 1.0.0-rc.10 (2023-03-02)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([581e0c0](https://github.com/atlas-bi/atlas-requests/commit/581e0c0))
+* fix(installer): fixed installer help screen bug ([11f25ef](https://github.com/atlas-bi/atlas-requests/commit/11f25ef))
+
 ## 1.0.0-rc.9 (2023-03-02)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([0e8eaa3](https://github.com/atlas-bi/atlas-requests/commit/0e8eaa3))
