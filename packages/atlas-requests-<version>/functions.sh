@@ -264,14 +264,14 @@ postgres_init(){
 recommendations(){
 
   cat <<EOF
-  ${BLUE}
-Viewing Logs
+${YELLOW}${BOLD}Viewing Logs${RESET}${BLUE}
 
   journalctl -u "$WEB_SERVICE" -n 100 --no-pager
   journalctl -u "$QUIRREL_SERVICE" -n 100 --no-pager
   journalctl -u "$SEARCH_SERVICE" -n 100 --no-pager
 
   journalctl -u nginx
+  /var/log/nginx/error.log
 ${RESET}
 EOF
 

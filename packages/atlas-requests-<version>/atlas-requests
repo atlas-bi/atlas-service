@@ -108,14 +108,7 @@ Available options:
 
 Additional Altas Requests Help
 
-${YELLOW}${BOLD}Where are user configuration options?${RESET}
-
-    Changes to user configuration are made in ${BLUE}/etc/$APP/config${RESET}.
-    Run ${BLUE}$APP -c${RESET} to reconfigure the app.
-
-${YELLOW}${BOLD}Where are log messages?${RESET}
-
-    ${BLUE}Nginx${RESET} /var/log/nginx/error.log
+${recommendations}
 
 EOF
   exit
