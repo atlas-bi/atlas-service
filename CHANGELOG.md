@@ -1,3 +1,8 @@
+## 1.0.0-rc.11 (2023-03-07)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([966ff65](https://github.com/atlas-bi/atlas-requests/commit/966ff65))
+* feat(editor): added more editor fields ([9069552](https://github.com/atlas-bi/atlas-requests/commit/9069552))
+
 ## 1.0.0-rc.10 (2023-03-02)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([581e0c0](https://github.com/atlas-bi/atlas-requests/commit/581e0c0))
