@@ -108,7 +108,7 @@ Available options:
 
 Additional Altas Requests Help
 
-${recommendations}
+$(recommendations)
 
 EOF
   exit

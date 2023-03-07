@@ -27,27 +27,16 @@ export default function Nav() {
     });
   };
 
-  const closePopouts = () => {
-    const popouts = document.querySelectorAll('.popout.is-active');
-    popouts.forEach((el) => {
-      el.classList.remove('is-active');
-    });
-  };
-
   useEffect(() => {
     window.onclick = (e) => {
       if (!(e.target as HTMLElement)?.closest('.dropdown-button')) {
         closeDropdowns();
-      }
-      if (!(e.target as HTMLElement)?.closest('.popout')) {
-        closePopouts();
       }
     };
     window.addEventListener('keydown', (event) => {
       const e = event || window.event;
       if (e.key === 'Esc' || e.key === 'Escape') {
         closeDropdowns();
-        closePopouts();
       }
     });
   }, []);
@@ -205,6 +194,10 @@ export default function Nav() {
                 <hr className="navbar-divider" />
                 <a className="navbar-item" href="/admin/config">
                   Site Configuration
+                </a>
+                <hr className="navbar-divider" />
+                <a className="navbar-item" href="/logout">
+                  Sign out
                 </a>
               </div>
             </div>

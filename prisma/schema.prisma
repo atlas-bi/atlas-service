@@ -106,9 +106,9 @@ model Request {
   requester   User @relation(name: "RequestRequester", fields: [requesterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   requesterId Int
 
-  category   RequestCategory @relation(fields: [categoryId], references: [id])
-  categoryId Int
+  category   RequestCategory? @relation(fields: [categoryId], references: [id])
+  categoryId Int?
 
-  type   RequestType @relation(fields: [typeId], references: [id])
-  typeId Int
+  type   RequestType? @relation(fields: [typeId], references: [id])
+  typeId Int?
 }

@@ -14,7 +14,7 @@ export const MiniUser = ({ user, linkToUser, onClick, children }) => {
       onClick={onClick}
     >
       {user.profilePhoto && (
-        <div className="media-left">
+        <div className="media-left my-auto">
           <figure className="image is-20x20">
             <img
               decoding="async"

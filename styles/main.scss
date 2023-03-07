@@ -222,8 +222,8 @@ body {
 .popout {
   position: relative;
   .popout-menu {
-    opacity: 0;
-    display: none;
+    // opacity: 0;
+    // display: none;
     border-radius: 6px;
     border: 1px solid $grey-lighter;
     box-shadow: $shadow;

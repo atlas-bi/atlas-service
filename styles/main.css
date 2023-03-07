@@ -12613,8 +12613,6 @@ body {
   position: relative;
 }
 .popout .popout-menu {
-  opacity: 0;
-  display: none;
   border-radius: 6px;
   border: 1px solid hsl(0, 0%, 86%);
   box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1),

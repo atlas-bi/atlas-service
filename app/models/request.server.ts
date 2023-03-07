@@ -18,14 +18,45 @@ export function getRequest({ id }: Pick<Request, 'id'>) {
       exportToExcel: true,
       supportsInitiative: true,
       regulatory: true,
+      requester: {
+        select: {
+          firstName: true,
+          lastName: true,
+          id: true,
+          email: true,
+          profilePhoto: true,
+        },
+      },
     },
     where: { id: id },
   });
 }
 
+export const editRequester = async ({
+  userId,
+  requestedFor,
+  id,
+}: Pick<Request, 'requestedFor'> & { userId: User['id'] }) => {
+  console.log(userId, requestedFor);
+  const request = await prisma.request.findUnique({
+    where: { id },
+  });
+  await prisma.request.update({
+    where: { id },
+    data: {
+      requester: {
+        connect: {
+          id: requestedFor,
+        },
+      },
+    },
+  });
+  return;
+};
+
 export function getRequestListItems({ userId }: { userId: User['id'] }) {
   return prisma.request.findMany({
-    where: { requesterId: userId },
+    where: { OR: [{ requesterId: userId }, { creatorId: userId }] },
     select: { id: true, name: true },
     orderBy: { updatedAt: 'desc' },
   });
@@ -43,6 +74,7 @@ export async function createRequest({
   excel,
   initiative,
   regulatory,
+  requestedFor,
 }: Pick<
   Request,
   | 'name'
@@ -52,17 +84,18 @@ export async function createRequest({
   | 'criteria'
   | 'description'
   | 'regulatory'
+  | 'requestedFor'
 > & {
   userId: User['id'];
   type: string;
   excel: Request['exportToExcel'];
   initiative: Request['supportsInitiative'];
 }) {
-  console.log(type);
   const defaultCategory = await prisma.requestCategory.findFirst({
     where: { isDefault: true },
     select: { id: true },
   });
+  console.log('cat', defaultCategory);
   const request = await prisma.request.create({
     data: {
       name,
@@ -81,19 +114,24 @@ export async function createRequest({
       },
       requester: {
         connect: {
-          id: userId,
+          id: requestedFor,
         },
       },
-      category: {
-        connect: {
-          id: defaultCategory?.id,
-        },
-      },
-      type: {
-        connect: {
-          id: type ? Number(type) : undefined,
-        },
-      },
+
+      category: defaultCategory?.id
+        ? {
+            connect: {
+              id: defaultCategory.id,
+            },
+          }
+        : undefined,
+      type: type
+        ? {
+            connect: {
+              id: Number(type),
+            },
+          }
+        : undefined,
     },
   });
 

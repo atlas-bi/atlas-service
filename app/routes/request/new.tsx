@@ -16,6 +16,8 @@ import { createRequest } from '~/models/request.server';
 import { authorize, requireUser } from '~/session.server';
 
 import Editor from '../../components/Editor';
+import { RecipientSelector } from '../../components/Recipients';
+import { RequesterSelector } from '../../components/Requester';
 import { MiniUser } from '../../components/User';
 
 const { MeiliSearch } = require('meilisearch');
@@ -448,156 +450,23 @@ export default function NewRequestPage() {
 
           <div className="column is-one-quarter">
             {selectedType.showRequester && (
-              <>
-                <div className="popout" ref={requesterPopout}>
-                  <label
-                    className="popout-trigger"
-                    onClick={(e) => {
-                      requesterPopout.current?.classList.toggle('is-active');
-                    }}
-                  >
-                    <span>Requester</span>
-                    <span className="icon mr-2">
-                      <FontAwesomeIcon icon={faPencil} />
-                    </span>
-                  </label>
-                  <div className="popout-menu">
-                    <div className="popout-content has-background-light">
-                      <strong className="py-2 px-3 is-block ">
-                        Request this on the behalf of
-                      </strong>
-                      <hr />
-                      <div className="py-2 px-3 has-background-white">
-                        <input
-                          className="input"
-                          onChange={async (e) => {
-                            const searchInput = e.target;
-                            if (searchInput.value.length == 0) {
-                              setRequesterSearchResults(null);
-                            } else {
-                              const matches = await client
-                                .index('atlas-requests-users')
-                                .search(searchInput.value, { limit: 20 });
-
-                              if (matches.hits.length > 0) {
-                                setRequesterSearchResults(
-                                  <>
-                                    {matches.hits.map((user) => (
-                                      <MiniUser
-                                        key={user.id}
-                                        user={user}
-                                        onClick={() => {
-                                          setRequester(user);
-                                          setRequesterSearchResults(null);
-                                          searchInput.value = '';
-                                        }}
-                                        linkToUser={false}
-                                      />
-                                    ))}
-                                  </>,
-                                );
-                              } else {
-                                setRequesterSearchResults(
-                                  <strong className="py-2 px-3 is-block ">
-                                    No matches.
-                                  </strong>,
-                                );
-                              }
-                            }
-                          }}
-                        />
-                      </div>
-                      <hr />
-
-                      {requesterSearchResults || (
-                        <>
-                          <strong className="py-2 px-3 is-block ">
-                            Suggestions
-                          </strong>
-                          <hr />
-                          <MiniUser
-                            user={user}
-                            onClick={() => {
-                              setRequester(user);
-                              setRequesterSearchResults(null);
-                            }}
-                          />
-                          ... boss or others?
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  <input
-                    type="hidden"
-                    ref={requestedForRef}
-                    name="requestedFor"
-                    value={requester.id}
-                    onInput={(
-                      event: React.SyntheticEvent<HTMLInputElement>,
-                    ) => {
-                      const input = event.target as HTMLInputElement;
-                      resetInput(input);
-                    }}
-                  />
-                  <MiniUser user={requester}>
-                    {requester.id !== user.id && (
-                      <span
-                        className="is-pulled-right has-text-link"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setRequester(user);
-                        }}
-                      >
-                        set back to me
-                      </span>
-                    )}
-                  </MiniUser>
-
-                  {actionData?.errors?.requestedFor && (
-                    <p className="help is-danger">
-                      {actionData.errors.requestedFor}
-                    </p>
-                  )}
-                </div>
-                <hr />
-              </>
+              <RequesterSelector
+                ref={requestedForRef}
+                me={user}
+                user={user}
+                actionData={actionData}
+                MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+              />
             )}
 
             {selectedType.showRecipients && (
-              <>
-                <div className="field">
-                  <label className="label has-text-grey is-flex is-justify-content-space-between mb-4">
-                    <span>Recipients</span>
-                    <span className="icon mr-2">
-                      <FontAwesomeIcon icon={faPencil} />
-                    </span>
-                  </label>
-                  <div className="control">
-                    <input
-                      ref={recipientsRef}
-                      name="recipients"
-                      type="hidden"
-                      onInput={(
-                        event: React.SyntheticEvent<HTMLInputElement>,
-                      ) => {
-                        const input = event.target as HTMLInputElement;
-                        resetInput(input);
-                      }}
-                    />
-                  </div>
-                  No one—
-                  <span className="is-clickable has-text-link">
-                    add yourself
-                  </span>
-                  {actionData?.errors?.recipients && (
-                    <p className="help is-danger">
-                      {actionData.errors.recipients}
-                    </p>
-                  )}
-                </div>
-                <hr />
-              </>
+              <RecipientSelector
+                ref={requestedForRef}
+                me={user}
+                recipients={undefined}
+                actionData={actionData}
+                MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+              />
             )}
             {selectedType.showTags && (
               <>
