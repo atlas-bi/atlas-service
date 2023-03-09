@@ -47,7 +47,7 @@ export async function loader({ request, params }: LoaderArgs) {
         { name: 'Schedule', id: 'showSchedule' },
         { name: 'Requester', id: 'showRequester' },
         { name: 'Recipients', id: 'showRecipients' },
-        { name: 'Tags', id: 'showTags' },
+        { name: 'Labels', id: 'showLabels' },
         { name: 'Export to Excel', id: 'showExportToExcel' },
         { name: 'Regulatory', id: 'showRegulatory' },
         { name: 'Supports an Initiative', id: 'showSupportsInitiative' },
@@ -87,7 +87,7 @@ export async function action({ request }: ActionArgs) {
         showSupportsInitiative,
         showRegulatory,
         showExportToExcel,
-        showTags,
+        showLabels,
         showRecipients,
         showRequester,
         showSchedule,
@@ -105,7 +105,7 @@ export async function action({ request }: ActionArgs) {
         showSupportsInitiative: showSupportsInitiative === 'on',
         showRegulatory: showRegulatory === 'on',
         showExportToExcel: showExportToExcel === 'on',
-        showTags: showTags === 'on',
+        showLabels: showLabels === 'on',
         showRecipients: showRecipients === 'on',
         showRequester: showRequester === 'on',
         showSchedule: showSchedule === 'on',
@@ -131,7 +131,7 @@ export async function action({ request }: ActionArgs) {
         showSupportsInitiative,
         showRegulatory,
         showExportToExcel,
-        showTags,
+        showLabels,
         showRecipients,
         showRequester,
         showSchedule,
@@ -148,7 +148,7 @@ export async function action({ request }: ActionArgs) {
         showSupportsInitiative: showSupportsInitiative === 'on',
         showRegulatory: showRegulatory === 'on',
         showExportToExcel: showExportToExcel === 'on',
-        showTags: showTags === 'on',
+        showLabels: showLabels === 'on',
         showRecipients: showRecipients === 'on',
         showRequester: showRequester === 'on',
         showSchedule: showSchedule === 'on',
@@ -272,8 +272,8 @@ export default function Index() {
   return (
     <div className="container">
       <h1 className="title is-1">Site Configuration</h1>
+      should ask also if the field is required or not.
       <h2 className="is-2 title">Request Types</h2>
-
       <div className="columns">
         <div className="column is-narrow pr-0 has-text-right">
           <label className="label py-3 my-0 mr-3">Name</label>
@@ -330,7 +330,6 @@ export default function Index() {
                     ))}
               </div>*/}
       </div>
-
       {requestCategories && (
         <div className="field is-grouped is-grouped-multiline">
           {requestCategories.map((category: RequestCategory) => (

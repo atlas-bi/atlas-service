@@ -1,8 +1,12 @@
 import type { Group, User } from '@prisma/client';
+import { MeiliSearch } from 'meilisearch';
 import { prisma } from '~/db.server';
-
 // export type { User, Group } from '@prisma/client';
+import { loadGroup, loadUser } from '~/search.server';
 
+const userIndex = 'atlas-requests-users';
+
+const client = new MeiliSearch({ host: process.env.MEILISEARCH_URL });
 export async function getUserById(id: User['id']) {
   return prisma.user.findUnique({ where: { id }, include: { groups: true } });
 }
@@ -12,19 +16,37 @@ async function getUserByEmail(email: User['email']) {
 }
 
 async function createUser(email: User['email']) {
-  return prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       email,
     },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      profilePhoto: true,
+    },
   });
+
+  await loadUser(user);
+
+  return user;
 }
 
 async function createGroup(name: Group['name']) {
-  return prisma.group.create({
+  const group = await prisma.group.create({
     data: {
       name,
     },
+    select: {
+      id: true,
+      name: true,
+    },
   });
+
+  await loadGroup(group);
+  return group;
 }
 async function getGroupByName(name: Group['name']) {
   return prisma.group.findUnique({ where: { name } });
@@ -66,9 +88,9 @@ export async function updateUserProps(
   const newGroupIds = groupModels.map((group: Group) => Number(group.id));
   const removedGroups = existingGroups?.groups
     .filter((group) => !newGroupIds.includes(group.id))
-    .map(({ id }) => ({ id }));
+    ?.map(({ id }) => ({ id }));
 
-  return prisma.user.update({
+  const user = await prisma.user.update({
     where: { email },
     data: {
       firstName,
@@ -81,5 +103,17 @@ export async function updateUserProps(
         disconnect: removedGroups,
       },
     },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      profilePhoto: true,
+    },
   });
+  await client
+    .index(userIndex)
+    .addDocuments([user])
+    .then((res) => console.log(res));
+  return user;
 }

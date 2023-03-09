@@ -2,7 +2,8 @@ import type { Request, User } from '@prisma/client';
 import { type Session, json } from '@remix-run/node';
 import { NavLink, useLoaderData } from '@remix-run/react';
 import type { LoaderArgs } from '@remix-run/server-runtime';
-import { getRequestListItems } from '~/models/request.server';
+import { getRequests } from '~/models/request.server';
+import searchRefreshQueue from '~/queues/search_refresh.server';
 import { authorize } from '~/session.server';
 
 // import greetingsQueue from "~/queues/greetings.server";
@@ -12,7 +13,8 @@ export async function loader({ request }: LoaderArgs) {
     request,
     undefined,
     async ({ user, session }: { user: User; session: Session }) => {
-      const requests = await getRequestListItems({ userId: user.id });
+      // await searchRefreshQueue.enqueue(null);
+      const requests = await getRequests({ userId: user.id });
       return json({ user, requests });
     },
   );
@@ -40,7 +42,7 @@ export default function Index() {
                     📝 {request.name} {request.id}
                   </div>
                   <div className="list-item-description">
-                    List item description fasdf sadf asdf asdfasdf
+                    {request.descriptionText}
                   </div>
                 </div>
               </NavLink>

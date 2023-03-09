@@ -22,7 +22,7 @@ export async function getRequestTypes() {
       showSupportsInitiative: true,
       showDescription: true,
       showRequester: true,
-      showTags: true,
+      showLabels: true,
     },
   });
 }
@@ -48,7 +48,7 @@ export async function getRequestType({ id }) {
       showSupportsInitiative: true,
       showDescription: true,
       showRequester: true,
-      showTags: true,
+      showLabels: true,
     },
   });
 }

@@ -23,6 +23,9 @@ model User {
   myRequests          Request[]         @relation("RequestRequester")
   requestTypesCreated RequestType[]
   categoriesCreated   RequestCategory[]
+  subscribedRequests  Request[]         @relation("RequestSubsciber")
+  recievingReports    Request[]         @relation("ReportRecipient")
+  myCreatedLabel      Label[]           @relation("LabelCreator")
 }
 
 model Group {
@@ -77,9 +80,20 @@ model RequestType {
   showSupportsInitiative Boolean   @default(true)
   showDescription        Boolean   @default(true)
   showRequester          Boolean   @default(true)
-  showTags               Boolean   @default(true)
+  showLabels             Boolean   @default(true)
   creator                User      @relation(fields: [creatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   creatorId              Int
+}
+
+model Label {
+  id          Int       @id @default(autoincrement())
+  name        String
+  color       String?
+  description String?
+  createdAt   DateTime  @default(now())
+  requests    Request[]
+  creator     User      @relation(name: "LabelCreator", fields: [creatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  creatorId   Int
 }
 
 model Request {
@@ -87,15 +101,24 @@ model Request {
   name               String?
   atlasId            Int?
   purpose            String?
+  purposeText        String?
   criteria           String?
+  criteriaText       String?
   parameters         String?
+  parametersText     String?
   schedule           String?
-  recipients         String?
+  scheduleText       String?
   exportToExcel      String?
   regulatory         String?
   supportsInitiative String?
   description        String?
+  descriptionText    String?
   devNotes           String?
+  devNotesText       String?
+
+  subscribers User[]  @relation("RequestSubsciber")
+  recipients  User[]  @relation("ReportRecipient")
+  labels      Label[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

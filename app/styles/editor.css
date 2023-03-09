@@ -48,15 +48,16 @@
   font-style: italic;
 }
 .editor-text-underline {
+  -webkit-text-decoration: underline;
   text-decoration: underline;
 }
 .editor-text-strikethrough {
+  -webkit-text-decoration: line-through;
   text-decoration: line-through;
 }
 .editor-text-underlineStrikethrough {
-  text-decoration: line-through;
-  -webkit-text-decoration: line-through solid currentColor;
-  text-decoration: line-through solid currentColor;
+  -webkit-text-decoration: underline line-through;
+  text-decoration: underline line-through;
 }
 .editor-text-code {
   background-color: #f0f2f5;
@@ -66,6 +67,7 @@
 }
 .editor-link {
   color: #216fdb;
+  -webkit-text-decoration: none;
   text-decoration: none;
 }
 .editor-code {
@@ -430,11 +432,13 @@ i.chevron-down {
   display: block;
   margin-right: 30px;
   overflow: hidden;
+  -webkit-text-decoration: none;
   text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .link-editor .link-input a:hover {
+  -webkit-text-decoration: underline;
   text-decoration: underline;
 }
 .link-editor .button {

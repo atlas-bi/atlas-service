@@ -1,46 +1,23 @@
+import ldap from 'ldapjs-promise';
 import { CronJob } from 'quirrel/remix';
+import invariant from 'tiny-invariant';
 import { updateUserProps } from '~/models/user.server';
 import searchRefreshQueue from '~/queues/search_refresh.server';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const SimpleLDAP = require('simple-ldap-search').default;
-
 // scheduled for 1 AM UTC.
 export default CronJob('/queues/user_refresh', '0 7 * * *', async () => {
-  if (!process.env.LDAP_EMAIL_FIELD) {
-    throw 'LDAP_EMAIL_FIELD is missing from configuration.';
-  }
-
-  if (!process.env.LDAP_FIRSTNAME) {
-    throw 'LDAP_FIRSTNAME is missing from configuration.';
-  }
-
-  if (!process.env.LDAP_LASTNAME) {
-    throw 'LDAP_LASTNAME is missing from configuration.';
-  }
-
-  if (!process.env.LDAP_GROUP_NAME) {
-    throw 'LDAP_GROUP_NAME is missing from configuration.';
-  }
+  invariant(process.env.LDAP_USER_SEARCH, 'LDAP_USER_SEARCH not found');
+  invariant(process.env.LDAP_GROUP_SEARCH, 'LDAP_GROUP_SEARCH not found');
+  invariant(process.env.LDAP_EMAIL_FIELD, 'LDAP_EMAIL_FIELD not found');
+  invariant(process.env.LDAP_FIRSTNAME, 'LDAP_FIRSTNAME not found');
+  invariant(process.env.LDAP_LASTNAME, 'LDAP_LASTNAME not found');
+  invariant(process.env.LDAP_GROUP_NAME, 'LDAP_GROUP_NAME not found');
 
   const EmailField: string = process.env.LDAP_EMAIL_FIELD || '';
   const FirstnameField: string = process.env.LDAP_FIRSTNAME || '';
   const LastnameField: string = process.env.LDAP_LASTNAME || '';
   const GroupNameField: string = process.env.LDAP_GROUP_NAME || '';
   const ProfilePhotoField: string = process.env.LDAP_PHOTO_FIELD || '';
-
-  const config = {
-    url: process.env.LDAP_HOST,
-    base: process.env.LDAP_BASE_DN,
-    dn: process.env.LDAP_USERNAME,
-    password: process.env.LDAP_PASSWORD,
-    // optionally pass tls options to ldapjs
-    // tlsOptions: {
-    //   // tls options ...
-    // },
-  };
-
-  const ldap = new SimpleLDAP(config);
 
   type AttributeType = {
     cn: string;
@@ -61,27 +38,57 @@ export default CronJob('/queues/user_refresh', '0 7 * * *', async () => {
   attributes[GroupNameField] = '';
   attributes[ProfilePhotoField] = '';
 
-  const users = await ldap.search(
-    `(objectClass=${process.env.LDAP_USER_CLASS})`,
-    Object.keys(attributes),
-  );
-  const groups = await ldap.search(
-    `(objectClass=${process.env.LDAP_GROUP_CLASS})`,
-    Object.keys(attributes),
-  );
-  ldap.destroy();
+  const password = process.env.LDAP_PASSWORD;
+  const dn = process.env.LDAP_USERNAME;
+  const url = process.env.LDAP_HOST;
+  const base = process.env.LDAP_BASE_DN;
 
-  users.forEach(async (user: AttributeType) => {
+  const userConfig = {
+    // email is required.
+    filter: process.env.LDAP_USER_SEARCH,
+    paged: {
+      pageSize: 500,
+    },
+    scope: 'sub',
+    attributes: Object.keys(attributes),
+  };
+
+  const groupConfig = {
+    // email is required.
+    filter: process.env.LDAP_GROUP_SEARCH,
+    paged: {
+      pageSize: 500,
+    },
+    scope: 'sub',
+    attributes: Object.keys(attributes),
+  };
+
+  const loadUser = async (user: AttributeType, groups) => {
     let profilePhoto = null;
 
-    if (process.env.LDAP_PHOTO_FIELD) {
+    if (process.env.LDAP_PHOTO_FIELD && user[process.env.LDAP_PHOTO_FIELD]) {
       try {
-        profilePhoto = Buffer.from(
-          user[process.env.LDAP_PHOTO_FIELD]
-            .split(' ')
-            .map((e: string) => parseInt(e)),
-        ).toString('base64');
-      } catch {}
+        //for bytestrings (8 120 99 ...)
+        if (
+          !isNaN(
+            user[process.env.LDAP_PHOTO_FIELD].toString().replace(/\s*/g, ''),
+          )
+        ) {
+          profilePhoto = Buffer.from(
+            user[process.env.LDAP_PHOTO_FIELD]
+              .split(' ')
+              .map((e: string) => parseInt(e)),
+          ).toString('base64');
+        } else {
+          // for true jpeg buffers
+          profilePhoto = Buffer.from(
+            user.raw[process.env.LDAP_PHOTO_FIELD],
+            'binary',
+          ).toString('base64');
+        }
+      } catch (e) {
+        console.log(e);
+      }
     }
 
     await updateUserProps(
@@ -91,7 +98,7 @@ export default CronJob('/queues/user_refresh', '0 7 * * *', async () => {
       process.env.LDAP_GROUP_NAME
         ? groups
             .filter(
-              (group: AttributeType) => group.member.indexOf(user.dn) !== -1,
+              (group: AttributeType) => group.member?.indexOf(user.dn) !== -1,
             )
             .map(
               (group: AttributeType) =>
@@ -100,7 +107,25 @@ export default CronJob('/queues/user_refresh', '0 7 * * *', async () => {
         : undefined,
       profilePhoto,
     );
-  });
+  };
+
+  const client = await ldap.createClient({ url });
+  await client.bind(dn, password);
+
+  // get groups
+  const groups = [];
+
+  const groupResults = await client.searchReturnAll(base, groupConfig);
+
+  groups.push(...groupResults.entries);
+
+  const userPage = await client.searchReturnAll(base, userConfig);
+
+  for (const user of userPage.entries) {
+    await loadUser(user, groups);
+  }
+
+  await client.destroy();
 
   await searchRefreshQueue.enqueue(null);
 });

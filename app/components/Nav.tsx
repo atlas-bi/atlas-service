@@ -17,26 +17,34 @@ export default function Nav() {
   const requestDropdownMenu = useRef<HTMLDivElement>(null);
   const profileDropdownMenu = useRef<HTMLDivElement>(null);
   const [isMenuActive, setIsMenuActive] = useState(false);
-
-  const closeDropdowns = () => {
-    const dropdowns = document.querySelectorAll(
-      '.has-dropdown.is-active:not(.is-hoverable)',
-    );
-    dropdowns.forEach((el) => {
-      el.classList.remove('is-active');
-    });
-  };
+  const [showNewRequestDropdown, setShowNewRequestDropdown] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   useEffect(() => {
-    window.onclick = (e) => {
-      if (!(e.target as HTMLElement)?.closest('.dropdown-button')) {
-        closeDropdowns();
-      }
-    };
+    window.addEventListener(
+      'click',
+      (e) => {
+        if (
+          requestDropdownMenu.current &&
+          !requestDropdownMenu.current.contains(event.target as Node)
+        ) {
+          setShowNewRequestDropdown(false);
+        }
+
+        if (
+          profileDropdownMenu.current &&
+          !profileDropdownMenu.current.contains(event.target as Node)
+        ) {
+          setShowProfileDropdown(false);
+        }
+      },
+      { capture: true },
+    );
     window.addEventListener('keydown', (event) => {
       const e = event || window.event;
       if (e.key === 'Esc' || e.key === 'Escape') {
-        closeDropdowns();
+        setShowNewRequestDropdown(false);
+        setShowProfileDropdown(false);
       }
     });
   }, []);
@@ -130,12 +138,16 @@ export default function Nav() {
               <span className="hide-desktop">Mail</span>
             </div>
 
-            <div ref={requestDropdownMenu} className="navbar-item has-dropdown">
+            <div
+              ref={requestDropdownMenu}
+              className={`navbar-item has-dropdown ${
+                showNewRequestDropdown && 'is-active'
+              }`}
+            >
               <button
                 className="button is-arrowless has-background-white-bis dropdown-button my-auto "
                 onClick={(e) => {
-                  closeDropdowns();
-                  requestDropdownMenu.current?.classList.toggle('is-active');
+                  setShowNewRequestDropdown(true);
                 }}
               >
                 <span className="icon mr-2 has-text-gold">
@@ -151,6 +163,9 @@ export default function Nav() {
                       key={rt.id}
                       className="navbar-item"
                       to={`/request/new?type=${rt.id}`}
+                      onClick={(e) => {
+                        setShowNewRequestDropdown(false);
+                      }}
                     >
                       {rt.menuText || rt.name}
                     </Link>
@@ -158,14 +173,17 @@ export default function Nav() {
               </div>
             </div>
             <div
-              className="navbar-item has-dropdown"
+              className={`navbar-item has-dropdown ${
+                showProfileDropdown && 'is-active'
+              }`}
               ref={profileDropdownMenu}
-              onClick={(e) => {
-                closeDropdowns();
-                profileDropdownMenu.current?.classList.toggle('is-active');
-              }}
             >
-              <div className="navbar-link is-arrowless dropdown-button">
+              <div
+                className="navbar-link is-arrowless dropdown-button"
+                onClick={(e) => {
+                  setShowProfileDropdown(true);
+                }}
+              >
                 {user.profilePhoto ? (
                   <figure className="image is-32x32">
                     <img
@@ -173,32 +191,35 @@ export default function Nav() {
                       loading="lazy"
                       alt="profile"
                       className="remix-image is-rounded profile"
-                      src={`data:image/png;base64,${user.profilePhoto}`}
+                      src={`data:image/*;base64,${user.profilePhoto}`}
                     />
                   </figure>
                 ) : (
                   'Profile'
                 )}
               </div>
-              <div className="navbar-dropdown is-boxed is-right">
-                <a className="navbar-item" href="/users">
+              <div
+                className="navbar-dropdown is-boxed is-right"
+                onClick={() => setShowProfileDropdown(false)}
+              >
+                <Link className="navbar-item" to="/users">
                   Your profile
-                </a>
-                <a className="navbar-item" href="/users#stars">
+                </Link>
+                <Link className="navbar-item" to="/users#stars">
                   Your stars
-                </a>
+                </Link>
                 <hr className="navbar-divider" />
-                <a className="navbar-item" href="/users/settings">
+                <Link className="navbar-item" to="/users/settings">
                   Settings
-                </a>
+                </Link>
                 <hr className="navbar-divider" />
-                <a className="navbar-item" href="/admin/config">
+                <Link className="navbar-item" to="/admin/config">
                   Site Configuration
-                </a>
+                </Link>
                 <hr className="navbar-divider" />
-                <a className="navbar-item" href="/logout">
+                <Link className="navbar-item" to="/logout">
                   Sign out
-                </a>
+                </Link>
               </div>
             </div>
           </div>

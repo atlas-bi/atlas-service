@@ -13,12 +13,17 @@ import * as React from 'react';
 import invariant from 'tiny-invariant';
 import {
   deleteRequest,
+  editLabels,
+  editRecipients,
   editRequester,
   getRequest,
 } from '~/models/request.server';
+import { labelIndex, userIndex } from '~/search.server';
 import { authorize, requireUser } from '~/session.server';
 
 import EditorReader from '../../components/EditorReader';
+import { LabelSelector } from '../../components/Labels';
+import { RecipientSelector } from '../../components/Recipients';
 import { RequesterSelector } from '../../components/Requester';
 import { MiniUser } from '../../components/User';
 
@@ -39,13 +44,13 @@ export async function loader({ request, params }: LoaderArgs) {
         user,
         thisRequest,
         ENV: { MEILISEARCH_URL: process.env.MEILISEARCH_URL },
+        search: { labelIndex, userIndex },
       });
     },
   );
 }
 
 export async function action({ request, params }: ActionArgs) {
-  console.log('action!');
   const user = await requireUser(request);
   const userId = user?.id;
   invariant(params.requestId, 'requestId not found');
@@ -57,11 +62,26 @@ export async function action({ request, params }: ActionArgs) {
 
   switch (_action) {
     case 'editRequester': {
-      console.log('changing requester');
-      console.log(values);
       const requestedFor = Number(values.requestedFor);
       await editRequester({
         requestedFor,
+        userId,
+        id: Number(params.requestId),
+      });
+      break;
+    }
+    case 'editRecipients': {
+      await editRecipients({
+        recipients: formData.getAll('recipients'),
+        userId,
+        id: Number(params.requestId),
+      });
+      break;
+    }
+    case 'editLabels': {
+      console.log(formData.getAll('labels'));
+      await editLabels({
+        labels: formData.getAll('labels'),
         userId,
         id: Number(params.requestId),
       });
@@ -75,7 +95,7 @@ export async function action({ request, params }: ActionArgs) {
 }
 
 export default function RequestDetailsPage() {
-  const { thisRequest, ENV, user } = useLoaderData<typeof loader>();
+  const { thisRequest, ENV, user, search } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const descriptionRef = React.useRef<HTMLInputElement>(null);
   const purposeRef = React.useRef<HTMLInputElement>(null);
@@ -83,6 +103,8 @@ export default function RequestDetailsPage() {
   const parametersRef = React.useRef<HTMLInputElement>(null);
   const scheduleRef = React.useRef<HTMLInputElement>(null);
   const changeRequester = React.useRef<HTMLFormElement>(null);
+  const changeRecipients = React.useRef<HTMLFormElement>(null);
+  const changeLabels = React.useRef<HTMLFormElement>(null);
   const requestedForRef = React.useRef<HTMLInputElement>(null);
   const [requesterSearchResults, setRequesterSearchResults] =
     React.useState(null);
@@ -181,6 +203,36 @@ export default function RequestDetailsPage() {
               user={thisRequest.requester}
               actionData={actionData}
               MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+              searchIndex={search.userIndex}
+            />
+          </Form>
+
+          <Form method="post" ref={changeRecipients}>
+            <input type="hidden" name="_action" value="editRecipients" />
+            <RecipientSelector
+              onChange={() => {
+                submitRequester(changeRecipients.current, { replace: true });
+              }}
+              action="editRecipients"
+              recipients={thisRequest.recipients}
+              me={user}
+              actionData={actionData}
+              MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+              searchIndex={search.userIndex}
+            />
+          </Form>
+
+          <Form method="post" ref={changeLabels}>
+            <input type="hidden" name="_action" value="editLabels" />
+            <LabelSelector
+              onChange={() => {
+                submitRequester(changeLabels.current, { replace: true });
+              }}
+              labels={thisRequest.labels}
+              actionData={actionData}
+              MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+              searchIndex={search.labelIndex}
+              action="editLabels"
             />
           </Form>
 

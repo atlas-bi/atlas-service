@@ -6,7 +6,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Fragment, useEffect, useRef, useState } from 'react';
 
-export default function CheckRemove({ children }) {
+export default function CheckRemove({ children, onClick }) {
   const [check, setCheck] = useState(faCheck);
   return (
     <div
@@ -17,6 +17,7 @@ export default function CheckRemove({ children }) {
       onMouseLeave={() => {
         setCheck(faCheck);
       }}
+      onClick={onClick}
     >
       <span className="icon my-auto has-text-grey mx-2">
         <FontAwesomeIcon icon={check} />

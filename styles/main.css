@@ -8654,7 +8654,9 @@ a.has-text-white:focus {
   color: #e6e6e6 !important;
 }
 
-.has-background-white {
+.has-background-white,
+.tag > span + span:after,
+.tag > span + span {
   background-color: hsl(0, 0%, 100%) !important;
 }
 
@@ -9315,7 +9317,8 @@ a.has-text-danger-dark:focus {
   margin-bottom: 0.25rem !important;
 }
 
-.ml-1 {
+.ml-1,
+.tag > span + span {
   margin-left: 0.25rem !important;
 }
 
@@ -9559,7 +9562,8 @@ a.has-text-danger-dark:focus {
   padding-bottom: 0.25rem !important;
 }
 
-.pl-1 {
+.pl-1,
+.tag > span + span {
   padding-left: 0.25rem !important;
 }
 
@@ -12552,6 +12556,25 @@ body {
   ) !important;
 }
 
+.tag > span {
+  height: calc(100% - 4px);
+}
+.tag > span + span {
+  position: relative;
+  margin-right: 2px;
+  padding-right: 1px;
+}
+.tag > span + span:after {
+  position: absolute;
+  content: '';
+  top: 0;
+  bottom: 0;
+  border-bottom-right-radius: 99999px;
+  border-top-right-radius: 99999px;
+  height: 100%;
+  aspect-ratio: 1/2;
+}
+
 .navbar-dropdown.is-boxed:after {
   margin-left: 1px;
   position: absolute;
@@ -12609,6 +12632,33 @@ body {
   display: block;
 }
 
+.delete.is-light {
+  background-color: transparent;
+}
+.delete.is-light::after,
+.delete.is-light::before {
+  background-color: hsl(0, 0%, 48%);
+}
+
+.input.semi-disabled:not(:focus),
+.semi-disabled.editable:not(:focus) {
+  background-color: hsl(0, 0%, 98%);
+}
+
+.modal.is-light .modal-background {
+  background-color: rgba(1, 1, 1, 0.5);
+}
+.modal.is-light.is-top {
+  justify-content: initial;
+}
+.modal.is-light.is-top .modal-card {
+  margin: 10vh auto;
+}
+.modal.is-light + :last-child {
+  border-bottom-right-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
 .popout {
   position: relative;
 }
@@ -12623,6 +12673,7 @@ body {
   width: 300px;
   left: 0;
   background-color: hsl(0, 0%, 100%);
+  overflow: hidden;
 }
 .popout .popout-menu .popout-content {
   border-radius: inherit;

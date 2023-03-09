@@ -10,12 +10,16 @@ import {
 } from '@remix-run/node';
 import { Form, Link, useActionData, useLoaderData } from '@remix-run/react';
 import type { EditorState } from 'lexical';
+import { $getRoot, $getSelection } from 'lexical';
 import * as React from 'react';
 import { getRequestType, getRequestTypes } from '~/models/config.server';
+import { createLabel } from '~/models/label.server';
 import { createRequest } from '~/models/request.server';
+import { labelIndex, userIndex } from '~/search.server';
 import { authorize, requireUser } from '~/session.server';
 
 import Editor from '../../components/Editor';
+import { LabelSelector } from '../../components/Labels';
 import { RecipientSelector } from '../../components/Recipients';
 import { RequesterSelector } from '../../components/Requester';
 import { MiniUser } from '../../components/User';
@@ -43,6 +47,7 @@ export async function loader({ request }: LoaderArgs) {
         user,
         selectedType,
         ENV: { MEILISEARCH_URL: process.env.MEILISEARCH_URL },
+        search: { labelIndex, userIndex },
       });
     },
   );
@@ -53,19 +58,36 @@ export async function action({ request }: ActionArgs) {
   const userId = user?.id;
 
   const formData = await request.formData();
+  const { _action } = Object.fromEntries(formData);
+
+  if (_action === 'newLabel') {
+    console.log('new label');
+
+    const { name, description, color } = Object.fromEntries(formData);
+
+    return json({
+      newLabel: await createLabel({ userId, name, description, color }),
+    });
+  } else if (_action !== 'newRequest') return null;
 
   const name = formData.get('name') as string;
   const requestedFor = formData.get('requestedFor');
   const type = formData.get('type');
-  const recipients = formData.get('recipients');
+  const recipients = formData.getAll('recipients');
+  const labels = formData.getAll('labels');
   const excel = formData.get('excel');
   const initiative = formData.get('initiative');
   const regulatory = formData.get('regulatory');
   const description = formData.get('description');
+  const descriptionText = formData.get('descriptionText');
   const purpose = formData.get('purpose');
+  const purposeText = formData.get('purposeText');
   const criteria = formData.get('criteria');
+  const criteriaText = formData.get('criteriaText');
   const parameters = formData.get('parameters');
+  const parametersText = formData.get('parametersText');
   const schedule = formData.get('schedule');
+  const scheduleText = formData.get('scheduleText');
 
   const requestType = await getRequestType({ id: Number(type) });
 
@@ -74,6 +96,7 @@ export async function action({ request }: ActionArgs) {
     requestedFor?: string;
     type?: string;
     recipients?: string;
+    labels?: string;
     description?: string;
     purpose?: string;
     criteria?: string;
@@ -93,9 +116,15 @@ export async function action({ request }: ActionArgs) {
 
   if (
     requestType.showRecipients &&
-    (typeof recipients !== 'string' || recipients.length === 0)
+    (typeof recipients !== 'object' || recipients.length === 0)
   ) {
     errors.recipients = 'Recipients are required';
+  }
+  if (
+    requestType.showLabels &&
+    (typeof labels !== 'object' || labels.length === 0)
+  ) {
+    errors.labels = 'Labels are required';
   }
 
   if (
@@ -152,26 +181,34 @@ export async function action({ request }: ActionArgs) {
     name,
     userId,
     purpose,
+    purposeText,
     schedule,
+    scheduleText,
     parameters,
+    parametersText,
     criteria,
+    criteriaText,
     description,
+    descriptionText,
     type,
     excel,
     initiative,
     regulatory,
+    recipients,
+    labels,
   });
 
   return redirect(`/request/${thisRequest.id}`);
 }
 
 export default function NewRequestPage() {
-  const { requestTypes, user, selectedType, ENV } =
+  const { requestTypes, user, selectedType, ENV, search } =
     useLoaderData<typeof loader>();
 
   const actionData = useActionData<typeof action>();
 
   const requestedForRef = React.useRef<HTMLInputElement>(null);
+  const labelRef = React.useRef<HTMLInputElement>(null);
   const typeRef = React.useRef<HTMLSelectElement>(null);
   const nameRef = React.useRef<HTMLInputElement>(null);
   const recipientsRef = React.useRef<HTMLInputElement>(null);
@@ -179,10 +216,15 @@ export default function NewRequestPage() {
   const initiativeRef = React.useRef<HTMLInputElement>(null);
   const regulatoryRef = React.useRef<HTMLInputElement>(null);
   const descriptionRef = React.useRef<HTMLInputElement>(null);
+  const descriptionTextRef = React.useRef<HTMLInputElement>(null);
   const purposeRef = React.useRef<HTMLInputElement>(null);
+  const purposeTextRef = React.useRef<HTMLInputElement>(null);
   const criteriaRef = React.useRef<HTMLInputElement>(null);
+  const criteriaTextRef = React.useRef<HTMLInputElement>(null);
   const parametersRef = React.useRef<HTMLInputElement>(null);
+  const parametersTextRef = React.useRef<HTMLInputElement>(null);
   const scheduleRef = React.useRef<HTMLInputElement>(null);
+  const scheduleTextRef = React.useRef<HTMLInputElement>(null);
 
   const descriptionWarningRef = React.useRef<HTMLParagraphElement>(null);
   const purposeWarningRef = React.useRef<HTMLParagraphElement>(null);
@@ -196,16 +238,7 @@ export default function NewRequestPage() {
   const parametersEditor = React.useRef<HTMLDivElement>();
   const scheduleEditor = React.useRef<HTMLDivElement>();
 
-  const requesterPopout = React.useRef<HTMLDivElement>();
-
   const [activeEditor, setActiveEditor] = React.useState(descriptionEditor);
-
-  const [requesterSearchResults, setRequesterSearchResults] =
-    React.useState(null);
-
-  const [requester, setRequester] = React.useState(user);
-
-  const client = new MeiliSearch({ host: ENV.MEILISEARCH_URL });
 
   React.useEffect(() => {
     if (actionData?.errors?.name) {
@@ -246,6 +279,7 @@ export default function NewRequestPage() {
   return (
     <div className="container">
       <Form method="post" className="form">
+        <input type="hidden" name="_action" value="newRequest" />
         <div className="columns">
           <div className="column">
             <h3 className="title is-3 mb-1">{selectedType.name}</h3>
@@ -335,6 +369,14 @@ export default function NewRequestPage() {
                     onChange={(editorState: EditorState) => {
                       setActiveEditor(descriptionEditor);
                       descriptionWarningRef.current?.remove();
+                      editorState.read(() => {
+                        const root = $getRoot().getTextContent();
+                        if (descriptionTextRef.current) {
+                          descriptionTextRef.current.value =
+                            $getRoot().getTextContent();
+                        }
+                      });
+
                       if (descriptionRef.current)
                         descriptionRef.current.value =
                           JSON.stringify(editorState);
@@ -345,6 +387,11 @@ export default function NewRequestPage() {
                     type="hidden"
                     ref={descriptionRef}
                     name="description"
+                  />
+                  <input
+                    type="hidden"
+                    ref={descriptionTextRef}
+                    name="descriptionText"
                   />
                 </>
               )}
@@ -363,12 +410,26 @@ export default function NewRequestPage() {
                     onChange={(editorState: EditorState) => {
                       setActiveEditor(purposeEditor);
                       purposeWarningRef.current?.remove();
+
+                      editorState.read(() => {
+                        const root = $getRoot().getTextContent();
+                        if (purposeTextRef.current) {
+                          purposeTextRef.current.value =
+                            $getRoot().getTextContent();
+                        }
+                      });
+
                       if (purposeRef.current)
                         purposeRef.current.value = JSON.stringify(editorState);
                     }}
                   />
 
                   <input type="hidden" ref={purposeRef} name="purpose" />
+                  <input
+                    type="hidden"
+                    ref={purposeTextRef}
+                    name="purposeText"
+                  />
                 </>
               )}
               {selectedType.showCriteria && (
@@ -385,12 +446,25 @@ export default function NewRequestPage() {
                     onChange={(editorState: EditorState) => {
                       setActiveEditor(criteriaEditor);
                       criteriaWarningRef.current?.remove();
+                      editorState.read(() => {
+                        const root = $getRoot().getTextContent();
+                        if (criteriaTextRef.current) {
+                          criteriaTextRef.current.value =
+                            $getRoot().getTextContent();
+                        }
+                      });
+
                       if (criteriaRef.current)
                         criteriaRef.current.value = JSON.stringify(editorState);
                     }}
                   />
 
                   <input type="hidden" ref={criteriaRef} name="criteria" />
+                  <input
+                    type="hidden"
+                    ref={criteriaTextRef}
+                    name="criteriaText"
+                  />
                 </>
               )}
               {selectedType.showParameters && (
@@ -410,6 +484,13 @@ export default function NewRequestPage() {
                     onChange={(editorState: EditorState) => {
                       setActiveEditor(parametersEditor);
                       parametersWarningRef.current?.remove();
+                      editorState.read(() => {
+                        const root = $getRoot().getTextContent();
+                        if (parametersTextRef.current) {
+                          parametersTextRef.current.value =
+                            $getRoot().getTextContent();
+                        }
+                      });
                       if (parametersRef.current)
                         parametersRef.current.value =
                           JSON.stringify(editorState);
@@ -417,6 +498,11 @@ export default function NewRequestPage() {
                   />
 
                   <input type="hidden" ref={parametersRef} name="parameters" />
+                  <input
+                    type="hidden"
+                    ref={parametersTextRef}
+                    name="parametersText"
+                  />
                 </>
               )}
               {selectedType.showSchedule && (
@@ -433,12 +519,24 @@ export default function NewRequestPage() {
                     onChange={(editorState: EditorState) => {
                       setActiveEditor(scheduleEditor);
                       scheduleWarningRef.current?.remove();
+                      editorState.read(() => {
+                        const root = $getRoot().getTextContent();
+                        if (scheduleTextRef.current) {
+                          scheduleTextRef.current.value =
+                            $getRoot().getTextContent();
+                        }
+                      });
                       if (scheduleRef.current)
                         scheduleRef.current.value = JSON.stringify(editorState);
                     }}
                   />
 
                   <input type="hidden" ref={scheduleRef} name="schedule" />
+                  <input
+                    type="hidden"
+                    ref={scheduleTextRef}
+                    name="scheduleText"
+                  />
                 </>
               )}
               <hr className="mb-0 mx-2" />
@@ -468,17 +566,15 @@ export default function NewRequestPage() {
                 MEILISEARCH_URL={ENV.MEILISEARCH_URL}
               />
             )}
-            {selectedType.showTags && (
-              <>
-                <label className="label has-text-grey is-flex is-justify-content-space-between mb-4">
-                  <span>Tags</span>
-                  <span className="icon mr-2">
-                    <FontAwesomeIcon icon={faPencil} />
-                  </span>
-                </label>
-
-                <hr />
-              </>
+            {selectedType.showLabels && (
+              <LabelSelector
+                ref={labelRef}
+                labels={undefined}
+                actionData={actionData}
+                MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                searchIndex={search.labelIndex}
+                action="newLabel"
+              />
             )}
             {selectedType.showExportToExcel && (
               <>

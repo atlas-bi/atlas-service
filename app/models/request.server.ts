@@ -1,6 +1,7 @@
 import type { Request, User } from '@prisma/client';
 import { prisma } from '~/db.server';
 import smtpQueue from '~/queues/smtp.server';
+import { loadReport } from '~/search.server';
 
 export type { Request } from '@prisma/client';
 
@@ -27,6 +28,23 @@ export function getRequest({ id }: Pick<Request, 'id'>) {
           profilePhoto: true,
         },
       },
+      recipients: {
+        select: {
+          firstName: true,
+          lastName: true,
+          id: true,
+          email: true,
+          profilePhoto: true,
+        },
+      },
+      labels: {
+        select: {
+          id: true,
+          color: true,
+          name: true,
+          description: true,
+        },
+      },
     },
     where: { id: id },
   });
@@ -38,9 +56,7 @@ export const editRequester = async ({
   id,
 }: Pick<Request, 'requestedFor'> & { userId: User['id'] }) => {
   console.log(userId, requestedFor);
-  const request = await prisma.request.findUnique({
-    where: { id },
-  });
+
   await prisma.request.update({
     where: { id },
     data: {
@@ -54,10 +70,65 @@ export const editRequester = async ({
   return;
 };
 
-export function getRequestListItems({ userId }: { userId: User['id'] }) {
+export const editLabels = async ({
+  userId,
+  labels,
+  id,
+}: Pick<Request, 'labels'> & { userId: User['id'] }) => {
+  console.log(userId, labels);
+
+  await prisma.request.update({
+    where: { id },
+    data: {
+      labels: {
+        set: labels.map((x) => ({ id: Number(x) })),
+      },
+    },
+  });
+  return;
+};
+
+export const editRecipients = async ({
+  userId,
+  recipients,
+  id,
+}: Pick<Request, 'recipients'> & { userId: User['id'] }) => {
+  await prisma.request.update({
+    where: { id },
+    data: {
+      recipients: {
+        set: recipients.map((x) => ({ id: Number(x) })),
+      },
+    },
+  });
+  return;
+};
+
+export function getRequests({ userId }: { userId: User['id'] }) {
   return prisma.request.findMany({
     where: { OR: [{ requesterId: userId }, { creatorId: userId }] },
-    select: { id: true, name: true },
+    select: {
+      id: true,
+      name: true,
+      requester: {
+        select: {
+          firstName: true,
+          lastName: true,
+          id: true,
+          email: true,
+          profilePhoto: true,
+        },
+      },
+      descriptionText: true,
+      labels: {
+        select: {
+          id: true,
+          color: true,
+          name: true,
+          description: true,
+        },
+      },
+    },
     orderBy: { updatedAt: 'desc' },
   });
 }
@@ -70,11 +141,18 @@ export async function createRequest({
   parameters,
   criteria,
   description,
+  purposeText,
+  scheduleText,
+  parametersText,
+  criteriaText,
+  descriptionText,
   type,
   excel,
   initiative,
   regulatory,
   requestedFor,
+  recipients,
+  labels,
 }: Pick<
   Request,
   | 'name'
@@ -85,17 +163,24 @@ export async function createRequest({
   | 'description'
   | 'regulatory'
   | 'requestedFor'
+  | 'purposeText'
+  | 'scheduleText'
+  | 'parametersText'
+  | 'criteriaText'
+  | 'descriptionText'
 > & {
   userId: User['id'];
   type: string;
   excel: Request['exportToExcel'];
   initiative: Request['supportsInitiative'];
+  recipients: Request['recipients'][];
+  labels: Request['labels'][];
 }) {
   const defaultCategory = await prisma.requestCategory.findFirst({
     where: { isDefault: true },
     select: { id: true },
   });
-  console.log('cat', defaultCategory);
+
   const request = await prisma.request.create({
     data: {
       name,
@@ -107,6 +192,11 @@ export async function createRequest({
       exportToExcel: excel,
       supportsInitiative: initiative,
       regulatory,
+      purposeText,
+      scheduleText,
+      parametersText,
+      criteriaText,
+      descriptionText,
       creator: {
         connect: {
           id: userId,
@@ -114,9 +204,20 @@ export async function createRequest({
       },
       requester: {
         connect: {
-          id: requestedFor,
+          id: requestedFor || userId,
         },
       },
+      recipients: recipients
+        ? {
+            connect: recipients.map((x) => ({ id: Number(x) })),
+          }
+        : undefined,
+
+      labels: labels
+        ? {
+            connect: labels.map((x) => ({ id: Number(x) })),
+          }
+        : undefined,
 
       category: defaultCategory?.id
         ? {
@@ -136,6 +237,9 @@ export async function createRequest({
   });
 
   await smtpQueue.enqueue(null); //"me","message");
+
+  // send to search
+  await loadReport(request);
   return request;
 }
 

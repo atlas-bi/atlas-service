@@ -78,7 +78,7 @@ export const RequesterSelector = forwardRef(
           <label
             className="popout-trigger"
             onClick={(e) => {
-              setShowRequesterSearch(true);
+              setShowRequesterSearch(!showRequesterSearch);
             }}
           >
             <span>Requester</span>
@@ -95,6 +95,7 @@ export const RequesterSelector = forwardRef(
                 <hr />
                 <div className="py-2 px-3 has-background-white">
                   <input
+                    placeholder="filter users"
                     ref={inputReference}
                     className="input"
                     onChange={async (e) => {
@@ -207,3 +208,5 @@ export const RequesterSelector = forwardRef(
     );
   },
 );
+
+RequesterSelector.displayName = 'Requester Selector';

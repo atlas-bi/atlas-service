@@ -161,6 +161,29 @@ body {
   }
 }
 
+.tag > span {
+  height: calc(100% - 4px);
+  + span {
+    @extend .ml-1;
+    @extend .pl-1;
+    @extend .has-background-white;
+    position: relative;
+    margin-right: 2px;
+    padding-right: 1px;
+    &:after {
+      position: absolute;
+      content: '';
+      top: 0;
+      bottom: 0;
+      @extend .has-background-white;
+      border-bottom-right-radius: 99999px;
+      border-top-right-radius: 99999px;
+      height: 100%;
+      aspect-ratio: 1 / 2;
+    }
+  }
+}
+
 .navbar-dropdown.is-boxed {
   &:after {
     margin-left: 1px;
@@ -219,8 +242,42 @@ body {
   }
 }
 
+.delete {
+  &.is-light {
+    background-color: transparent;
+    &::after,
+    &::before {
+      background-color: $grey;
+    }
+  }
+}
+
+.input {
+  &.semi-disabled:not(:focus) {
+    background-color: $white-bis;
+  }
+}
+
+.modal {
+  &.is-light {
+    .modal-background {
+      background-color: rgba(1, 1, 1, 0.5);
+    }
+    &.is-top {
+      justify-content: initial;
+      .modal-card {
+        margin: 10vh auto;
+      }
+    }
+    + :last-child {
+      border-bottom-right-radius: $radius;
+      border-bottom-left-radius: $radius;
+    }
+  }
+}
 .popout {
   position: relative;
+
   .popout-menu {
     // opacity: 0;
     // display: none;
@@ -233,6 +290,7 @@ body {
     width: 300px;
     left: 0;
     background-color: $white;
+    overflow: hidden;
     .popout-content {
       border-radius: inherit;
       hr {

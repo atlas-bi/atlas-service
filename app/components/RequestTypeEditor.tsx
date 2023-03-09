@@ -70,12 +70,12 @@ const RequestTypeEditor = ({ rt, fields }: { RequestType?; any }) => {
           />
 
           {isEditingType ? (
-            <span class="icon has-text-warning my-auto">
+            <span className="icon has-text-warning my-auto">
               <FontAwesomeIcon icon={faCircleNotch} size="lg" spin />
             </span>
           ) : nameError && !save ? (
-            <div class="icon-text  my-auto has-text-danger is-flex-shrink-0">
-              <span class="icon">
+            <div className="icon-text  my-auto has-text-danger is-flex-shrink-0">
+              <span className="icon">
                 <FontAwesomeIcon icon={faXmark} size="sm" />
               </span>
               <small style={{ whiteSpace: 'nowrap' }}>{nameError}</small>
@@ -83,7 +83,7 @@ const RequestTypeEditor = ({ rt, fields }: { RequestType?; any }) => {
           ) : (
             <>
               <span
-                class="icon has-text-success my-auto"
+                className="icon has-text-success my-auto"
                 style={{
                   transition: 'opacity .2s',
                   transitionDelay: '1s',
@@ -107,7 +107,7 @@ const RequestTypeEditor = ({ rt, fields }: { RequestType?; any }) => {
                 }}
                 onClick={() => {}}
               >
-                <span class="icon">
+                <span className="icon">
                   <FontAwesomeIcon icon={faCheck} />
                 </span>
                 <span>Save</span>

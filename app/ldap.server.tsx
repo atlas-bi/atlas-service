@@ -10,6 +10,7 @@ export async function verifyLogin(email: User['email'], password: string) {
   const options = {
     ldapOpts: {
       url: process.env.LDAP_HOST,
+      includeRaw: true,
     },
     adminDn: process.env.LDAP_USERNAME,
     adminPassword: process.env.LDAP_PASSWORD,
@@ -18,7 +19,7 @@ export async function verifyLogin(email: User['email'], password: string) {
     usernameAttribute: process.env.LDAP_EMAIL_FIELD,
     username: email,
     groupsSearchBase: process.env.LDAP_BASE_DN,
-    groupClass: process.env.LDAP_GROUP_CLASS,
+    groupClass: process.env.LDAP_USER_GROUP,
     // groupMemberAttribute: process.env.LDAP_GROUP_NAME,
     starttls: process.env.LDAP_START_TLS === 'true',
   };
@@ -32,14 +33,34 @@ export async function verifyLogin(email: User['email'], password: string) {
 
     let profilePhoto = null;
 
-    if (process.env.LDAP_PHOTO_FIELD) {
+    if (
+      process.env.LDAP_PHOTO_FIELD &&
+      ldapUser[process.env.LDAP_PHOTO_FIELD]
+    ) {
       try {
-        profilePhoto = Buffer.from(
-          ldapUser[process.env.LDAP_PHOTO_FIELD]
-            .split(' ')
-            .map((e: string) => parseInt(e)),
-        ).toString('base64');
-      } catch {}
+        //for bytestrings (8 120 99 ...)
+        if (
+          !isNaN(
+            ldapUser[process.env.LDAP_PHOTO_FIELD]
+              .toString()
+              .replace(/\s*/g, ''),
+          )
+        ) {
+          profilePhoto = Buffer.from(
+            ldapUser[process.env.LDAP_PHOTO_FIELD]
+              .split(' ')
+              .map((e: string) => parseInt(e)),
+          ).toString('base64');
+        } else {
+          // for true jpeg buffers
+          profilePhoto = Buffer.from(
+            ldapUser.raw[process.env.LDAP_PHOTO_FIELD],
+            'binary',
+          ).toString('base64');
+        }
+      } catch (e) {
+        console.log(e);
+      }
     }
 
     type Group = {

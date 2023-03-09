@@ -24,6 +24,9 @@
 - [ ] option for adding attachments
 - [ ] option to take a screen shot directly
 - [ ] allow multiple people to be assigned to a single ticket
+- [ ] ticket labeling with scoped labels
+- [ ] allow tickets to be grouped into projects
+- [ ] allow tickets inside a project to be split
 
 **Atlas Integration**
 
@@ -91,7 +94,7 @@
 
 ## Notes
 
-- currently requiring Node 16 for remix-image > ... > node-gyp + better sqlite3
+- currently requiring Node 18 for remix-image > ... > node-gyp + better sqlite3
 
 ## Development
 
