@@ -1,3 +1,8 @@
+## 1.0.0-rc.13 (2023-03-10)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([2d9bd23](https://github.com/atlas-bi/atlas-requests/commit/2d9bd23))
+* feat(labels): started on label editor ([1697ddd](https://github.com/atlas-bi/atlas-requests/commit/1697ddd))
+
 ## 1.0.0-rc.12 (2023-03-09)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([6ac5a4f](https://github.com/atlas-bi/atlas-requests/commit/6ac5a4f))
