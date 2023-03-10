@@ -216,6 +216,9 @@ export default function Nav() {
                 <Link className="navbar-item" to="/admin/config">
                   Site Configuration
                 </Link>
+                <Link className="navbar-item" to="/admin/labels">
+                  Labels
+                </Link>
                 <hr className="navbar-divider" />
                 <Link className="navbar-item" to="/logout">
                   Sign out

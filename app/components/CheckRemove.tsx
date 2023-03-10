@@ -1,12 +1,14 @@
-import {
-  faCheck,
-  faCircleNotch,
-  faXmark,
-} from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 
-export default function CheckRemove({ children, onClick }) {
+export default function CheckRemove({
+  children,
+  onClick,
+}: {
+  children: React.ReactNode;
+  onClick: React.MouseEventHandler<HTMLDivElement>;
+}) {
   const [check, setCheck] = useState(faCheck);
   return (
     <div

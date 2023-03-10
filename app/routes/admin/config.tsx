@@ -1,5 +1,3 @@
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { RequestCategory, RequestType, User } from '@prisma/client';
 import {
   type ActionArgs,

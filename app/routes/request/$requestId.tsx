@@ -1,18 +1,16 @@
 import { faBell } from '@fortawesome/free-regular-svg-icons';
-import { faPencil } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { type ActionArgs, type LoaderArgs, json } from '@remix-run/node';
 import {
-  type ActionArgs,
-  type LoaderArgs,
-  json,
-  redirect,
-} from '@remix-run/node';
-import { Form, useActionData, useCatch, useLoaderData } from '@remix-run/react';
-import { useSubmit, useTransition } from '@remix-run/react';
+  Form,
+  useActionData,
+  useCatch,
+  useLoaderData,
+  useSubmit,
+} from '@remix-run/react';
 import * as React from 'react';
 import invariant from 'tiny-invariant';
 import {
-  deleteRequest,
   editLabels,
   editRecipients,
   editRequester,
@@ -25,7 +23,6 @@ import EditorReader from '../../components/EditorReader';
 import { LabelSelector } from '../../components/Labels';
 import { RecipientSelector } from '../../components/Recipients';
 import { RequesterSelector } from '../../components/Requester';
-import { MiniUser } from '../../components/User';
 
 export async function loader({ request, params }: LoaderArgs) {
   return authorize(
@@ -57,8 +54,6 @@ export async function action({ request, params }: ActionArgs) {
 
   const formData = await request.formData();
   const { _action, ...values } = Object.fromEntries(formData);
-
-  const errors: Errors = {};
 
   switch (_action) {
     case 'editRequester': {
@@ -106,11 +101,6 @@ export default function RequestDetailsPage() {
   const changeRecipients = React.useRef<HTMLFormElement>(null);
   const changeLabels = React.useRef<HTMLFormElement>(null);
   const requestedForRef = React.useRef<HTMLInputElement>(null);
-  const [requesterSearchResults, setRequesterSearchResults] =
-    React.useState(null);
-
-  const [requester, setRequester] = React.useState(thisRequest.requester);
-  const requesterPopout = React.useRef<HTMLDivElement>();
 
   const submitRequester = useSubmit();
 

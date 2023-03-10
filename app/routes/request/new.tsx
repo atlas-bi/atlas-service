@@ -1,6 +1,4 @@
-import { faPencil } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { RequestType, User } from '@prisma/client';
+import type { Label, RequestType, User } from '@prisma/client';
 import {
   type ActionArgs,
   type LoaderArgs,
@@ -8,9 +6,8 @@ import {
   json,
   redirect,
 } from '@remix-run/node';
-import { Form, Link, useActionData, useLoaderData } from '@remix-run/react';
-import type { EditorState } from 'lexical';
-import { $getRoot, $getSelection } from 'lexical';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { $getRoot, type EditorState } from 'lexical';
 import * as React from 'react';
 import { getRequestType, getRequestTypes } from '~/models/config.server';
 import { createLabel } from '~/models/label.server';
@@ -22,9 +19,6 @@ import Editor from '../../components/Editor';
 import { LabelSelector } from '../../components/Labels';
 import { RecipientSelector } from '../../components/Recipients';
 import { RequesterSelector } from '../../components/Requester';
-import { MiniUser } from '../../components/User';
-
-const { MeiliSearch } = require('meilisearch');
 
 export async function loader({ request }: LoaderArgs) {
   return authorize(
@@ -53,6 +47,18 @@ export async function loader({ request }: LoaderArgs) {
   );
 }
 
+type Errors = {
+  name?: string;
+  requestedFor?: string;
+  type?: string;
+  recipients?: string;
+  labels?: string;
+  description?: string;
+  purpose?: string;
+  criteria?: string;
+  parameters?: string;
+  schedule?: string;
+};
 export async function action({ request }: ActionArgs) {
   const user = await requireUser(request);
   const userId = user?.id;
@@ -65,70 +71,67 @@ export async function action({ request }: ActionArgs) {
 
     const { name, description, color } = Object.fromEntries(formData);
 
-    return json({
-      newLabel: await createLabel({ userId, name, description, color }),
-    });
+    return json(
+      {
+        newLabel: await createLabel({
+          userId,
+          name: name as string,
+          description: description as string | null,
+          color: color as string | null,
+        }),
+      },
+      { status: 200 },
+    );
   } else if (_action !== 'newRequest') return null;
 
   const name = formData.get('name') as string;
-  const requestedFor = formData.get('requestedFor');
-  const type = formData.get('type');
-  const recipients = formData.getAll('recipients');
-  const labels = formData.getAll('labels');
-  const excel = formData.get('excel');
-  const initiative = formData.get('initiative');
-  const regulatory = formData.get('regulatory');
-  const description = formData.get('description');
-  const descriptionText = formData.get('descriptionText');
-  const purpose = formData.get('purpose');
-  const purposeText = formData.get('purposeText');
-  const criteria = formData.get('criteria');
-  const criteriaText = formData.get('criteriaText');
-  const parameters = formData.get('parameters');
-  const parametersText = formData.get('parametersText');
-  const schedule = formData.get('schedule');
-  const scheduleText = formData.get('scheduleText');
+  const requestedFor = formData.get('requestedFor') as string | null;
+  const type = formData.get('type') as string;
+  const recipients = formData.getAll('recipients') as string[] | null;
+  const labels = formData.getAll('labels') as string[] | null;
+  const excel = formData.get('excel') as string | null;
+  const initiative = formData.get('initiative') as string | null;
+  const regulatory = formData.get('regulatory') as string | null;
+  const description = formData.get('description') as string | null;
+  const descriptionText = formData.get('descriptionText') as string | null;
+  const purpose = formData.get('purpose') as string | null;
+  const purposeText = formData.get('purposeText') as string | null;
+  const criteria = formData.get('criteria') as string | null;
+  const criteriaText = formData.get('criteriaText') as string | null;
+  const parameters = formData.get('parameters') as string | null;
+  const parametersText = formData.get('parametersText') as string | null;
+  const schedule = formData.get('schedule') as string | null;
+  const scheduleText = formData.get('scheduleText') as string | null;
 
   const requestType = await getRequestType({ id: Number(type) });
 
-  const errors: {
-    name?: string;
-    requestedFor?: string;
-    type?: string;
-    recipients?: string;
-    labels?: string;
-    description?: string;
-    purpose?: string;
-    criteria?: string;
-    parameters?: string;
-    schedule?: string;
-  } = {};
+  const errors: Errors = {};
 
   if (typeof name !== 'string' || name.length === 0) {
     errors.name = 'Name is required';
   }
   if (
-    requestType.showRequestor &&
+    requestType?.showRequester &&
     (typeof requestedFor !== 'string' || requestedFor.length === 0)
   ) {
     errors.requestedFor = 'Requested for is required';
   }
 
   if (
-    requestType.showRecipients &&
-    (typeof recipients !== 'object' || recipients.length === 0)
+    requestType?.showRecipients &&
+    (!recipients || typeof recipients !== 'object' || recipients.length === 0)
   ) {
     errors.recipients = 'Recipients are required';
   }
   if (
-    requestType.showLabels &&
-    (typeof labels !== 'object' || labels.length === 0)
+    requestType?.showLabels &&
+    (!labels || typeof labels !== 'object' || labels.length === 0)
   ) {
     errors.labels = 'Labels are required';
   }
 
   if (
-    requestType.showDescription &&
+    requestType?.showDescription &&
     (typeof description !== 'string' ||
       description.length === 0 ||
       (JSON.parse(description).root?.children.length === 1 &&
@@ -137,7 +140,7 @@ export async function action({ request }: ActionArgs) {
     errors.description = 'Description is required';
   }
   if (
-    requestType.showPurpose &&
+    requestType?.showPurpose &&
     (typeof purpose !== 'string' ||
       purpose.length === 0 ||
       (JSON.parse(purpose).root?.children.length === 1 &&
@@ -146,7 +149,7 @@ export async function action({ request }: ActionArgs) {
     errors.purpose = 'Purpose is required';
   }
   if (
-    requestType.showCriteria &&
+    requestType?.showCriteria &&
     (typeof criteria !== 'string' ||
       criteria.length === 0 ||
       (JSON.parse(criteria).root?.children.length === 1 &&
@@ -155,7 +158,7 @@ export async function action({ request }: ActionArgs) {
     errors.criteria = 'Criteria is required';
   }
   if (
-    requestType.showParameters &&
+    requestType?.showParameters &&
     (typeof parameters !== 'string' ||
       parameters.length === 0 ||
       (JSON.parse(parameters).root?.children.length === 1 &&
@@ -164,7 +167,7 @@ export async function action({ request }: ActionArgs) {
     errors.parameters = 'Parameters is required';
   }
   if (
-    requestType.showSchedule &&
+    requestType?.showSchedule &&
     (typeof schedule !== 'string' ||
       schedule.length === 0 ||
       (JSON.parse(schedule).root?.children.length === 1 &&
@@ -174,7 +177,7 @@ export async function action({ request }: ActionArgs) {
   }
 
   if (Object.keys(errors).length) {
-    return json({ errors: errors }, { status: 400 });
+    return json({ errors }, { status: 400 });
   }
 
   const thisRequest = await createRequest({
@@ -202,10 +205,11 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function NewRequestPage() {
-  const { requestTypes, user, selectedType, ENV, search } =
-    useLoaderData<typeof loader>();
+  const { user, selectedType, ENV, search } = useLoaderData<typeof loader>();
 
-  const actionData = useActionData<typeof action>();
+  type ActionData = { errors?: Errors; newLabel?: Label } | undefined | null;
+
+  const actionData = useActionData<ActionData>();
 
   const requestedForRef = React.useRef<HTMLInputElement>(null);
   const labelRef = React.useRef<HTMLInputElement>(null);
@@ -370,7 +374,6 @@ export default function NewRequestPage() {
                       setActiveEditor(descriptionEditor);
                       descriptionWarningRef.current?.remove();
                       editorState.read(() => {
-                        const root = $getRoot().getTextContent();
                         if (descriptionTextRef.current) {
                           descriptionTextRef.current.value =
                             $getRoot().getTextContent();
@@ -412,7 +415,6 @@ export default function NewRequestPage() {
                       purposeWarningRef.current?.remove();
 
                       editorState.read(() => {
-                        const root = $getRoot().getTextContent();
                         if (purposeTextRef.current) {
                           purposeTextRef.current.value =
                             $getRoot().getTextContent();
@@ -447,7 +449,6 @@ export default function NewRequestPage() {
                       setActiveEditor(criteriaEditor);
                       criteriaWarningRef.current?.remove();
                       editorState.read(() => {
-                        const root = $getRoot().getTextContent();
                         if (criteriaTextRef.current) {
                           criteriaTextRef.current.value =
                             $getRoot().getTextContent();
@@ -485,7 +486,6 @@ export default function NewRequestPage() {
                       setActiveEditor(parametersEditor);
                       parametersWarningRef.current?.remove();
                       editorState.read(() => {
-                        const root = $getRoot().getTextContent();
                         if (parametersTextRef.current) {
                           parametersTextRef.current.value =
                             $getRoot().getTextContent();
@@ -510,7 +510,7 @@ export default function NewRequestPage() {
                   <label className="pl-2 label">Schedule</label>
                   {actionData?.errors?.schedule && (
                     <p ref={scheduleWarningRef} className="pl-2 help is-danger">
-                      {actionData.errors.schedule}
+                      {actionData?.errors?.schedule}
                     </p>
                   )}
                   <Editor
@@ -520,7 +520,6 @@ export default function NewRequestPage() {
                       setActiveEditor(scheduleEditor);
                       scheduleWarningRef.current?.remove();
                       editorState.read(() => {
-                        const root = $getRoot().getTextContent();
                         if (scheduleTextRef.current) {
                           scheduleTextRef.current.value =
                             $getRoot().getTextContent();
@@ -540,7 +539,7 @@ export default function NewRequestPage() {
                 </>
               )}
               <hr className="mb-0 mx-2" />
-              <button type="submit" className="button is-success m-2">
+              <button type="submit" className="button is-success is-short m-2">
                 Save
               </button>
             </div>
@@ -554,6 +553,8 @@ export default function NewRequestPage() {
                 user={user}
                 actionData={actionData}
                 MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                searchIndex={search.userIndex}
+                action="newRequester"
               />
             )}
 
@@ -561,9 +562,10 @@ export default function NewRequestPage() {
               <RecipientSelector
                 ref={requestedForRef}
                 me={user}
-                recipients={undefined}
                 actionData={actionData}
                 MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                searchIndex={search.userIndex}
+                action="newRecipient"
               />
             )}
             {selectedType.showLabels && (

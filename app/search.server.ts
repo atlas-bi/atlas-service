@@ -1,12 +1,16 @@
+import type { Group, Label, Request, User } from '@prisma/client';
 import { MeiliSearch } from 'meilisearch';
 import { medicalSynonyms } from 'meilisearch-medical-synonyms';
 import { nameSynonyms } from 'meilisearch-name-synonyms';
+import invariant from 'tiny-invariant';
 import { prisma } from '~/db.server';
 
 export const userIndex = 'atlas-requests-users';
 export const requestIndex = 'atlas-requests-requests';
 export const groupIndex = 'atlas-requests-groups';
 export const labelIndex = 'atlas-requests-labels';
+
+invariant(process.env.MEILISEARCH_URL, 'MEILISEARCH_URL not found');
 
 const client = new MeiliSearch({ host: process.env.MEILISEARCH_URL });
 
@@ -37,8 +41,8 @@ export const searchSettings = async () => {
   await client.index(requestIndex).updateSynonyms(medicalSynonyms);
 };
 
-export const loadReport = async (request) => {
-  return client
+export const loadReport = async (request: Request) =>
+  client
     .index(requestIndex)
     .addDocuments([
       {
@@ -52,7 +56,6 @@ export const loadReport = async (request) => {
       },
     ])
     .then((res) => console.log(res));
-};
 
 export const loadLabels = async () => {
   let chunk = await prisma.label.findMany({
@@ -99,27 +102,23 @@ export const loadLabels = async () => {
       .then((res) => console.log(res));
   }
 };
-export const loadLabel = async (label) => {
-  console.log('adding label', label);
-  return client
+export const loadLabel = async (label: Label) =>
+  client
     .index(labelIndex)
     .addDocuments([label])
     .then((res) => console.log(res));
-};
 
-export const loadUser = async (user) => {
-  return client
+export const loadUser = async (user: User) =>
+  client
     .index(userIndex)
     .addDocuments([user])
     .then((res) => console.log(res));
-};
 
-export const loadGroup = async (group) => {
-  return client
+export const loadGroup = async (group: Group) =>
+  client
     .index(groupIndex)
     .addDocuments([group])
     .then((res) => console.log(res));
-};
 
 export const loadUsers = async () => {
   let chunk = await prisma.user.findMany({

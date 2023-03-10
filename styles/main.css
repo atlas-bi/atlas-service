@@ -9249,7 +9249,8 @@ a.has-text-danger-dark:focus {
 }
 
 .is-clickable,
-.popout .popout-trigger:hover {
+.popout .popout-trigger:hover,
+.emoji-select {
   cursor: pointer !important;
   pointer-events: all !important;
 }
@@ -9577,7 +9578,8 @@ a.has-text-danger-dark:focus {
   padding-bottom: 0.25rem !important;
 }
 
-.p-2 {
+.p-2,
+.emoji-select {
   padding: 0.5rem !important;
 }
 
@@ -12511,7 +12513,7 @@ body {
     padding: 0 15px;
   }
 }
-.button.is-success {
+.button.is-short {
   height: 2.2rem;
 }
 
@@ -12573,6 +12575,19 @@ body {
   border-top-right-radius: 99999px;
   height: 100%;
   aspect-ratio: 1/2;
+}
+
+.has-border-grey-lighter {
+  border: 1px solid hsl(0, 0%, 86%);
+  border-radius: 4px;
+}
+.has-border-grey-lighter > :first-child {
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+}
+.has-border-grey-lighter > :last-child {
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
 }
 
 .navbar-dropdown.is-boxed:after {
@@ -12654,9 +12669,23 @@ body {
 .modal.is-light.is-top .modal-card {
   margin: 10vh auto;
 }
-.modal.is-light + :last-child {
+.modal.is-light > :last-child {
   border-bottom-right-radius: 4px;
   border-bottom-left-radius: 4px;
+}
+
+.has-shadow {
+  box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.1),
+    0 0px 0 1px rgba(10, 10, 10, 0.02);
+}
+
+.emoji-select:hover {
+  background-color: hsl(0, 0%, 96%);
+  color: hsl(229, 53%, 53%);
+}
+
+.is-absolute {
+  position: absolute;
 }
 
 .popout {

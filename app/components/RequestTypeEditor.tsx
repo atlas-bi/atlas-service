@@ -95,7 +95,7 @@ const RequestTypeEditor = ({ rt, fields }: { RequestType?; any }) => {
               <button
                 name="_action"
                 value={rt ? 'editRequestType' : 'createRequestType'}
-                className="button is-rounded is-success my-auto"
+                className="button is-rounded is-success is-short my-auto"
                 style={{
                   transition: 'visibility .2s; opacity .2s',
                   visibility: save ? 'visible' : 'hidden',
@@ -105,7 +105,6 @@ const RequestTypeEditor = ({ rt, fields }: { RequestType?; any }) => {
                   bottom: 0,
                   position: 'absolute',
                 }}
-                onClick={() => {}}
               >
                 <span className="icon">
                   <FontAwesomeIcon icon={faCheck} />
@@ -136,34 +135,21 @@ const RequestTypeEditor = ({ rt, fields }: { RequestType?; any }) => {
           }}
         />
         <hr className="m-0" />
-        {/*<Form method="post">
-          <input type="hidden" name="id" value={rt.id} />
-          <button
-            name="_action"
-            value="deleteRequestType"
-            type="submit"
-            aria-label="delete"
-            className="delete"
-          ></button>
-        </Form>*/}
+
         {fields &&
-          fields.map((field) => {
-            return (
-              <React.Fragment key={field.id}>
-                <input
-                  id={(rt?.id || 'new') + '-' + field.id}
-                  type="checkbox"
-                  name={field.id}
-                  defaultChecked={rt ? rt[field.id] : false}
-                  className="switch is-rounded is-success"
-                  onChange={(e) => {
-                    setSave(true);
-                  }}
-                />
-                <label htmlFor={(rt?.id || 'new') + '-' + field.id}></label>
-              </React.Fragment>
-            );
-          })}
+          fields.map((field) => (
+            <React.Fragment key={field.id}>
+              <input
+                id={(rt?.id || 'new') + '-' + field.id}
+                type="checkbox"
+                name={field.id}
+                defaultChecked={rt ? rt[field.id] : false}
+                className="switch is-rounded is-success"
+                onChange={(e) => setSave(true)}
+              />
+              <label htmlFor={(rt?.id || 'new') + '-' + field.id}></label>
+            </React.Fragment>
+          ))}
       </Form>
       {rt && (
         <Form method="post">

@@ -5,19 +5,19 @@ import {
   faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useTransition,
-} from '@remix-run/react';
-import { type MutableRefObject, type RefObject, forwardRef } from 'react';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import type { User } from '@prisma/client';
+import { useTransition } from '@remix-run/react';
+import { MeiliSearch } from 'meilisearch';
+import React, {
+  Fragment,
+  forwardRef,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 import CheckRemove from './CheckRemove';
 import { MiniUser } from './User';
-
-const { MeiliSearch } = require('meilisearch');
 
 export const RecipientSelector = forwardRef(
   (
@@ -29,6 +29,14 @@ export const RecipientSelector = forwardRef(
       onChange,
       action,
       searchIndex,
+    }: {
+      me: User;
+      recipients?: User[];
+      MEILISEARCH_URL: string;
+      actionData: any;
+      onChange?: React.ChangeEvent<HTMLInputElement>;
+      action: string;
+      searchIndex: string;
     },
     ref,
   ) => {
@@ -71,6 +79,7 @@ export const RecipientSelector = forwardRef(
         }
         onChange();
       }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [recipientList]);
 
     const transition = useTransition();
@@ -134,11 +143,11 @@ export const RecipientSelector = forwardRef(
                     className="input"
                     onChange={async (e) => {
                       const searchInput = e.target;
-                      if (searchInput.value.length == 0) {
+                      if (searchInput.value.length === 0) {
                         setRecipientSearchResults(null);
                       } else {
                         const matches = await client
-                          .index('atlas-requests-users')
+                          .index(searchIndex)
                           .search(searchInput.value, { limit: 20 });
 
                         if (matches.hits.length > 0) {
@@ -201,7 +210,6 @@ export const RecipientSelector = forwardRef(
                         <MiniUser
                           key={recipient.id}
                           user={recipient}
-                          onClick={() => {}}
                           linkToUser={false}
                         />
                       </CheckRemove>
@@ -229,7 +237,6 @@ export const RecipientSelector = forwardRef(
                           setRecipientList([...recipientList, me]);
                         }
                         setRecipientSearchResults(null);
-                        // setShowRecipientSearch(false)
                       }}
                     />
                     ... boss or others?

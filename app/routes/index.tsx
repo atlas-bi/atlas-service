@@ -3,17 +3,13 @@ import { type Session, json } from '@remix-run/node';
 import { NavLink, useLoaderData } from '@remix-run/react';
 import type { LoaderArgs } from '@remix-run/server-runtime';
 import { getRequests } from '~/models/request.server';
-import searchRefreshQueue from '~/queues/search_refresh.server';
 import { authorize } from '~/session.server';
-
-// import greetingsQueue from "~/queues/greetings.server";
 
 export async function loader({ request }: LoaderArgs) {
   return authorize(
     request,
     undefined,
     async ({ user, session }: { user: User; session: Session }) => {
-      // await searchRefreshQueue.enqueue(null);
       const requests = await getRequests({ userId: user.id });
       return json({ user, requests });
     },

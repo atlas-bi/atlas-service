@@ -4,21 +4,33 @@ import {
   faPencil,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useTransition,
-} from '@remix-run/react';
-import { type MutableRefObject, type RefObject, forwardRef } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useTransition } from '@remix-run/react';
+import { MeiliSearch } from 'meilisearch';
+import React, { forwardRef, useEffect, useRef, useState } from 'react';
 
 import { MiniUser } from './User';
 
-const { MeiliSearch } = require('meilisearch');
-
 export const RequesterSelector = forwardRef(
-  ({ me, user, actionData, MEILISEARCH_URL, onChange, action }, ref) => {
+  (
+    {
+      me,
+      user,
+      actionData,
+      MEILISEARCH_URL,
+      onChange,
+      action,
+      searchIndex,
+    }: {
+      me: User;
+      user?: User;
+      actionData: any;
+      MEILISEARCH_URL: string;
+      onChange?: React.ChangeEvent<HTMLInputElement>;
+      action: string;
+      searchIndex: string;
+    },
+    ref,
+  ) => {
     const [watchState, setWatchState] = useState(false);
     const [requester, setRequester] = useState(user);
     const [showRequesterSearch, setShowRequesterSearch] = useState(false);
@@ -55,6 +67,7 @@ export const RequesterSelector = forwardRef(
         }
         onChange();
       }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [requester]);
 
     const transition = useTransition();
@@ -100,11 +113,11 @@ export const RequesterSelector = forwardRef(
                     className="input"
                     onChange={async (e) => {
                       const searchInput = e.target;
-                      if (searchInput.value.length == 0) {
+                      if (searchInput.value.length === 0) {
                         setRequesterSearchResults(null);
                       } else {
                         const matches = await client
-                          .index('atlas-requests-users')
+                          .index(searchIndex)
                           .search(searchInput.value, { limit: 20 });
 
                         if (matches.hits.length > 0) {
