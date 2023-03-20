@@ -17,9 +17,13 @@ import { TableCellNode, TableNode, TableRowNode } from '@lexical/table';
 import type { EditorState } from 'lexical';
 import { type MutableRefObject, type RefObject, forwardRef } from 'react';
 
+import { MentionNode } from '../nodes/MentionNode';
+import { TextTokenNode } from '../nodes/TextTokenNode';
 import AutoLinkPlugin from '../plugins/AutoLinkPlugin';
 import CodeHighlightPlugin from '../plugins/CodeHighlightPlugin';
+import EmojiPlugin from '../plugins/EmojiPlugin';
 import ListMaxIndentLevelPlugin from '../plugins/ListMaxIndentLevelPlugin';
+import MentionsPlugin from '../plugins/MentionsPlugin';
 import ToolbarPlugin from '../plugins/ToolbarPlugin';
 import { EditorTheme } from './EditorTheme';
 
@@ -46,9 +50,13 @@ const Editor = forwardRef(
     {
       onChange,
       activeEditor,
+      MEILISEARCH_URL,
+      userIndex,
     }: {
       onChange: changeCallbackType;
       activeEditor: MutableRefObject<HTMLDivElement | undefined>;
+      MEILISEARCH_URL: string;
+      userIndex: string;
     },
     ref,
   ) => {
@@ -75,8 +83,11 @@ const Editor = forwardRef(
         TableRowNode,
         AutoLinkNode,
         LinkNode,
+        MentionNode,
+        TextTokenNode,
       ],
     };
+
     return (
       <LexicalComposer initialConfig={editorConfig}>
         <div className="editor-container">
@@ -87,6 +98,12 @@ const Editor = forwardRef(
             ref={ref as RefObject<HTMLDivElement>}
           >
             <ToolbarPlugin />
+            {typeof document !== 'undefined' && (
+              <MentionsPlugin
+                MEILISEARCH_URL={MEILISEARCH_URL}
+                searchIndex={userIndex}
+              />
+            )}
           </div>
           <div className="editor-inner">
             <RichTextPlugin
@@ -102,6 +119,7 @@ const Editor = forwardRef(
             <AutoLinkPlugin />
             <ListMaxIndentLevelPlugin maxDepth={7} />
             <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+            {/*{typeof document !== 'undefined' && <EmojiPlugin />}*/}
           </div>
         </div>
       </LexicalComposer>

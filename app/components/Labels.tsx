@@ -18,6 +18,7 @@ import React, {
   useState,
 } from 'react';
 import { SketchPicker } from 'react-color';
+import { EmojiFinder } from '~/components/Emoji';
 
 import CheckRemove from './CheckRemove';
 
@@ -85,15 +86,13 @@ export const LabelCreator = ({
   label?: Label;
 }) => {
   const [showNewLabelModal, setShowNewLabelModal] = useState(show);
-  const [descriptionValue, setDescriptionValue] = useState<string>(
+  const [labelDescription, setLabelDescription] = useState<string>(
     label?.description || '',
   );
   const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
   const [idValue, setIdValue] = useState<string>(label?.id || '');
   const [labelColor, setLabelColor] = useState<string>(label?.color || '');
-  const [inputValue, setInputValue] = useState<string>(
-    label?.name || name || '',
-  );
+  const [labelName, setLabelName] = useState<string>(label?.name || name || '');
   const defaultColor = {
     r: '241',
     g: '112',
@@ -102,6 +101,8 @@ export const LabelCreator = ({
   };
   const [colorPickerColor, setColorPickerColor] = useState(defaultColor);
   const colorPicker = useRef(null);
+  const labelNameRef = useRef<HTMLInputElement>();
+  const labelDescriptionRef = useRef<HTMLInputElement>();
   const labelModal = useRef<HTMLDivElement>();
   const [previewLabel, setPreviewLabel] = useState({
     color: undefined,
@@ -141,16 +142,16 @@ export const LabelCreator = ({
   }, [show]);
   useEffect(() => {
     if (name) {
-      setInputValue(name);
+      setLabelName(name);
     }
     setPreviewLabel({ ...previewLabel, name });
   }, [name]);
 
   useEffect(() => {
     if (label) {
-      setInputValue(label.name || '');
+      setLabelName(label.name || '');
       setIdValue(label.id);
-      setDescriptionValue(label.description || '');
+      setLabelDescription(label.description || '');
       setColorPickerColor(label.color || '');
       setLabelColor(label.color || '');
       setPreviewLabel(label);
@@ -190,16 +191,22 @@ export const LabelCreator = ({
             <label className="label">Label name</label>
             <div className="control">
               <input
+                ref={labelNameRef}
                 className="input semi-disabled"
                 placeholder="label name"
-                value={inputValue}
+                value={labelName}
                 onChange={(e) => {
-                  setInputValue(e.target.value);
+                  setLabelName(e.target.value);
                   setPreviewLabel({
                     ...previewLabel,
                     name: e.target.value,
                   });
                 }}
+              />
+              <EmojiFinder
+                input={labelNameRef.current}
+                value={labelName}
+                setter={setLabelName}
               />
             </div>
           </div>
@@ -207,12 +214,18 @@ export const LabelCreator = ({
             <label className="label">Description</label>
             <div className="control">
               <input
+                ref={labelDescriptionRef}
                 className="input semi-disabled"
                 placeholder="optional description"
-                value={descriptionValue}
+                value={labelDescription}
                 onChange={(e) => {
-                  setDescriptionValue(e.target.value);
+                  setLabelDescription(e.target.value);
                 }}
+              />
+              <EmojiFinder
+                input={labelDescriptionRef.current}
+                value={labelDescription}
+                setter={setLabelDescription}
               />
             </div>
           </div>
@@ -283,20 +296,20 @@ export const LabelCreator = ({
               onClick={() => {
                 const formData = new FormData();
                 formData.append('_action', action);
-                formData.append('name', inputValue);
+                formData.append('name', labelName);
                 if (labelColor) {
                   formData.append('color', labelColor);
                 }
-                if (descriptionValue) {
-                  formData.append('description', descriptionValue);
+                if (labelDescription) {
+                  formData.append('description', labelDescription);
                 }
                 if (idValue) {
                   formData.append('id', idValue);
                 }
                 submitNewLabel(formData, { replace: true, method: 'post' });
-                setInputValue('');
+                setLabelName('');
                 onClose();
-                setDescriptionValue('');
+                setLabelDescription('');
                 setColorPickerColor(defaultColor);
               }}
             >
@@ -339,7 +352,7 @@ export const LabelSelector = forwardRef(
 
     const inputReference = useRef<HTMLInputElement>(null);
 
-    const [inputValue, setInputValue] = useState('');
+    const [labelName, setLabelName] = useState('');
 
     const resetLabelSearch = async () => {
       const matches = await client.index(searchIndex).search('', { limit: 10 });
@@ -356,7 +369,7 @@ export const LabelSelector = forwardRef(
                     setLabelList([...labelList, label]);
                   }
 
-                  setInputValue('');
+                  setLabelName('');
                 }}
               />
             ))}
@@ -471,10 +484,10 @@ export const LabelSelector = forwardRef(
                     ref={inputReference}
                     className="input"
                     placeholder="filter labels"
-                    value={inputValue}
+                    value={labelName}
                     onChange={async (e) => {
                       const searchInput = e.target;
-                      setInputValue(e.target.value);
+                      setLabelName(e.target.value);
 
                       if (searchInput.value === '') {
                         await resetLabelSearch();
@@ -495,7 +508,7 @@ export const LabelSelector = forwardRef(
                                       setLabelList([...labelList, label]);
                                     }
                                     setLabelSearchResults(null);
-                                    setInputValue('');
+                                    setLabelName('');
                                   }}
                                 />
                               ))}
@@ -510,6 +523,11 @@ export const LabelSelector = forwardRef(
                         }
                       }
                     }}
+                  />
+                  <EmojiFinder
+                    input={inputReference.current}
+                    value={labelName}
+                    setter={setLabelName}
                   />
                 </div>
                 <hr />
@@ -544,7 +562,7 @@ export const LabelSelector = forwardRef(
                 )}
                 {labelSearchResults}
 
-                {inputValue && (
+                {labelName && (
                   <>
                     <hr />
                     <strong
@@ -553,7 +571,7 @@ export const LabelSelector = forwardRef(
                         setShowNewLabelModal(true);
                       }}
                     >
-                      Create new label "{inputValue}"
+                      Create new label "{labelName}"
                     </strong>
 
                     <hr />
@@ -593,7 +611,7 @@ export const LabelSelector = forwardRef(
 
         <LabelCreator
           action={action}
-          name={inputValue}
+          name={labelName}
           show={showNewLabelModal}
           onClose={() => {
             setShowNewLabelModal(false);

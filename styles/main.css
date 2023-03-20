@@ -12679,7 +12679,8 @@ body {
     0 0px 0 1px rgba(10, 10, 10, 0.02);
 }
 
-.emoji-select:hover {
+.emoji-select:hover,
+.emoji-select.is-active {
   background-color: hsl(0, 0%, 96%);
   color: hsl(229, 53%, 53%);
 }

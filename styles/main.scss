@@ -298,7 +298,8 @@ body {
 .emoji-select {
   @extend .p-2;
   @extend .is-clickable;
-  &:hover {
+  &:hover,
+  &.is-active {
     background-color: $white-ter;
     color: $link;
   }

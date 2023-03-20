@@ -22,6 +22,12 @@ export async function verifyLogin(email: User['email'], password: string) {
     groupClass: process.env.LDAP_USER_GROUP,
     // groupMemberAttribute: process.env.LDAP_GROUP_NAME,
     starttls: process.env.LDAP_START_TLS === 'true',
+    attributes: [
+      process.env.LDAP_PHOTO_FIELD,
+      process.env.LDAP_FIRSTNAME,
+      process.env.LDAP_LASTNAME,
+      'memberOf',
+    ],
   };
 
   try {
@@ -39,6 +45,7 @@ export async function verifyLogin(email: User['email'], password: string) {
     ) {
       try {
         //for bytestrings (8 120 99 ...)
+        console.log(ldapUser);
         if (
           !isNaN(
             ldapUser[process.env.LDAP_PHOTO_FIELD]
@@ -52,11 +59,8 @@ export async function verifyLogin(email: User['email'], password: string) {
               .map((e: string) => parseInt(e)),
           ).toString('base64');
         } else {
-          // for true jpeg buffers
-          profilePhoto = Buffer.from(
-            ldapUser.raw[process.env.LDAP_PHOTO_FIELD],
-            'binary',
-          ).toString('base64');
+          // for binary
+          profilePhoto = ldapUser[process.env.LDAP_PHOTO_FIELD];
         }
       } catch (e) {
         console.log(e);

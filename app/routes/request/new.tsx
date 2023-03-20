@@ -9,6 +9,7 @@ import {
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { $getRoot, type EditorState } from 'lexical';
 import * as React from 'react';
+import { EmojiFinder } from '~/components/Emoji';
 import { getRequestType, getRequestTypes } from '~/models/config.server';
 import { createLabel } from '~/models/label.server';
 import { createRequest } from '~/models/request.server';
@@ -206,11 +207,11 @@ export async function action({ request }: ActionArgs) {
 
 export default function NewRequestPage() {
   const { user, selectedType, ENV, search } = useLoaderData<typeof loader>();
-
   type ActionData = { errors?: Errors; newLabel?: Label } | undefined | null;
 
   const actionData = useActionData<ActionData>();
 
+  const [name, setName] = React.useState('');
   const requestedForRef = React.useRef<HTMLInputElement>(null);
   const labelRef = React.useRef<HTMLInputElement>(null);
   const typeRef = React.useRef<HTMLSelectElement>(null);
@@ -344,12 +345,21 @@ export default function NewRequestPage() {
                     name="name"
                     type="text"
                     placeholder="✨ [ New Report ]"
+                    value={name}
                     onInput={(
                       event: React.SyntheticEvent<HTMLInputElement>,
                     ) => {
                       const input = event.target as HTMLInputElement;
                       resetInput(input);
                     }}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                    }}
+                  />
+                  <EmojiFinder
+                    input={nameRef.current}
+                    value={name}
+                    setter={setName}
                   />
                 </div>
                 {actionData?.errors?.name && (
@@ -369,7 +379,9 @@ export default function NewRequestPage() {
                   )}
                   <Editor
                     ref={descriptionEditor}
+                    userIndex={search.userIndex}
                     activeEditor={activeEditor}
+                    MEILISEARCH_URL={ENV.MEILISEARCH_URL}
                     onChange={(editorState: EditorState) => {
                       setActiveEditor(descriptionEditor);
                       descriptionWarningRef.current?.remove();
@@ -410,6 +422,8 @@ export default function NewRequestPage() {
                   <Editor
                     ref={purposeEditor}
                     activeEditor={activeEditor}
+                    userIndex={search.userIndex}
+                    MEILISEARCH_URL={ENV.MEILISEARCH_URL}
                     onChange={(editorState: EditorState) => {
                       setActiveEditor(purposeEditor);
                       purposeWarningRef.current?.remove();
@@ -444,7 +458,9 @@ export default function NewRequestPage() {
                   )}
                   <Editor
                     ref={criteriaEditor}
+                    MEILISEARCH_URL={ENV.MEILISEARCH_URL}
                     activeEditor={activeEditor}
+                    userIndex={search.userIndex}
                     onChange={(editorState: EditorState) => {
                       setActiveEditor(criteriaEditor);
                       criteriaWarningRef.current?.remove();
@@ -481,7 +497,9 @@ export default function NewRequestPage() {
                   )}
                   <Editor
                     ref={parametersEditor}
+                    MEILISEARCH_URL={ENV.MEILISEARCH_URL}
                     activeEditor={activeEditor}
+                    userIndex={search.userIndex}
                     onChange={(editorState: EditorState) => {
                       setActiveEditor(parametersEditor);
                       parametersWarningRef.current?.remove();
@@ -516,6 +534,8 @@ export default function NewRequestPage() {
                   <Editor
                     ref={scheduleEditor}
                     activeEditor={activeEditor}
+                    userIndex={search.userIndex}
+                    MEILISEARCH_URL={ENV.MEILISEARCH_URL}
                     onChange={(editorState: EditorState) => {
                       setActiveEditor(scheduleEditor);
                       scheduleWarningRef.current?.remove();

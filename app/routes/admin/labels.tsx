@@ -15,7 +15,7 @@ import {
 } from '@remix-run/react';
 import { useEffect, useRef, useState } from 'react';
 import { namedAction } from 'remix-utils';
-import { EmojiSearch, Input } from '~/components/Emoji';
+import { EmojiFinder } from '~/components/Emoji';
 import { LabelCreator, LabelTag } from '~/components/Labels';
 import {
   createLabel,
@@ -102,40 +102,9 @@ export default function Index() {
                           .indexOf(e.target.value.toLowerCase()) !== -1,
                     ),
                   );
-                  if (
-                    e.target.value.length > 0 &&
-                    /:[^\s]+?$/.test(e.target.value)
-                  ) {
-                    setEmojiBox(
-                      EmojiSearch(
-                        e.target.value.match(/(?!:)[^\s]+?$/)[0],
-                        e.target.selectionStart,
-                        getComputedStyle(e.target),
-                      ),
-                    );
-                  } else {
-                    setEmojiBox();
-                  }
-                }}
-                onBlur={() => setEmojiBox()}
-                onFocus={(e) => {
-                  if (
-                    e.target.value.length > 0 &&
-                    /:[^\s]+?$/.test(e.target.value)
-                  ) {
-                    setEmojiBox(
-                      EmojiSearch(
-                        e.target.value.match(/(?!:)[^\s]+?$/)[0],
-                        e.target.selectionStart,
-                        getComputedStyle(e.target),
-                      ),
-                    );
-                  } else {
-                    setEmojiBox();
-                  }
                 }}
               />
-              <Input
+              <EmojiFinder
                 input={filterInput.current}
                 value={filter}
                 setter={setFilter}

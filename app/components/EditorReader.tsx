@@ -17,6 +17,8 @@ import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table';
 import { forwardRef } from 'react';
 
+import { MentionNode } from '../nodes/MentionNode';
+import { TextTokenNode } from '../nodes/TextTokenNode';
 import AutoLinkPlugin from '../plugins/AutoLinkPlugin';
 import CodeHighlightPlugin from '../plugins/CodeHighlightPlugin';
 import { EditorTheme } from './EditorTheme';
@@ -51,6 +53,8 @@ const EditorReader = forwardRef(
         TableRowNode,
         AutoLinkNode,
         LinkNode,
+        MentionNode,
+        TextTokenNode,
       ],
     };
     return (
