@@ -17,6 +17,7 @@ export const RequesterSelector = forwardRef(
       user,
       actionData,
       MEILISEARCH_URL,
+      MEILISEARCH_KEY,
       onChange,
       action,
       searchIndex,
@@ -25,6 +26,7 @@ export const RequesterSelector = forwardRef(
       user?: User;
       actionData: any;
       MEILISEARCH_URL: string;
+      MEILISEARCH_KEY: string;
       onChange?: React.ChangeEvent<HTMLInputElement>;
       action: string;
       searchIndex: string;
@@ -35,7 +37,10 @@ export const RequesterSelector = forwardRef(
     const [requester, setRequester] = useState(user);
     const [showRequesterSearch, setShowRequesterSearch] = useState(false);
     const requesterPopout = useRef<HTMLDivElement>();
-    const client = new MeiliSearch({ host: MEILISEARCH_URL });
+    const client = new MeiliSearch({
+      host: MEILISEARCH_URL,
+      apiKey: MEILISEARCH_KEY,
+    });
 
     const [requesterSearchResults, setRequesterSearchResults] = useState(null);
 

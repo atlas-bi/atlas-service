@@ -51,11 +51,13 @@ const Editor = forwardRef(
       onChange,
       activeEditor,
       MEILISEARCH_URL,
+      MEILISEARCH_KEY,
       userIndex,
     }: {
       onChange: changeCallbackType;
       activeEditor: MutableRefObject<HTMLDivElement | undefined>;
       MEILISEARCH_URL: string;
+      MEILISEARCH_KEY: string;
       userIndex: string;
     },
     ref,
@@ -101,6 +103,7 @@ const Editor = forwardRef(
             {typeof document !== 'undefined' && (
               <MentionsPlugin
                 MEILISEARCH_URL={MEILISEARCH_URL}
+                MEILISEARCH_KEY={MEILISEARCH_KEY}
                 searchIndex={userIndex}
               />
             )}

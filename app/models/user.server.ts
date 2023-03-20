@@ -6,7 +6,11 @@ import { loadGroup, loadUser } from '~/search.server';
 
 const userIndex = 'atlas-requests-users';
 
-const client = new MeiliSearch({ host: process.env.MEILISEARCH_URL });
+const client = new MeiliSearch({
+  host: process.env.MEILISEARCH_URL,
+  apiKey: process.env.MEILI_MASTER_KEY,
+});
+
 export async function getUserById(id: User['id']) {
   return prisma.user.findUnique({ where: { id }, include: { groups: true } });
 }

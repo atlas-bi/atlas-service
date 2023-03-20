@@ -26,6 +26,7 @@ export const RecipientSelector = forwardRef(
       recipients,
       actionData,
       MEILISEARCH_URL,
+      MEILISEARCH_KEY,
       onChange,
       action,
       searchIndex,
@@ -33,6 +34,7 @@ export const RecipientSelector = forwardRef(
       me: User;
       recipients?: User[];
       MEILISEARCH_URL: string;
+      MEILISEARCH_KEY: string;
       actionData: any;
       onChange?: React.ChangeEvent<HTMLInputElement>;
       action: string;
@@ -44,7 +46,10 @@ export const RecipientSelector = forwardRef(
     const [recipientList, setRecipientList] = useState(recipients || []);
     const [showRecipientSearch, setShowRecipientSearch] = useState(false);
     const recipientPopout = useRef<HTMLDivElement>();
-    const client = new MeiliSearch({ host: MEILISEARCH_URL });
+    const client = new MeiliSearch({
+      host: MEILISEARCH_URL,
+      apiKey: MEILISEARCH_KEY,
+    });
 
     const [recipientSearchResults, setRecipientSearchResults] = useState(null);
 

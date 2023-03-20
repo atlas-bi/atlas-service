@@ -97,10 +97,14 @@ const dummyLookupService = {
   search(
     queryString: string,
     MEILISEARCH_URL: string,
+    MEILISEARCH_KEY: string,
     searchIndex: string,
     callback: (results: Array<string>) => void,
   ): void {
-    const client = new MeiliSearch({ host: MEILISEARCH_URL });
+    const client = new MeiliSearch({
+      host: MEILISEARCH_URL,
+      apiKey: MEILISEARCH_KEY,
+    });
     setTimeout(async () => {
       const results = await client
         .index(searchIndex)
@@ -118,6 +122,7 @@ const dummyLookupService = {
 function useMentionLookupService(
   queryString: string | null,
   MEILISEARCH_URL: string,
+  MEILISEARCH_KEY: string,
   searchIndex: string,
 ) {
   const [results, setResults] = useState<Array<string>>([]);
@@ -141,6 +146,7 @@ function useMentionLookupService(
     dummyLookupService.search(
       queryString,
       MEILISEARCH_URL,
+      MEILISEARCH_KEY,
       searchIndex,
       (newResults) => {
         mentionsCache.set(queryString, newResults);
@@ -272,9 +278,11 @@ function MentionsTypeaheadMenuItem({
 
 export default function MentionsPlugin({
   MEILISEARCH_URL,
+  MEILISEARCH_KEY,
   searchIndex,
 }: {
   MEILISEARCH_URL: string;
+  MEILISEARCH_KEY: string;
   searchIndex: string;
 }): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
@@ -284,6 +292,7 @@ export default function MentionsPlugin({
   const results = useMentionLookupService(
     queryString,
     MEILISEARCH_URL,
+    MEILISEARCH_KEY,
     searchIndex,
   );
 

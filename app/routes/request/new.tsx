@@ -8,6 +8,7 @@ import {
 } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { $getRoot, type EditorState } from 'lexical';
+import { MeiliSearch } from 'meilisearch';
 import * as React from 'react';
 import { EmojiFinder } from '~/components/Emoji';
 import { getRequestType, getRequestTypes } from '~/models/config.server';
@@ -37,11 +38,20 @@ export async function loader({ request }: LoaderArgs) {
         requestTypes.filter((rt: RequestType) => rt.id === defaultType)[0] ||
         requestTypes[0];
 
+      const client = new MeiliSearch({
+        host: process.env.MEILISEARCH_URL,
+        apiKey: process.env.MEILI_MASTER_KEY,
+      });
+      const keys = await client.getKeys();
+
       return json({
         requestTypes,
         user,
         selectedType,
-        ENV: { MEILISEARCH_URL: process.env.MEILISEARCH_URL },
+        MEILISEARCH_URL: process.env.MEILISEARCH_URL,
+        MEILISEARCH_KEY: keys.results.filter(
+          (x) => x.name === 'Default Search API Key',
+        )[0].key,
         search: { labelIndex, userIndex },
       });
     },
@@ -206,7 +216,9 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function NewRequestPage() {
-  const { user, selectedType, ENV, search } = useLoaderData<typeof loader>();
+  const { user, selectedType, MEILISEARCH_URL, MEILISEARCH_KEY, search } =
+    useLoaderData<typeof loader>();
+
   type ActionData = { errors?: Errors; newLabel?: Label } | undefined | null;
 
   const actionData = useActionData<ActionData>();
@@ -381,7 +393,8 @@ export default function NewRequestPage() {
                     ref={descriptionEditor}
                     userIndex={search.userIndex}
                     activeEditor={activeEditor}
-                    MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                    MEILISEARCH_URL={MEILISEARCH_URL}
+                    MEILISEARCH_KEY={MEILISEARCH_KEY}
                     onChange={(editorState: EditorState) => {
                       setActiveEditor(descriptionEditor);
                       descriptionWarningRef.current?.remove();
@@ -423,7 +436,8 @@ export default function NewRequestPage() {
                     ref={purposeEditor}
                     activeEditor={activeEditor}
                     userIndex={search.userIndex}
-                    MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                    MEILISEARCH_URL={MEILISEARCH_URL}
+                    MEILISEARCH_KEY={MEILISEARCH_KEY}
                     onChange={(editorState: EditorState) => {
                       setActiveEditor(purposeEditor);
                       purposeWarningRef.current?.remove();
@@ -458,7 +472,8 @@ export default function NewRequestPage() {
                   )}
                   <Editor
                     ref={criteriaEditor}
-                    MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                    MEILISEARCH_URL={MEILISEARCH_URL}
+                    MEILISEARCH_KEY={MEILISEARCH_KEY}
                     activeEditor={activeEditor}
                     userIndex={search.userIndex}
                     onChange={(editorState: EditorState) => {
@@ -497,7 +512,8 @@ export default function NewRequestPage() {
                   )}
                   <Editor
                     ref={parametersEditor}
-                    MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                    MEILISEARCH_URL={MEILISEARCH_URL}
+                    MEILISEARCH_KEY={MEILISEARCH_KEY}
                     activeEditor={activeEditor}
                     userIndex={search.userIndex}
                     onChange={(editorState: EditorState) => {
@@ -535,7 +551,8 @@ export default function NewRequestPage() {
                     ref={scheduleEditor}
                     activeEditor={activeEditor}
                     userIndex={search.userIndex}
-                    MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                    MEILISEARCH_URL={MEILISEARCH_URL}
+                    MEILISEARCH_KEY={MEILISEARCH_KEY}
                     onChange={(editorState: EditorState) => {
                       setActiveEditor(scheduleEditor);
                       scheduleWarningRef.current?.remove();
@@ -572,7 +589,8 @@ export default function NewRequestPage() {
                 me={user}
                 user={user}
                 actionData={actionData}
-                MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                MEILISEARCH_URL={MEILISEARCH_URL}
+                MEILISEARCH_KEY={MEILISEARCH_KEY}
                 searchIndex={search.userIndex}
                 action="newRequester"
               />
@@ -583,7 +601,8 @@ export default function NewRequestPage() {
                 ref={requestedForRef}
                 me={user}
                 actionData={actionData}
-                MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                MEILISEARCH_URL={MEILISEARCH_URL}
+                MEILISEARCH_KEY={MEILISEARCH_KEY}
                 searchIndex={search.userIndex}
                 action="newRecipient"
               />
@@ -593,7 +612,8 @@ export default function NewRequestPage() {
                 ref={labelRef}
                 labels={undefined}
                 actionData={actionData}
-                MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                MEILISEARCH_URL={MEILISEARCH_URL}
+                MEILISEARCH_KEY={MEILISEARCH_KEY}
                 searchIndex={search.labelIndex}
                 action="newLabel"
               />

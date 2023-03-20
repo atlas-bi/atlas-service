@@ -328,6 +328,7 @@ export const LabelSelector = forwardRef(
       labels,
       actionData,
       MEILISEARCH_URL,
+      MEILISEARCH_KEY,
       onChange,
       searchIndex,
       action,
@@ -335,6 +336,7 @@ export const LabelSelector = forwardRef(
       labels?: Label[];
       actionData: any;
       MEILISEARCH_URL: string;
+      MEILISEARCH_KEY: string;
       onChange?: React.ChangeEvent<HTMLInputElement>;
       searchIndex: string;
       action: string;
@@ -347,7 +349,10 @@ export const LabelSelector = forwardRef(
     const [showLabelSearch, setShowLabelSearch] = useState(false);
     const labelPopout = useRef<HTMLDivElement>();
 
-    const client = new MeiliSearch({ host: MEILISEARCH_URL });
+    const client = new MeiliSearch({
+      host: MEILISEARCH_URL,
+      apiKey: MEILISEARCH_KEY,
+    });
     const [labelSearchResults, setLabelSearchResults] = useState(null);
 
     const inputReference = useRef<HTMLInputElement>(null);

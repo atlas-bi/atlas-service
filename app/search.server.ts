@@ -12,7 +12,10 @@ export const labelIndex = 'atlas-requests-labels';
 
 invariant(process.env.MEILISEARCH_URL, 'MEILISEARCH_URL not found');
 
-const client = new MeiliSearch({ host: process.env.MEILISEARCH_URL });
+const client = new MeiliSearch({
+  host: process.env.MEILISEARCH_URL,
+  apiKey: process.env.MEILI_MASTER_KEY,
+});
 
 // default batch size to send to meillisearch
 const chunkSize = 50;
