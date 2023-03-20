@@ -1,3 +1,8 @@
+## 1.0.0-rc.16 (2023-03-20)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([6feb181](https://github.com/atlas-bi/atlas-requests/commit/6feb181))
+* feat(watching): added watcher ([c6da904](https://github.com/atlas-bi/atlas-requests/commit/c6da904))
+
 ## 1.0.0-rc.15 (2023-03-20)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([8ba8ca2](https://github.com/atlas-bi/atlas-requests/commit/8ba8ca2))
