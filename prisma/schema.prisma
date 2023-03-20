@@ -16,9 +16,9 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  notes Note[]
-
   groups              Group[]
+  myAssignedRequests  Request[]         @relation("RequestAssignees")
+  myWatchedRequests   Request[]         @relation("RequestWatchers")
   myCreatedRequests   Request[]         @relation("RequestCreator")
   myRequests          Request[]         @relation("RequestRequester")
   requestTypesCreated RequestType[]
@@ -36,18 +36,6 @@ model Group {
   updatedAt DateTime @updatedAt
 
   users User[]
-}
-
-model Note {
-  id    Int    @id @default(autoincrement())
-  title String
-  body  String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId Int
 }
 
 model RequestCategory {
@@ -116,8 +104,10 @@ model Request {
   devNotes           String?
   devNotesText       String?
 
+  assignees   User[]  @relation("RequestAssignees")
   subscribers User[]  @relation("RequestSubsciber")
   recipients  User[]  @relation("ReportRecipient")
+  watchers    User[]  @relation("RequestWatchers")
   labels      Label[]
 
   createdAt DateTime @default(now())

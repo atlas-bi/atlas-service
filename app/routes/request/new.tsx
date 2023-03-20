@@ -17,6 +17,7 @@ import { createRequest } from '~/models/request.server';
 import { labelIndex, userIndex } from '~/search.server';
 import { authorize, requireUser } from '~/session.server';
 
+import { AssigneeSelector } from '../../components/Assignees';
 import Editor from '../../components/Editor';
 import { LabelSelector } from '../../components/Labels';
 import { RecipientSelector } from '../../components/Recipients';
@@ -99,6 +100,7 @@ export async function action({ request }: ActionArgs) {
   const requestedFor = formData.get('requestedFor') as string | null;
   const type = formData.get('type') as string;
   const recipients = formData.getAll('recipients') as string[] | null;
+  const assignees = formData.getAll('assignees') as string[] | null;
   const labels = formData.getAll('labels') as string[] | null;
   const excel = formData.get('excel') as string | null;
   const initiative = formData.get('initiative') as string | null;
@@ -210,6 +212,8 @@ export async function action({ request }: ActionArgs) {
     regulatory,
     recipients,
     labels,
+    assignees,
+    watchers: [userId],
   });
 
   return redirect(`/request/${thisRequest.id}`);
@@ -225,6 +229,7 @@ export default function NewRequestPage() {
 
   const [name, setName] = React.useState('');
   const requestedForRef = React.useRef<HTMLInputElement>(null);
+  const assigneeRef = React.useRef<HTMLInputElement>(null);
   const labelRef = React.useRef<HTMLInputElement>(null);
   const typeRef = React.useRef<HTMLSelectElement>(null);
   const nameRef = React.useRef<HTMLInputElement>(null);
@@ -598,7 +603,7 @@ export default function NewRequestPage() {
 
             {selectedType.showRecipients && (
               <RecipientSelector
-                ref={requestedForRef}
+                ref={recipientsRef}
                 me={user}
                 actionData={actionData}
                 MEILISEARCH_URL={MEILISEARCH_URL}
@@ -662,6 +667,17 @@ export default function NewRequestPage() {
                 </div>
               </>
             )}
+
+            <AssigneeSelector
+              ref={assigneeRef}
+              me={user}
+              user={user}
+              actionData={actionData}
+              MEILISEARCH_URL={MEILISEARCH_URL}
+              MEILISEARCH_KEY={MEILISEARCH_KEY}
+              searchIndex={search.userIndex}
+              action="newAssignee"
+            />
           </div>
         </div>
       </Form>

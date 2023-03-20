@@ -80,7 +80,7 @@ export const LabelCreator = ({
   onClose,
   label,
 }: {
-  action: any;
+  action: string;
   name: string | undefined;
   show: boolean;
   label?: Label;

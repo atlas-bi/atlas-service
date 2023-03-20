@@ -37,6 +37,24 @@ export function getRequest({ id }: Pick<Request, 'id'>) {
           profilePhoto: true,
         },
       },
+      assignees: {
+        select: {
+          firstName: true,
+          lastName: true,
+          id: true,
+          email: true,
+          profilePhoto: true,
+        },
+      },
+      watchers: {
+        select: {
+          firstName: true,
+          lastName: true,
+          id: true,
+          email: true,
+          profilePhoto: true,
+        },
+      },
       labels: {
         select: {
           id: true,
@@ -104,9 +122,61 @@ export const editRecipients = async ({
   return;
 };
 
-export function getRequests({ userId }: { userId: User['id'] }) {
+export const editWatch = async ({
+  watch,
+  userId,
+  id,
+}: Pick<Request, 'assignees'> & { userId: User['id']; watch: boolean }) => {
+  if (watch) {
+    return prisma.request.update({
+      where: { id },
+      data: {
+        watchers: {
+          connect: [{ id: userId }],
+        },
+      },
+    });
+  }
+  return prisma.request.update({
+    where: { id },
+    data: {
+      watchers: {
+        disconnect: [{ id: userId }],
+      },
+    },
+  });
+};
+export const editAssignees = async ({
+  userId,
+  assignees,
+  id,
+}: Pick<Request, 'assignees'> & { userId: User['id'] }) => {
+  await prisma.request.update({
+    where: { id },
+    data: {
+      assignees: {
+        set: assignees.map((x) => ({ id: Number(x) })),
+      },
+    },
+  });
+  return;
+};
+
+export function getRequests({
+  userId,
+  assigneeId,
+  watcherId,
+}: {
+  userId?: User['id'];
+  assigneeId?: User['id'];
+  watcherId?: User['id'];
+}) {
   return prisma.request.findMany({
-    where: { OR: [{ requesterId: userId }, { creatorId: userId }] },
+    where: userId
+      ? { OR: [{ requesterId: userId }, { creatorId: userId }] }
+      : assigneeId
+      ? { assignees: { some: { id: assigneeId } } }
+      : { watchers: { some: { id: watcherId } } },
     select: {
       id: true,
       name: true,
@@ -152,7 +222,9 @@ export async function createRequest({
   regulatory,
   requestedFor,
   recipients,
+  assignees,
   labels,
+  watchers,
 }: Pick<
   Request,
   | 'name'
@@ -175,6 +247,7 @@ export async function createRequest({
   initiative: Request['supportsInitiative'];
   recipients: Request['recipients'][];
   labels: Request['labels'][];
+  watchers: Request['watchers'][];
 }) {
   const defaultCategory = await prisma.requestCategory.findFirst({
     where: { isDefault: true },
@@ -210,6 +283,18 @@ export async function createRequest({
       recipients: recipients
         ? {
             connect: recipients.map((x) => ({ id: Number(x) })),
+          }
+        : undefined,
+
+      assignees: assignees
+        ? {
+            connect: assignees.map((x) => ({ id: Number(x) })),
+          }
+        : undefined,
+
+      watchers: watchers
+        ? {
+            connect: watchers.map((x) => ({ id: Number(x) })),
           }
         : undefined,
 

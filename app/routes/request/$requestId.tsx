@@ -1,6 +1,9 @@
-import { faBell } from '@fortawesome/free-regular-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { type ActionArgs, type LoaderArgs, json } from '@remix-run/node';
+import {
+  type ActionArgs,
+  type LoaderArgs,
+  json,
+  redirect,
+} from '@remix-run/node';
 import {
   Form,
   useActionData,
@@ -8,21 +11,28 @@ import {
   useLoaderData,
   useSubmit,
 } from '@remix-run/react';
+import { MeiliSearch } from 'meilisearch';
 import * as React from 'react';
+import { namedAction } from 'remix-utils';
 import invariant from 'tiny-invariant';
 import {
+  deleteRequest,
+  editAssignees,
   editLabels,
   editRecipients,
   editRequester,
+  editWatch,
   getRequest,
 } from '~/models/request.server';
 import { labelIndex, userIndex } from '~/search.server';
 import { authorize, requireUser } from '~/session.server';
 
+import { AssigneeSelector } from '../../components/Assignees';
 import EditorReader from '../../components/EditorReader';
 import { LabelSelector } from '../../components/Labels';
 import { RecipientSelector } from '../../components/Recipients';
 import { RequesterSelector } from '../../components/Requester';
+import { WatcherList } from '../../components/Watchers';
 
 export async function loader({ request, params }: LoaderArgs) {
   return authorize(
@@ -37,10 +47,20 @@ export async function loader({ request, params }: LoaderArgs) {
       if (!thisRequest) {
         throw new Response('Not Found', { status: 404 });
       }
+
+      const client = new MeiliSearch({
+        host: process.env.MEILISEARCH_URL,
+        apiKey: process.env.MEILI_MASTER_KEY,
+      });
+      const keys = await client.getKeys();
+
       return json({
         user,
         thisRequest,
-        ENV: { MEILISEARCH_URL: process.env.MEILISEARCH_URL },
+        MEILISEARCH_URL: process.env.MEILISEARCH_URL,
+        MEILISEARCH_KEY: keys.results.filter(
+          (x) => x.name === 'Default Search API Key',
+        )[0].key,
         search: { labelIndex, userIndex },
       });
     },
@@ -52,45 +72,76 @@ export async function action({ request, params }: ActionArgs) {
   const userId = user?.id;
   invariant(params.requestId, 'requestId not found');
 
-  const formData = await request.formData();
-  const { _action, ...values } = Object.fromEntries(formData);
-
-  switch (_action) {
-    case 'editRequester': {
+  return namedAction(request, {
+    async editRequester() {
+      const formData = await request.formData();
+      const { _action, ...values } = Object.fromEntries(formData);
       const requestedFor = Number(values.requestedFor);
+
       await editRequester({
         requestedFor,
         userId,
         id: Number(params.requestId),
       });
-      break;
-    }
-    case 'editRecipients': {
+      return null;
+    },
+    async editRecipients() {
+      const formData = await request.formData();
+      const { _action, ...values } = Object.fromEntries(formData);
       await editRecipients({
         recipients: formData.getAll('recipients'),
         userId,
         id: Number(params.requestId),
       });
-      break;
-    }
-    case 'editLabels': {
+      return null;
+    },
+    async editLabels() {
+      const formData = await request.formData();
+      const { _action, ...values } = Object.fromEntries(formData);
       console.log(formData.getAll('labels'));
       await editLabels({
         labels: formData.getAll('labels'),
         userId,
         id: Number(params.requestId),
       });
-      break;
-    }
-  }
-  return null;
-  // await deleteRequest({ userId, id: Number(params.requestId) });
-
-  // return redirect('/');
+      return null;
+    },
+    async editAssignees() {
+      const formData = await request.formData();
+      const { _action, ...values } = Object.fromEntries(formData);
+      console.log('edit assignees', values);
+      await editAssignees({
+        assignees: formData.getAll('assignees'),
+        userId,
+        id: Number(params.requestId),
+      });
+      return null;
+    },
+    async editWatcher() {
+      console.log('edit watcher');
+      const formData = await request.formData();
+      const { _action, ...values } = Object.fromEntries(formData);
+      console.log(values);
+      await editWatch({
+        userId,
+        watch: values.watch === 'true',
+        id: Number(params.requestId),
+      });
+      return null;
+    },
+    async delete() {
+      console.log('deleting');
+      await deleteRequest({
+        id: Number(params.requestId),
+      });
+      return redirect('/');
+    },
+  });
 }
 
 export default function RequestDetailsPage() {
-  const { thisRequest, ENV, user, search } = useLoaderData<typeof loader>();
+  const { thisRequest, MEILISEARCH_URL, MEILISEARCH_KEY, user, search } =
+    useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const descriptionRef = React.useRef<HTMLInputElement>(null);
   const purposeRef = React.useRef<HTMLInputElement>(null);
@@ -99,16 +150,30 @@ export default function RequestDetailsPage() {
   const scheduleRef = React.useRef<HTMLInputElement>(null);
   const changeRequester = React.useRef<HTMLFormElement>(null);
   const changeRecipients = React.useRef<HTMLFormElement>(null);
+  const changeAssignees = React.useRef<HTMLFormElement>(null);
+  const changeWatcher = React.useRef<HTMLFormElement>(null);
   const changeLabels = React.useRef<HTMLFormElement>(null);
   const requestedForRef = React.useRef<HTMLInputElement>(null);
 
-  const submitRequester = useSubmit();
+  const formSubmitter = useSubmit();
 
   return (
     <div className="container">
       <div className="columns">
         <div className="column">
-          <h3 className="title is-3 pl-4">{thisRequest.name}</h3>
+          <div className="is-flex is-justify-content-space-between">
+            <h3 className="title is-3 pl-4">{thisRequest.name}</h3>
+            <Form method="post">
+              <button
+                type="submit"
+                name="_action"
+                value="delete"
+                className="button is-ghost has-text-link"
+              >
+                delete
+              </button>
+            </Form>
+          </div>
 
           <div className="thread-box">
             {thisRequest.description && (
@@ -168,31 +233,23 @@ export default function RequestDetailsPage() {
           </div>
         </div>
         <div className="column is-one-third">
-          <Form method="post">
-            <button
-              type="submit"
-              className="rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
-            >
-              Delete
-            </button>
-          </Form>
           <p>{thisRequest.exportToExcel}</p>
           <p>{thisRequest.supportsInitiative}</p>
           <p>{thisRequest.regulatory}</p>
-          <strong>Watchers</strong>
 
           <Form method="post" ref={changeRequester}>
             <input type="hidden" name="_action" value="editRequester" />
             <RequesterSelector
               onChange={() => {
-                submitRequester(changeRequester.current, { replace: true });
+                formSubmitter(changeRequester.current, { replace: true });
               }}
               action="editRequester"
               me={user}
               ref={requestedForRef}
               user={thisRequest.requester}
               actionData={actionData}
-              MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+              MEILISEARCH_URL={MEILISEARCH_URL}
+              MEILISEARCH_KEY={MEILISEARCH_KEY}
               searchIndex={search.userIndex}
             />
           </Form>
@@ -201,13 +258,14 @@ export default function RequestDetailsPage() {
             <input type="hidden" name="_action" value="editRecipients" />
             <RecipientSelector
               onChange={() => {
-                submitRequester(changeRecipients.current, { replace: true });
+                formSubmitter(changeRecipients.current, { replace: true });
               }}
               action="editRecipients"
               recipients={thisRequest.recipients}
               me={user}
               actionData={actionData}
-              MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+              MEILISEARCH_URL={MEILISEARCH_URL}
+              MEILISEARCH_KEY={MEILISEARCH_KEY}
               searchIndex={search.userIndex}
             />
           </Form>
@@ -216,25 +274,37 @@ export default function RequestDetailsPage() {
             <input type="hidden" name="_action" value="editLabels" />
             <LabelSelector
               onChange={() => {
-                submitRequester(changeLabels.current, { replace: true });
+                formSubmitter(changeLabels.current, { replace: true });
               }}
               labels={thisRequest.labels}
               actionData={actionData}
-              MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+              MEILISEARCH_URL={MEILISEARCH_URL}
+              MEILISEARCH_KEY={MEILISEARCH_KEY}
               searchIndex={search.labelIndex}
               action="editLabels"
             />
           </Form>
+          <Form method="post" ref={changeAssignees}>
+            <input type="hidden" name="_action" value="editAssignees" />
+            <AssigneeSelector
+              onChange={() => {
+                formSubmitter(changeAssignees.current, { replace: true });
+              }}
+              action="editAssignees"
+              assignees={thisRequest.assignees}
+              me={user}
+              actionData={actionData}
+              MEILISEARCH_URL={MEILISEARCH_URL}
+              MEILISEARCH_KEY={MEILISEARCH_KEY}
+              searchIndex={search.userIndex}
+            />
+          </Form>
 
-          <strong>Requested For</strong>
-          <br />
-
-          <button className="button">
-            <span className="icon">
-              <FontAwesomeIcon icon={faBell} size="lg" />
-            </span>
-            <span>subscribe</span>
-          </button>
+          <WatcherList
+            me={user}
+            watchers={thisRequest.watchers}
+            action="editWatcher"
+          />
         </div>
       </div>
     </div>
