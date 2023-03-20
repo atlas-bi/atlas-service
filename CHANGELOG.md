@@ -1,3 +1,9 @@
+## 1.0.0-rc.14 (2023-03-20)
+
+* feat(mentions): added mentions ([75e71af](https://github.com/atlas-bi/atlas-requests/commit/75e71af))
+* added renovate.json ([e6f1cbc](https://github.com/atlas-bi/atlas-requests/commit/e6f1cbc))
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([de32fa1](https://github.com/atlas-bi/atlas-requests/commit/de32fa1))
+
 ## 1.0.0-rc.13 (2023-03-10)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([2d9bd23](https://github.com/atlas-bi/atlas-requests/commit/2d9bd23))
