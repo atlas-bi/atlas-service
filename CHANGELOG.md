@@ -1,3 +1,8 @@
+## 1.0.0-rc.15 (2023-03-20)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([8ba8ca2](https://github.com/atlas-bi/atlas-requests/commit/8ba8ca2))
+* feat(search): added search key ([c0229c2](https://github.com/atlas-bi/atlas-requests/commit/c0229c2))
+
 ## 1.0.0-rc.14 (2023-03-20)
 
 * feat(mentions): added mentions ([75e71af](https://github.com/atlas-bi/atlas-requests/commit/75e71af))
