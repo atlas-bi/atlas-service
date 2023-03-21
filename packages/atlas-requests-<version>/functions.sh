@@ -12,8 +12,8 @@ export VERSION="<version>"
 
 # website
 HOSTNAME=localhost
-EXTERNAL_URL=${EXTERNAL_URL:-hostname}
 PORT=3010
+EXTERNAL_URL=${EXTERNAL_URL:-undefined}
 
 # postgres
 PG_HOSTNAME=localhost
@@ -30,6 +30,11 @@ INSTALL_DIR="$BASE_DIR/app"
 USER_DIR="/etc/$APP_NAME"
 # shellcheck disable=SC2034
 BACKUP_DIR="$USER_DIR/backup"
+
+# search
+SEARCH_HOSTNAME=localhost
+SEARCH_PUBLIC_PORT=7700
+SEARCH_INTERNAL_PORT=7701
 
 # files
 CONFIG="$USER_DIR/config"
@@ -124,20 +129,37 @@ install_configuration(){
     sed -i -e "s/MEILI_MASTER_KEY=.*//g" $CONFIG > /dev/null
     sed -i -e "s/MEILI_DB_PAT=.*//g" $CONFIG > /dev/null
     sed -i -e "s/MEILI_ENV=.*//g" $CONFIG > /dev/null
+    sed -i -e "s/MEILISEARCH_URL=.*//g" $CONFIG > /dev/null
+    sed -i -e "s/MEILI_HTTP_ADDR=.*//g" $CONFIG > /dev/null
     sed -i -e "s/HOSTNAME=.*//g" $CONFIG > /dev/null
     sed -i -e "s/REDIS_URL=.*//g" $CONFIG > /dev/null
     sed -i -e "s/SAML/#SAML/g" $CONFIG > /dev/null
     sed -i -e "s/LDAP/#LDAP/g" $CONFIG > /dev/null
+
+    load_external_url
+  fi
+}
+
+load_external_url(){
+  if [ "$EXTERNAL_URL" != "undefined" ]
+  then
+    sed -i -e "s/EXTERNAL_URL=.*//g" $CONFIG > /dev/null
+    cat <<EOT > $CONFIG
+$(cat "$CONFIG")
+EXTERNAL_URL=$EXTERNAL_URL
+EOT
   fi
 }
 
 load_configuration(){
 
+  load_external_url
+
   DATABASE_PASS=$(jq .PG_PASS "$SECRETS" --raw-output)
   SESSION_SECRET=$(jq .SESSION_SECRET "$SECRETS" --raw-output)
   PASSPHRASES=$(jq .PASSPHRASES "$SECRETS" --raw-output)
   MEILI_MASTER_KEY=$(jq .MEILI_MASTER_KEY "$SECRETS" --raw-output)
-
+  EXTERNAL_URL=$({ grep EXTERNAL_URL= || true; } <  $CONFIG  | sed 's/^.*=//')
   cat <<EOT > $INSTALL_DIR/.env
 $(cat "$CONFIG")
 DATABASE_URL="postgresql://$PG_USER:$DATABASE_PASS@$PG_HOSTNAME:$PG_PORT/$PG_DATABASE"
@@ -146,6 +168,8 @@ PASSPHRASES=$PASSPHRASES
 MEILI_ENV=production
 MEILI_DB_PAT=$INSTALL_DIR/data.js/
 MEILI_MASTER_KEY=$MEILI_MASTER_KEY
+MEILISEARCH_URL=$EXTERNAL_URL:$SEARCH_PUBLIC_PORT
+MEILI_HTTP_ADDR=http://$SEARCH_HOSTNAME:$SEARCH_INTERNAL_PORT
 HOSTNAME=$HOSTNAME:$PORT
 REDIS_URL=redis://$REDIS_HOSTNAME:$REDIS_PORT/0
 EOT
@@ -340,6 +364,8 @@ EOT
 
 nginx_init(){
 
+  EXTERNAL_URL=$({ grep EXTERNAL_URL= || true; } <  $CONFIG  | sed 's/^.*=//')
+
   cat <<EOT > /etc/nginx/sites-enabled/$APP_NAME
 server {
   listen 80;
@@ -349,6 +375,17 @@ server {
       access_log   off;
       include proxy_params;
       proxy_pass http://$HOSTNAME:$PORT;
+  }
+}
+
+server {
+  listen $SEARCH_PUBLIC_PORT;
+  server_name $EXTERNAL_URL localhost 127.0.0.1;
+
+  location / {
+    access_log   off;
+      include proxy_params;
+      proxy_pass http://$SEARCH_HOSTNAME:$SEARCH_INTERNAL_PORT;
   }
 }
 EOT
