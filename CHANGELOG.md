@@ -1,3 +1,8 @@
+## 1.0.0-rc.17 (2023-03-21)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([32e0439](https://github.com/atlas-bi/atlas-requests/commit/32e0439))
+* fix(installer): fixed search urls in installer ([e579b5a](https://github.com/atlas-bi/atlas-requests/commit/e579b5a))
+
 ## 1.0.0-rc.16 (2023-03-20)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([6feb181](https://github.com/atlas-bi/atlas-requests/commit/6feb181))
