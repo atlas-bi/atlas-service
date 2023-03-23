@@ -109,12 +109,10 @@ const Editor = forwardRef(
     };
 
     return (
-      <LexicalComposer
-        initialConfig={editorConfig}
-        ref={ref as RefObject<HTMLDivElement>}
-      >
+      <LexicalComposer initialConfig={editorConfig}>
         <div className="editor-container">
           <div
+            ref={ref as RefObject<HTMLDivElement>}
             className={`editor-toolbar ${
               ref !== activeEditor ? 'is-hidden' : ''
             }`}

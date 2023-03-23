@@ -86,6 +86,9 @@ $block-spacing: 1rem;
 
 html {
   height: 100%;
+  &.has-navbar-fixed-top {
+    padding-top: 4.5rem;
+  }
 }
 
 body {
@@ -129,39 +132,45 @@ body {
 .thread-box {
   @extend .box;
   @extend .p-0;
-  @extend .ml-3;
+
   shadow-box: unset;
   filter: drop-shadow(0px 2px 2px $white-ter);
   position: relative;
   border: 1px solid $grey-lighter;
 
-  &:after {
-    margin-left: 1px;
-    position: absolute;
-    top: 11px;
-    right: 100%;
-    left: -8px;
-    display: block;
-    width: 8px;
-    height: 16px;
-    pointer-events: none;
-    content: ' ';
-    clip-path: polygon(0 50%, 100% 0, 100% 100%);
-    background-image: linear-gradient($white, $white) !important;
-  }
-  &:before {
-    margin-left: -1px;
-    position: absolute;
-    top: 11px;
-    right: 100%;
-    left: -8px;
-    display: block;
-    width: 8px;
-    height: 16px;
-    pointer-events: none;
-    content: ' ';
-    clip-path: polygon(0 50%, 100% 0, 100% 100%);
-    background-image: linear-gradient($grey-lighter, $grey-lighter) !important;
+  &:not(.new) {
+    @extend .ml-3;
+    &:after {
+      margin-left: 1px;
+      position: absolute;
+      top: 11px;
+      right: 100%;
+      left: -8px;
+      display: block;
+      width: 8px;
+      height: 16px;
+      pointer-events: none;
+      content: ' ';
+      clip-path: polygon(0 50%, 100% 0, 100% 100%);
+      background-color: inherit;
+    }
+    &:before {
+      margin-left: -1px;
+      position: absolute;
+      top: 11px;
+      right: 100%;
+      left: -8px;
+      display: block;
+      width: 8px;
+      height: 16px;
+      pointer-events: none;
+      content: ' ';
+      clip-path: polygon(0 50%, 100% 0, 100% 100%);
+      background-image: linear-gradient(
+        $grey-lighter,
+        $grey-lighter
+      ) !important;
+    }
   }
 }
 
@@ -186,6 +195,10 @@ body {
       aspect-ratio: 1 / 2;
     }
   }
+}
+
+.has-border-bottom-grey-lighter {
+  border-bottom: 1px solid $grey-lighter;
 }
 
 .has-border-grey-lighter {
@@ -376,10 +389,63 @@ figure.is-20x20 {
 /* purgecss start ignore */
 @import 'editor';
 .editor-input {
-  @extend .has-background-white-bis;
   @extend .p-3;
-  @extend .m-2;
+
   border-radius: $radius;
-  border: 1px solid $grey-lighter;
+  &:not(.readonly) {
+    @extend .m-2;
+    border: 1px solid $grey-lighter;
+    @extend .has-background-white-bis;
+  }
 }
 /* purgecss end ignore */
+
+.timeline {
+  @extend .pb-5;
+  position: relative;
+  &:before {
+    content: '';
+    position: absolute;
+    border-left: 2px solid $grey-lighter;
+    top: 0;
+    bottom: 0;
+    z-index: -1;
+    left: 90px;
+  }
+  & + hr {
+    @extend .mt-0;
+  }
+  & > *:last-child {
+    @extend .pb-0;
+  }
+}
+
+article.media.thread {
+  border-top: none;
+}
+
+.profile-photo {
+  position: relative;
+  .image + .image {
+    position: absolute;
+    top: 20%;
+    left: 20%;
+  }
+}
+
+.history {
+  position: relative;
+  display: flex;
+  margin-left: 82px;
+  @extend .pt-5;
+  padding-bottom: 0;
+  & + .history {
+    // @extend .pb-5;
+    @extend .pt-3;
+    &:last-child {
+    }
+  }
+  & + .media.thread {
+    @extend .pt-5;
+  }
+}

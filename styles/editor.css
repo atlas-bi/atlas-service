@@ -7,6 +7,10 @@
   text-align: left;
 }
 
+.editor-toolbar {
+  border-radius: inherit;
+}
+
 .editor-inner {
   background: #fff;
   position: relative;

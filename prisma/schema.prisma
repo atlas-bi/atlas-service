@@ -16,18 +16,24 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  groups              Group[]
-  myAssignedRequests  Request[]         @relation("RequestAssignees")
-  myWatchedRequests   Request[]         @relation("RequestWatchers")
-  myCreatedRequests   Request[]         @relation("RequestCreator")
-  myRequests          Request[]         @relation("RequestRequester")
-  requestTypesCreated RequestType[]
-  categoriesCreated   RequestCategory[]
-  subscribedRequests  Request[]         @relation("RequestSubsciber")
-  recievingReports    Request[]         @relation("ReportRecipient")
-  myCreatedLabel      Label[]           @relation("LabelCreator")
-  myUpdatedComments   RequestComments[] @relation("CommentUpdater")
-  myComments          RequestComments[] @relation("CommentCreator")
+  groups                         Group[]
+  myAssignedRequests             Request[]                 @relation("RequestAssignees")
+  myWatchedRequests              Request[]                 @relation("RequestWatchers")
+  myCreatedRequests              Request[]                 @relation("RequestCreator")
+  myRequests                     Request[]                 @relation("RequestRequester")
+  requestTypesCreated            RequestType[]
+  categoriesCreated              RequestCategory[]
+  recievingReports               Request[]                 @relation("ReportRecipient")
+  myCreatedLabel                 Label[]                   @relation("LabelCreator")
+  myUpdatedComments              RequestComments[]         @relation("CommentUpdater")
+  myComments                     RequestComments[]         @relation("CommentCreator")
+  RequestLabelHistory            RequestLabelHistory[]
+  RequestAssigneeHistoryUpdater  RequestAssigneeHistory[]  @relation("AssigneeHistoryUpdater")
+  RequestAssigneeHistory         RequestAssigneeHistory[]
+  RequestRequesterHistoryUpdater RequestRequesterHistory[] @relation("RequesterHistoryUpdater")
+  RequestRequesterHistory        RequestRequesterHistory[]
+  RequestRecipientHistoryUpdater RequestRecipientHistory[] @relation("RecipientHistoryUpdater")
+  RequestRecipientHistory        RequestRecipientHistory[]
 }
 
 model Group {
@@ -76,14 +82,15 @@ model RequestType {
 }
 
 model Label {
-  id          Int       @id @default(autoincrement())
-  name        String
-  color       String?
-  description String?
-  createdAt   DateTime  @default(now())
-  requests    Request[]
-  creator     User      @relation(name: "LabelCreator", fields: [creatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  creatorId   Int
+  id                  Int                   @id @default(autoincrement())
+  name                String
+  color               String?
+  description         String?
+  createdAt           DateTime              @default(now())
+  requests            Request[]
+  creator             User                  @relation(name: "LabelCreator", fields: [creatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  creatorId           Int
+  RequestLabelHistory RequestLabelHistory[]
 }
 
 model Request {
@@ -106,11 +113,14 @@ model Request {
   devNotes           String?
   devNotesText       String?
 
-  assignees   User[]  @relation("RequestAssignees")
-  subscribers User[]  @relation("RequestSubsciber")
-  recipients  User[]  @relation("ReportRecipient")
-  watchers    User[]  @relation("RequestWatchers")
-  labels      Label[]
+  assignees        User[]                    @relation("RequestAssignees")
+  recipients       User[]                    @relation("ReportRecipient")
+  watchers         User[]                    @relation("RequestWatchers")
+  labels           Label[]
+  labelHistory     RequestLabelHistory[]     @relation("LabelHistory")
+  assigneeHistory  RequestAssigneeHistory[]  @relation("AssigneeHistory")
+  requesterHistory RequestRequesterHistory[] @relation("RequesterHistory")
+  recipientHistory RequestRecipientHistory[] @relation("RecipientHistory")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -139,9 +149,57 @@ model RequestComments {
   creatorId Int
   createdAt DateTime @default(now())
 
-  updater   User     @relation(name: "CommentUpdater", fields: [updaterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  updaterId Int
-  updatedAt DateTime @updatedAt
+  updater   User?     @relation(name: "CommentUpdater", fields: [updaterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  updaterId Int?
+  updatedAt DateTime? @updatedAt
 
   comment String?
+}
+
+model RequestLabelHistory {
+  id        Int      @id @default(autoincrement())
+  request   Request  @relation(name: "LabelHistory", fields: [requestId], references: [id])
+  requestId Int
+  label     Label    @relation(fields: [labelId], references: [id])
+  labelId   Int
+  creator   User     @relation(fields: [creatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  creatorId Int
+  createdAt DateTime @default(now())
+  added     Boolean // true = added, false = removed
+}
+
+model RequestAssigneeHistory {
+  id         Int      @id @default(autoincrement())
+  request    Request  @relation(name: "AssigneeHistory", fields: [requestId], references: [id])
+  requestId  Int
+  assignee   User     @relation(fields: [assigneeId], references: [id])
+  assigneeId Int
+  creator    User     @relation(name: "AssigneeHistoryUpdater", fields: [creatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  creatorId  Int
+  createdAt  DateTime @default(now())
+  added      Boolean // true = added, false = removed
+}
+
+model RequestRequesterHistory {
+  id          Int      @id @default(autoincrement())
+  request     Request  @relation(name: "RequesterHistory", fields: [requestId], references: [id])
+  requestId   Int
+  requester   User     @relation(fields: [requesterId], references: [id])
+  requesterId Int
+  creator     User     @relation(name: "RequesterHistoryUpdater", fields: [creatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  creatorId   Int
+  createdAt   DateTime @default(now())
+  added       Boolean // true = added, false = removed
+}
+
+model RequestRecipientHistory {
+  id          Int      @id @default(autoincrement())
+  request     Request  @relation(name: "RecipientHistory", fields: [requestId], references: [id])
+  requestId   Int
+  recipient   User     @relation(fields: [recipientId], references: [id])
+  recipientId Int
+  creator     User     @relation(name: "RecipientHistoryUpdater", fields: [creatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  creatorId   Int
+  createdAt   DateTime @default(now())
+  added       Boolean // true = added, false = removed
 }

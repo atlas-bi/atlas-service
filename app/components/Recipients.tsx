@@ -111,7 +111,7 @@ export const RecipientSelector = forwardRef(
               setShowRecipientSearch(!showRecipientSearch);
             }}
           >
-            <span>Subscriber List</span>
+            <span>Recipient List</span>
             <span className="icon mr-2">
               <FontAwesomeIcon icon={faPencil} />
             </span>
@@ -121,7 +121,7 @@ export const RecipientSelector = forwardRef(
               <div className="popout-content has-background-light">
                 <div className="py-2 px-3 is-flex is-justify-content-space-between">
                   <strong className="my-auto">
-                    Add subscribers to this report
+                    Add recipients to this report
                   </strong>
                   {isSaving ? (
                     <span className="icon has-text-warning my-auto is-pulled-right">
@@ -286,4 +286,4 @@ export const RecipientSelector = forwardRef(
   },
 );
 
-RecipientSelector.displayName = 'Subscriber List';
+RecipientSelector.displayName = 'Recipient List';

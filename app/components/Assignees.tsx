@@ -111,7 +111,7 @@ export const AssigneeSelector = forwardRef(
               setShowAssigneeSearch(!showAssigneeSearch);
             }}
           >
-            <span>Assigned Analyists</span>
+            <span>Assigned Analysts</span>
             <span className="icon mr-2">
               <FontAwesomeIcon icon={faPencil} />
             </span>

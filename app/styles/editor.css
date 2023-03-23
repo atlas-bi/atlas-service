@@ -1,10 +1,13 @@
 .editor-container {
-  border-radius: inherit;
   color: #000;
   font-weight: 400;
   line-height: 20px;
   position: relative;
   text-align: left;
+}
+.editor-container,
+.editor-toolbar {
+  border-radius: inherit;
 }
 .editor-inner {
   background: #fff;

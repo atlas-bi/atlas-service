@@ -1,4 +1,11 @@
 import {
+  faAtom,
+  faEnvelopesBulk,
+  faLifeRing,
+  faTag,
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
   type ActionArgs,
   type LoaderArgs,
   json,
@@ -16,7 +23,19 @@ import { MeiliSearch } from 'meilisearch';
 import * as React from 'react';
 import { namedAction } from 'remix-utils';
 import invariant from 'tiny-invariant';
+import { AssigneeSelector } from '~/components/Assignees';
+import { RelativeDate } from '~/components/Date';
+import Editor from '~/components/Editor';
+import EditorReader from '~/components/EditorReader';
+import { LabelTag } from '~/components/Labels';
+import { LabelSelector } from '~/components/Labels';
+import { ProfilePhoto } from '~/components/Photo';
+import { RecipientSelector } from '~/components/Recipients';
+import { RequesterSelector } from '~/components/Requester';
+import { InlineUser } from '~/components/User';
+import { WatcherList } from '~/components/Watchers';
 import {
+  addComment,
   deleteRequest,
   editAssignees,
   editLabels,
@@ -27,14 +46,6 @@ import {
 } from '~/models/request.server';
 import { labelIndex, userIndex } from '~/search.server';
 import { authorize, requireUser } from '~/session.server';
-
-import { AssigneeSelector } from '../../components/Assignees';
-import Editor from '../../components/Editor';
-import EditorReader from '../../components/EditorReader';
-import { LabelSelector } from '../../components/Labels';
-import { RecipientSelector } from '../../components/Recipients';
-import { RequesterSelector } from '../../components/Requester';
-import { WatcherList } from '../../components/Watchers';
 
 export async function loader({ request, params }: LoaderArgs) {
   return authorize(
@@ -143,6 +154,11 @@ export async function action({ request, params }: ActionArgs) {
       const formData = await request.formData();
       const { _action, ...values } = Object.fromEntries(formData);
       console.log(values);
+      await addComment({
+        requestId: Number(params.requestId),
+        comment: values.comment,
+        userId,
+      });
       return null;
     },
   });
@@ -170,12 +186,30 @@ export default function RequestDetailsPage() {
 
   const formSubmitter = useSubmit();
 
+  const history = [
+    ...thisRequest.recipientHistory.map((x) => {
+      return { type: 'recipientHistory', ...x };
+    }),
+    ...thisRequest.requesterHistory.map((x) => {
+      return { type: 'requesterHistory', ...x };
+    }),
+    ...thisRequest.assigneeHistory.map((x) => {
+      return { type: 'assigneeHistory', ...x };
+    }),
+    ...thisRequest.comments.map((x) => {
+      return { type: 'comment', ...x };
+    }),
+    ...thisRequest.labelHistory.map((x) => {
+      return { type: 'labelHistory', ...x };
+    }),
+  ].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
   return (
     <div className="container">
       <div className="columns">
         <div className="column">
           <div className="is-flex is-justify-content-space-between">
-            <h3 className="title is-3 pl-4">{thisRequest.name}</h3>
+            <h3 className="title is-3">{thisRequest.name}</h3>
             <Form method="post">
               <button
                 type="submit"
@@ -188,82 +222,235 @@ export default function RequestDetailsPage() {
             </Form>
           </div>
 
-          <article className="media ">
-            {user.profilePhoto && (
-              <div className="media-left my-auto">
-                <figure className="image is-48x48">
-                  <img
-                    decoding="async"
-                    loading="lazy"
-                    alt="profile"
-                    className="remix-image is-rounded profile"
-                    src={`data:image/png;base64,${user.profilePhoto}`}
-                  />
-                </figure>
+          <div className="timeline">
+            <article className="media thread">
+              {(thisRequest.creator?.profilePhoto ||
+                thisRequest.requester?.profilePhoto) && (
+                <div className="media-left profile-photo">
+                  <figure className="image is-48x48">
+                    <ProfilePhoto base64={thisRequest.creator?.profilePhoto} />
+                  </figure>
+                  {thisRequest.creator?.id !== thisRequest.requester?.id && (
+                    <figure className="image is-48x48">
+                      <ProfilePhoto
+                        base64={thisRequest.requester?.profilePhoto}
+                      />
+                    </figure>
+                  )}
+                </div>
+              )}
+              <div className="media-content my-auto">
+                <div
+                  className={`thread-box ${
+                    thisRequest.creator?.id === user.id
+                      ? 'has-background-info-light'
+                      : 'has-background-white-bis'
+                  }`}
+                >
+                  <div className="p-3 is-flex is-justify-content-space-between has-border-bottom-grey-lighter">
+                    <span>
+                      <strong>
+                        {thisRequest.creator?.firstName}{' '}
+                        {thisRequest.creator?.lastName}
+                      </strong>
+                      {thisRequest.requester?.id !==
+                        thisRequest.creator?.id && (
+                        <>
+                          {' '}
+                          on behalf of{' '}
+                          <strong>
+                            {thisRequest.requester?.firstName}{' '}
+                            {thisRequest.requester?.lastName}
+                          </strong>
+                        </>
+                      )}{' '}
+                      <RelativeDate date={thisRequest.createdAt} />
+                    </span>
+                    <div className="tags">
+                      {thisRequest.requester?.id ===
+                        thisRequest.creator?.id && (
+                        <div className="tag is-rounded has-border-grey-lighter">
+                          Requester
+                        </div>
+                      )}
+                      {thisRequest.assignees?.filter(
+                        (assignee) => assignee.id === thisRequest.creator?.id,
+                      ).length > 0 && (
+                        <div className="tag is-rounded has-border-grey-lighter">
+                          Analyst
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div
+                    className="has-background-white"
+                    style={{ borderRadius: 'inherit' }}
+                  >
+                    {thisRequest.description && (
+                      <>
+                        <strong className="is-block pt-2 px-3">
+                          Description
+                        </strong>
+                        <EditorReader
+                          ref={descriptionRef}
+                          initialEditorState={thisRequest.description}
+                        />
+                      </>
+                    )}
+                    {thisRequest.purpose && (
+                      <>
+                        <strong className="is-block pt-2 px-3">Purpose</strong>
+                        <EditorReader
+                          ref={purposeRef}
+                          initialEditorState={thisRequest.purpose}
+                        />
+                      </>
+                    )}
+                    {thisRequest.criteria && (
+                      <>
+                        <strong className="is-block pt-2 px-3">Criteria</strong>
+                        <EditorReader
+                          ref={criteriaRef}
+                          initialEditorState={thisRequest.criteria}
+                        />
+                      </>
+                    )}
+                    {thisRequest.parameters && (
+                      <>
+                        <strong className="is-block pt-2 px-3">
+                          Parameters
+                        </strong>
+                        <EditorReader
+                          ref={parametersRef}
+                          initialEditorState={thisRequest.parameters}
+                        />
+                      </>
+                    )}
+                    {thisRequest.purpose && (
+                      <>
+                        <strong className="is-block pt-2 px-3">Purpose</strong>
+                        <EditorReader
+                          ref={purposeRef}
+                          initialEditorState={thisRequest.purpose}
+                        />
+                      </>
+                    )}
+                    {thisRequest.schedule && (
+                      <>
+                        <strong className="is-block pt-2 px-3">Schedule</strong>
+                        <EditorReader
+                          ref={scheduleRef}
+                          initialEditorState={thisRequest.schedule}
+                        />
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
-            )}
-            <div className="media-content my-auto">
-              <div className="thread-box">
-                {thisRequest.description && (
-                  <>
-                    <strong className="p-2">Description</strong>
-                    <EditorReader
-                      ref={descriptionRef}
-                      initialEditorState={thisRequest.description}
-                    />
-                  </>
-                )}
-                {thisRequest.purpose && (
-                  <>
-                    <strong className="p-2">Purpose</strong>
-                    <EditorReader
-                      ref={purposeRef}
-                      initialEditorState={thisRequest.purpose}
-                    />
-                  </>
-                )}
-                {thisRequest.criteria && (
-                  <>
-                    <strong className="p-2">Criteria</strong>
-                    <EditorReader
-                      ref={criteriaRef}
-                      initialEditorState={thisRequest.criteria}
-                    />
-                  </>
-                )}
-                {thisRequest.parameters && (
-                  <>
-                    <strong className="p-2">Parameters</strong>
-                    <EditorReader
-                      ref={parametersRef}
-                      initialEditorState={thisRequest.parameters}
-                    />
-                  </>
-                )}
-                {thisRequest.purpose && (
-                  <>
-                    <strong className="p-2">Purpose</strong>
-                    <EditorReader
-                      ref={purposeRef}
-                      initialEditorState={thisRequest.purpose}
-                    />
-                  </>
-                )}
-                {thisRequest.schedule && (
-                  <>
-                    <strong className="p-2">Schedule</strong>
-                    <EditorReader
-                      ref={scheduleRef}
-                      initialEditorState={thisRequest.schedule}
-                    />
-                  </>
-                )}
-              </div>
-            </div>
-          </article>
+            </article>
+
+            {history.length > 0 &&
+              history.map((item) => (
+                <React.Fragment key={item.type + item.id}>
+                  {item.type === 'comment' ? (
+                    <article key={item.id} className="media thread">
+                      <div className="media-left">
+                        <figure className="image is-48x48">
+                          <ProfilePhoto base64={item.creator?.profilePhoto} />
+                        </figure>
+                      </div>
+                      <div className="media-content my-auto">
+                        <div
+                          className={`thread-box ${
+                            item.creator?.id === user.id
+                              ? 'has-background-info-light'
+                              : 'has-background-white-bis'
+                          }`}
+                        >
+                          <div className="p-3 is-flex is-justify-content-space-between has-border-bottom-grey-lighter">
+                            <span>
+                              <strong>
+                                {item.creator?.firstName}{' '}
+                                {item.creator?.lastName}
+                              </strong>{' '}
+                              <RelativeDate date={item.createdAt} />
+                            </span>
+                            <div className="tags">
+                              {thisRequest.requester?.id ===
+                                item.creator?.id && (
+                                <div className="tag is-rounded has-border-grey-lighter">
+                                  Requester
+                                </div>
+                              )}
+                              {thisRequest.assignees?.filter(
+                                (assignee) => assignee.id === item.creator?.id,
+                              ).length > 0 && (
+                                <div className="tag is-rounded has-border-grey-lighter">
+                                  Analyst
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <EditorReader
+                            key={item.id}
+                            initialEditorState={item.comment}
+                          />
+                        </div>
+                      </div>
+                    </article>
+                  ) : item.type === 'labelHistory' ? (
+                    <div className="history">
+                      <span className="icon has-text-grey-lighter mr-3 has-background-white">
+                        <FontAwesomeIcon icon={faTag} />
+                      </span>
+                      <InlineUser user={item.creator} />
+                      &nbsp;{item.added ? 'added' : 'removed'}&nbsp;
+                      <LabelTag label={item.label} />
+                      &nbsp;label&nbsp;
+                      <RelativeDate date={item.createdAt} />
+                    </div>
+                  ) : item.type === 'assigneeHistory' ? (
+                    <div className="history">
+                      <span className="icon has-text-grey-lighter mr-3 has-background-white">
+                        <FontAwesomeIcon icon={faAtom} />
+                      </span>
+                      <InlineUser user={item.creator} />
+                      &nbsp;{item.added ? 'assigned' : 'unassigned'}&nbsp;
+                      {item.assignee.firstName}&nbsp;{item.assignee.lastName}
+                      &nbsp;
+                      <RelativeDate date={item.createdAt} />
+                    </div>
+                  ) : item.type === 'requesterHistory' ? (
+                    <div className="history">
+                      <span className="icon has-text-grey-lighter mr-3 has-background-white">
+                        <FontAwesomeIcon icon={faLifeRing} />
+                      </span>
+                      <InlineUser user={item.creator} />
+                      &nbsp;changed the requester to&nbsp;
+                      {item.requester.firstName}&nbsp;{item.requester.lastName}
+                      &nbsp;
+                      <RelativeDate date={item.createdAt} />
+                    </div>
+                  ) : (
+                    item.type === 'recipientHistory' && (
+                      <div className="history">
+                        <span className="icon has-text-grey-lighter mr-3 has-background-white">
+                          <FontAwesomeIcon icon={faEnvelopesBulk} />
+                        </span>
+                        <InlineUser user={item.creator} />
+                        &nbsp;{item.added ? 'added' : 'removed'}
+                        &nbsp;recipient&nbsp;{item.recipient.firstName}&nbsp;
+                        {item.recipient.lastName}&nbsp;
+                        <RelativeDate date={item.createdAt} />
+                      </div>
+                    )
+                  )}
+                </React.Fragment>
+              ))}
+          </div>
 
           <hr />
-          <div className="thread-box">
+          <div className="thread-box new">
             <Editor
               ref={newCommentEditor}
               userIndex={search.userIndex}
