@@ -4,6 +4,7 @@ import { AutoLinkNode, LinkNode } from '@lexical/link';
 import { ListItemNode, ListNode } from '@lexical/list';
 import { TRANSFORMERS } from '@lexical/markdown';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
@@ -15,7 +16,12 @@ import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table';
 import type { EditorState } from 'lexical';
-import { type MutableRefObject, type RefObject, forwardRef } from 'react';
+import {
+  type MutableRefObject,
+  type RefObject,
+  forwardRef,
+  useEffect,
+} from 'react';
 
 import { MentionNode } from '../nodes/MentionNode';
 import { TextTokenNode } from '../nodes/TextTokenNode';
@@ -44,6 +50,18 @@ function PlaceholderBuilder() {
 interface changeCallbackType {
   (editorState: EditorState): void;
 }
+
+const EditorCapturePlugin = forwardRef((props: any, ref: any) => {
+  const [editor] = useLexicalComposerContext();
+  useEffect(() => {
+    ref.current = editor;
+    return () => {
+      ref.current = null;
+    };
+  }, [editor, ref]);
+
+  return null;
+});
 
 const Editor = forwardRef(
   (
@@ -91,13 +109,15 @@ const Editor = forwardRef(
     };
 
     return (
-      <LexicalComposer initialConfig={editorConfig}>
+      <LexicalComposer
+        initialConfig={editorConfig}
+        ref={ref as RefObject<HTMLDivElement>}
+      >
         <div className="editor-container">
           <div
             className={`editor-toolbar ${
               ref !== activeEditor ? 'is-hidden' : ''
             }`}
-            ref={ref as RefObject<HTMLDivElement>}
           >
             <ToolbarPlugin />
             {typeof document !== 'undefined' && (
@@ -122,6 +142,7 @@ const Editor = forwardRef(
             <AutoLinkPlugin />
             <ListMaxIndentLevelPlugin maxDepth={7} />
             <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+            <EditorCapturePlugin ref={ref} />
             {/*{typeof document !== 'undefined' && <EmojiPlugin />}*/}
           </div>
         </div>

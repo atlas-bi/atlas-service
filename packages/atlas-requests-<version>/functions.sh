@@ -36,6 +36,9 @@ SEARCH_HOSTNAME=localhost
 SEARCH_PUBLIC_PORT=7700
 SEARCH_INTERNAL_PORT=7701
 
+# quirrel
+QUIRREL_HOSTNAME=http://localhost:9181
+
 # files
 CONFIG="$USER_DIR/config"
 SECRETS="$USER_DIR/secrets.json"
@@ -114,6 +117,25 @@ postgres_online() {
   done
 }
 
+quirrel_ready() {
+    wget $QUIRREL_HOSTNAME --max-redirect 0 --tries=1 2>&1 | grep 'connected'
+}
+
+quirrel_online() {
+  x=0
+  until quirrel_ready; do
+    >&2 fmt_yellow 'Waiting for quirrel to become available...'
+
+    x=$(( x + 1 ))
+
+    if [ "$x" -gt 3 ]; then
+      fmt_error 'Failed to start quirrel'
+      break
+    fi
+    sleep 1
+  done
+}
+
 install_configuration(){
   # install default configuration if missing
   if [ ! -e $CONFIG ]
@@ -126,6 +148,9 @@ install_configuration(){
     sed -i -e "s/DATABASE_URL=.*//g" $CONFIG > /dev/null
     sed -i -e "s/SESSION_SECRET=.*//g" $CONFIG > /dev/null
     sed -i -e "s/PASSPHRASES=.*//g" $CONFIG > /dev/null
+    sed -i -e "s/QUIRREL_BASE_URL=.*//g" $CONFIG > /dev/null
+    sed -i -e "s/QUIRREL_API_URL=.*//g" $CONFIG > /dev/null
+    sed -i -e "s/QUIRREL_TOKEN=.*//g" $CONFIG > /dev/null
     sed -i -e "s/MEILI_MASTER_KEY=.*//g" $CONFIG > /dev/null
     sed -i -e "s/MEILI_DB_PAT=.*//g" $CONFIG > /dev/null
     sed -i -e "s/MEILI_ENV=.*//g" $CONFIG > /dev/null
@@ -137,6 +162,23 @@ install_configuration(){
     sed -i -e "s/LDAP/#LDAP/g" $CONFIG > /dev/null
 
     load_external_url
+
+    EXTERNAL_URL=$({ grep EXTERNAL_URL= || true; } <  $CONFIG  | sed 's/^.*=//')
+    SERVER_HOSTNAME=$(cat /etc/hostname)
+
+
+
+    # if external url was not set, we need to add it now.
+    if [ "$EXTERNAL_URL" ]; then
+      cat <<EOT >> $CONFIG
+QUIRREL_BASE_URL=$EXTERNAL_URL
+EOT
+    else
+    cat <<EOT >> $CONFIG
+EXTERNAL_URL=$SERVER_HOSTNAME
+QUIRREL_BASE_URL=$SERVER_HOSTNAME
+EOT
+    fi
   fi
 }
 
@@ -144,9 +186,9 @@ load_external_url(){
   if [ "$EXTERNAL_URL" != "undefined" ]
   then
     sed -i -e "s/EXTERNAL_URL=.*//g" $CONFIG > /dev/null
-    cat <<EOT > $CONFIG
-$(cat "$CONFIG")
+    cat <<EOT >> $CONFIG
 EXTERNAL_URL=$EXTERNAL_URL
+QUIRREL_BASE_URL=$EXTERNAL_URL
 EOT
   fi
 }
@@ -155,11 +197,18 @@ load_configuration(){
 
   load_external_url
 
+  SSL_CERTIFICATE=$({ grep SSL_CERTIFICATE= || true; } <  $CONFIG  | sed 's/^.*=//')
+
   DATABASE_PASS=$(jq .PG_PASS "$SECRETS" --raw-output)
   SESSION_SECRET=$(jq .SESSION_SECRET "$SECRETS" --raw-output)
   PASSPHRASES=$(jq .PASSPHRASES "$SECRETS" --raw-output)
   MEILI_MASTER_KEY=$(jq .MEILI_MASTER_KEY "$SECRETS" --raw-output)
   EXTERNAL_URL=$({ grep EXTERNAL_URL= || true; } <  $CONFIG  | sed 's/^.*=//')
+
+  SERVER_HOSTNAME=$(cat /etc/hostname)
+
+  SERVER_NAME=$( if [ "$EXTERNAL_URL" ]; then echo "$EXTERNAL_URL"; else echo "$SERVER_HOSTNAME"; fi )
+
   cat <<EOT > $INSTALL_DIR/.env
 $(cat "$CONFIG")
 DATABASE_URL="postgresql://$PG_USER:$DATABASE_PASS@$PG_HOSTNAME:$PG_PORT/$PG_DATABASE"
@@ -168,46 +217,75 @@ PASSPHRASES=$PASSPHRASES
 MEILI_ENV=production
 MEILI_DB_PAT=$INSTALL_DIR/data.js/
 MEILI_MASTER_KEY=$MEILI_MASTER_KEY
-MEILISEARCH_URL=$EXTERNAL_URL:$SEARCH_PUBLIC_PORT
-MEILI_HTTP_ADDR=http://$SEARCH_HOSTNAME:$SEARCH_INTERNAL_PORT
+MEILISEARCH_URL=$( if [ "$SSL_CERTIFICATE" ]; then echo "https://"; else echo "http://"; fi )$SERVER_NAME:$SEARCH_PUBLIC_PORT
+MEILI_HTTP_ADDR=$SEARCH_HOSTNAME:$SEARCH_INTERNAL_PORT
 HOSTNAME=$HOSTNAME:$PORT
 REDIS_URL=redis://$REDIS_HOSTNAME:$REDIS_PORT/0
+QUIRREL_API_URL=$QUIRREL_HOSTNAME
+EOT
+
+  # this can only be accessed after the quirrel service is running.
+  # temporarily start it so we can access tokens
+  quirrel_service
+  start_quirrel
+  quirrel_online
+  QUIRREL_TOKEN=$(curl --user ignored:$PASSPHRASES -X PUT $QUIRREL_HOSTNAME/tokens/prod)
+  stop_quirrel
+  cat <<EOT >> $INSTALL_DIR/.env
+QUIRREL_TOKEN=$QUIRREL_TOKEN
 EOT
 
 }
 
+stop_quirrel(){
+  if [ "$(pidof systemd)" != "" ]; then
+    systemctl stop "$QUIRREL_SERVICE"
+  fi
+}
 stop_services(){
   if [ "$(pidof systemd)" != "" ]; then
     systemctl stop nginx
     systemctl stop "$WEB_SERVICE"
-    systemctl stop "$QUIRREL_SERVICE"
     systemctl stop "$SEARCH_SERVICE"
   else
     /etc/init.d/nginx stop
   fi
+  stop_quirrel
+}
+
+start_quirrel(){
+  if [ "$(pidof systemd)" != "" ]; then
+    systemctl enable "$QUIRREL_SERVICE"
+    systemctl start "$QUIRREL_SERVICE"
+  else
+    fmt_yellow "Starting quirrel"
+    cd "$INSTALL_DIR" || exit 1; dotenv node node_modules/quirrel/dist/cjs/src/api/main.js &
+  fi
+
+  quirrel_online
+  cd "$INSTALL_DIR" || exit 1
+  # load cron jobs
+  npm run quirrel:ci
 }
 
 start_services(){
   if [ "$(pidof systemd)" != "" ]; then
-
-      systemctl enable nginx
-      systemctl start nginx
-      systemctl is-active nginx | grep "inactive" && echo "${RED}!!!Failed to reload Nginx!!!${RESET}" && (exit 1)
-
-      systemctl enable "$WEB_SERVICE"
-      systemctl enable "$QUIRREL_SERVICE"
-      systemctl enable "$SEARCH_SERVICE"
-
-      systemctl start "$WEB_SERVICE"
-      systemctl start "$QUIRREL_SERVICE"
-      systemctl start "$SEARCH_SERVICE"
-
       fmt_green "Starting Redis!"
       fmt_blue "Starting redis server"
 
       sed -i -e "s/supervised no/supervised systemd/g" /etc/redis/redis.conf > /dev/null
       systemctl enable redis-server > /dev/null
       systemctl start redis-server > /dev/null
+
+      systemctl enable nginx
+      systemctl start nginx
+      systemctl is-active nginx | grep "inactive" && echo "${RED}!!!Failed to reload Nginx!!!${RESET}" && (exit 1)
+
+      systemctl enable "$WEB_SERVICE"
+      systemctl enable "$SEARCH_SERVICE"
+
+      systemctl start "$WEB_SERVICE"
+      systemctl start "$SEARCH_SERVICE"
 
   else
     fmt_red "systemd is not intalled on your system. $NAME will start but will not restart after booting."
@@ -228,6 +306,8 @@ start_services(){
     cd "$INSTALL_DIR"|| exit 1; PORT=3010; npm start &
 
   fi
+
+  start_quirrel
 }
 
 get_pass() {
@@ -317,6 +397,23 @@ EOF
 
 }
 
+quirrel_service() {
+  cat <<EOT > "/etc/systemd/system/$QUIRREL_SERVICE"
+[Unit]
+Description=Atlas Requests / Querrel
+After=network.target
+
+[Service]
+User=$USER
+Group=$USER
+WorkingDirectory=$INSTALL_DIR
+ExecStart=dotenv node node_modules/quirrel/dist/cjs/src/api/main.js
+
+[Install]
+WantedBy=multi-user.target
+EOT
+}
+
 services(){
   cat <<EOT > "/etc/systemd/system/$WEB_SERVICE"
 [Unit]
@@ -333,20 +430,8 @@ ExecStart=npm start
 [Install]
 WantedBy=multi-user.target
 EOT
-  cat <<EOT > "/etc/systemd/system/$QUIRREL_SERVICE"
-[Unit]
-Description=Atlas Requests / Querrel
-After=network.target
+  quirrel_service
 
-[Service]
-User=$USER
-Group=$USER
-WorkingDirectory=$INSTALL_DIR
-ExecStart=dotenv node node_modules/quirrel/dist/cjs/src/api/main.js
-
-[Install]
-WantedBy=multi-user.target
-EOT
   cat <<EOT > "/etc/systemd/system/$SEARCH_SERVICE"
 [Unit]
 Description=Atlas Requets / Meilisearch
@@ -365,11 +450,41 @@ EOT
 nginx_init(){
 
   EXTERNAL_URL=$({ grep EXTERNAL_URL= || true; } <  $CONFIG  | sed 's/^.*=//')
+  SSL_CERTIFICATE=$({ grep SSL_CERTIFICATE= || true; } <  $CONFIG  | sed 's/^.*=//')
+  SSL_CERTIFICATE_KEY=$({ grep SSL_CERTIFICATE_KEY= || true; } <  $CONFIG  | sed 's/^.*=//')
+  SERVER_HOSTNAME=$(cat /etc/hostname)
 
-  cat <<EOT > /etc/nginx/sites-enabled/$APP_NAME
+  SERVER_NAME=$( if [ "$EXTERNAL_URL" ]; then echo "$EXTERNAL_URL"; else echo "$SERVER_HOSTNAME"; fi )
+
+  if [ "$SSL_CERTIFICATE" ]; then
+    # redirect http to https
+    cat <<EOT > /etc/nginx/sites-enabled/$APP_NAME
 server {
-  listen 80;
-  server_name $EXTERNAL_URL localhost 127.0.0.1;
+  listen              80;
+  listen              [::]:80;
+  server_name         $SERVER_NAME default_server;
+  return              301 https://\$host\$request_uri;
+}
+
+server {
+  listen              443 ssl;
+  server_name         $SERVER_NAME default_server;
+
+  ssl_certificate     $SSL_CERTIFICATE;
+  ssl_certificate_key $SSL_CERTIFICATE_KEY;
+
+EOT
+  else
+    cat <<EOT > /etc/nginx/sites-enabled/$APP_NAME
+server {
+  listen      80;
+  listen      [::]:80;
+  server_name $SERVER_NAME;
+EOT
+
+  fi
+
+  cat <<EOT >> /etc/nginx/sites-enabled/$APP_NAME
 
   location / {
       access_log   off;
@@ -379,8 +494,12 @@ server {
 }
 
 server {
-  listen $SEARCH_PUBLIC_PORT;
-  server_name $EXTERNAL_URL localhost 127.0.0.1;
+  listen $SEARCH_PUBLIC_PORT $( if [ "$SSL_CERTIFICATE" ]; then echo "ssl"; fi );
+  listen [::]:$SEARCH_PUBLIC_PORT $( if [ "$SSL_CERTIFICATE" ]; then echo "ssl"; fi );
+  server_name $SERVER_NAME;
+
+  $( if [ "$SSL_CERTIFICATE" ]; then echo "ssl_certificate     $SSL_CERTIFICATE;"; fi )
+  $( if [ "$SSL_CERTIFICATE_KEY" ]; then echo "ssl_certificate_key $SSL_CERTIFICATE_KEY;"; fi )
 
   location / {
     access_log   off;

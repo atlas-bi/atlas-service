@@ -23,6 +23,7 @@ import {
   getRequestTypes,
   setRequestCategoryDefault,
 } from '~/models/config.server';
+import userRefreshQueue from '~/queues/user_refresh.server';
 import { authorize, requireUser } from '~/session.server';
 
 type Errors = {
@@ -32,6 +33,8 @@ type Errors = {
 };
 
 export async function loader({ request, params }: LoaderArgs) {
+  await userRefreshQueue.enqueue(null); //"me","message");
+
   return authorize(
     request,
     [process.env.ADMIN_GROUP],

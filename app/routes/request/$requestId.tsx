@@ -11,6 +11,7 @@ import {
   useLoaderData,
   useSubmit,
 } from '@remix-run/react';
+import { $getRoot, CLEAR_HISTORY_COMMAND, type EditorState } from 'lexical';
 import { MeiliSearch } from 'meilisearch';
 import * as React from 'react';
 import { namedAction } from 'remix-utils';
@@ -28,6 +29,7 @@ import { labelIndex, userIndex } from '~/search.server';
 import { authorize, requireUser } from '~/session.server';
 
 import { AssigneeSelector } from '../../components/Assignees';
+import Editor from '../../components/Editor';
 import EditorReader from '../../components/EditorReader';
 import { LabelSelector } from '../../components/Labels';
 import { RecipientSelector } from '../../components/Recipients';
@@ -136,6 +138,13 @@ export async function action({ request, params }: ActionArgs) {
       });
       return redirect('/');
     },
+    async comment() {
+      console.log('comment!');
+      const formData = await request.formData();
+      const { _action, ...values } = Object.fromEntries(formData);
+      console.log(values);
+      return null;
+    },
   });
 }
 
@@ -154,6 +163,10 @@ export default function RequestDetailsPage() {
   const changeWatcher = React.useRef<HTMLFormElement>(null);
   const changeLabels = React.useRef<HTMLFormElement>(null);
   const requestedForRef = React.useRef<HTMLInputElement>(null);
+
+  const newCommentEditor = React.useRef<HTMLDivElement>();
+  const [comment, setComment] = React.useState('');
+  const commentTextRef = React.useRef<HTMLInputElement>();
 
   const formSubmitter = useSubmit();
 
@@ -175,61 +188,120 @@ export default function RequestDetailsPage() {
             </Form>
           </div>
 
+          <article className="media ">
+            {user.profilePhoto && (
+              <div className="media-left my-auto">
+                <figure className="image is-48x48">
+                  <img
+                    decoding="async"
+                    loading="lazy"
+                    alt="profile"
+                    className="remix-image is-rounded profile"
+                    src={`data:image/png;base64,${user.profilePhoto}`}
+                  />
+                </figure>
+              </div>
+            )}
+            <div className="media-content my-auto">
+              <div className="thread-box">
+                {thisRequest.description && (
+                  <>
+                    <strong className="p-2">Description</strong>
+                    <EditorReader
+                      ref={descriptionRef}
+                      initialEditorState={thisRequest.description}
+                    />
+                  </>
+                )}
+                {thisRequest.purpose && (
+                  <>
+                    <strong className="p-2">Purpose</strong>
+                    <EditorReader
+                      ref={purposeRef}
+                      initialEditorState={thisRequest.purpose}
+                    />
+                  </>
+                )}
+                {thisRequest.criteria && (
+                  <>
+                    <strong className="p-2">Criteria</strong>
+                    <EditorReader
+                      ref={criteriaRef}
+                      initialEditorState={thisRequest.criteria}
+                    />
+                  </>
+                )}
+                {thisRequest.parameters && (
+                  <>
+                    <strong className="p-2">Parameters</strong>
+                    <EditorReader
+                      ref={parametersRef}
+                      initialEditorState={thisRequest.parameters}
+                    />
+                  </>
+                )}
+                {thisRequest.purpose && (
+                  <>
+                    <strong className="p-2">Purpose</strong>
+                    <EditorReader
+                      ref={purposeRef}
+                      initialEditorState={thisRequest.purpose}
+                    />
+                  </>
+                )}
+                {thisRequest.schedule && (
+                  <>
+                    <strong className="p-2">Schedule</strong>
+                    <EditorReader
+                      ref={scheduleRef}
+                      initialEditorState={thisRequest.schedule}
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+          </article>
+
+          <hr />
           <div className="thread-box">
-            {thisRequest.description && (
-              <>
-                <strong className="p-2">Description</strong>
-                <EditorReader
-                  ref={descriptionRef}
-                  initialEditorState={thisRequest.description}
-                />
-              </>
-            )}
-            {thisRequest.purpose && (
-              <>
-                <strong className="p-2">Purpose</strong>
-                <EditorReader
-                  ref={purposeRef}
-                  initialEditorState={thisRequest.purpose}
-                />
-              </>
-            )}
-            {thisRequest.criteria && (
-              <>
-                <strong className="p-2">Criteria</strong>
-                <EditorReader
-                  ref={criteriaRef}
-                  initialEditorState={thisRequest.criteria}
-                />
-              </>
-            )}
-            {thisRequest.parameters && (
-              <>
-                <strong className="p-2">Parameters</strong>
-                <EditorReader
-                  ref={parametersRef}
-                  initialEditorState={thisRequest.parameters}
-                />
-              </>
-            )}
-            {thisRequest.purpose && (
-              <>
-                <strong className="p-2">Purpose</strong>
-                <EditorReader
-                  ref={purposeRef}
-                  initialEditorState={thisRequest.purpose}
-                />
-              </>
-            )}
-            {thisRequest.schedule && (
-              <>
-                <strong className="p-2">Schedule</strong>
-                <EditorReader
-                  ref={scheduleRef}
-                  initialEditorState={thisRequest.schedule}
-                />
-              </>
-            )}
+            <Editor
+              ref={newCommentEditor}
+              userIndex={search.userIndex}
+              activeEditor={newCommentEditor}
+              MEILISEARCH_URL={MEILISEARCH_URL}
+              MEILISEARCH_KEY={MEILISEARCH_KEY}
+              onChange={(editorState: EditorState) => {
+                editorState.read(() => {
+                  if (commentTextRef.current) {
+                    commentTextRef.current.value = $getRoot().getTextContent();
+                  }
+                });
+
+                setComment(JSON.stringify(editorState));
+              }}
+            />
+
+            <input type="hidden" ref={commentTextRef} name="commentText" />
+            <button
+              type="button"
+              className="button is-success is-short m-2"
+              onClick={() => {
+                const formData = new FormData();
+                formData.append('_action', 'comment');
+                formData.append('comment', comment);
+                if (newCommentEditor.current) {
+                  const editor = newCommentEditor.current;
+                  editor.update(() => {
+                    $getRoot().clear();
+                  });
+                  editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
+                }
+
+                formSubmitter(formData, { replace: true, method: 'post' });
+              }}
+            >
+              Comment
+            </button>
           </div>
         </div>
         <div className="column is-one-third">
