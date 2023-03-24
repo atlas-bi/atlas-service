@@ -32,7 +32,7 @@ export const AssigneeSelector = forwardRef(
       searchIndex,
     }: {
       me: User;
-      assignees?: User[];
+      assignees?: User[] | string | any;
       MEILISEARCH_URL: string;
       MEILISEARCH_KEY: string;
       actionData: any;
@@ -45,20 +45,20 @@ export const AssigneeSelector = forwardRef(
     const [watchState, setWatchState] = useState(false);
     const [assigneeList, setAssigneeList] = useState(assignees || []);
     const [showAssigneeSearch, setShowAssigneeSearch] = useState(false);
-    const assigneePopout = useRef<HTMLDivElement>();
+    const assigneePopout = useRef<HTMLDivElement>(null);
     const client = new MeiliSearch({
       host: MEILISEARCH_URL,
       apiKey: MEILISEARCH_KEY,
     });
 
-    const [assigneeSearchResults, setAssigneeSearchResults] = useState(null);
+    const [assigneeSearchResults, setAssigneeSearchResults] = useState(<></>);
 
     const inputReference = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
       window.addEventListener(
         'click',
-        (e) => {
+        (event) => {
           if (
             assigneePopout.current &&
             !assigneePopout.current.contains(event.target as Node)
@@ -149,7 +149,7 @@ export const AssigneeSelector = forwardRef(
                     onChange={async (e) => {
                       const searchInput = e.target;
                       if (searchInput.value.length === 0) {
-                        setAssigneeSearchResults(null);
+                        setAssigneeSearchResults(<></>);
                       } else {
                         const matches = await client
                           .index(searchIndex)
@@ -166,7 +166,7 @@ export const AssigneeSelector = forwardRef(
                                     if (!assigneeList.includes(user)) {
                                       setAssigneeList([...assigneeList, user]);
                                     }
-                                    setAssigneeSearchResults(null);
+                                    setAssigneeSearchResults(<></>);
                                     searchInput.value = '';
                                     // setShowAssigneeSearch(false)
                                   }}
@@ -199,14 +199,16 @@ export const AssigneeSelector = forwardRef(
                       </span>
                       <span className="my-auto">Clear List</span>
                     </div>
-                    {assigneeList.map((assignee) => (
+                    {assigneeList.map((assignee: User | any) => (
                       <CheckRemove
                         key={assignee.id}
                         onClick={() => {
                           setAssigneeList(
-                            assigneeList.filter((x) => x !== assignee),
+                            assigneeList.filter(
+                              (x: User | any) => x !== assignee,
+                            ),
                           );
-                          setAssigneeSearchResults(null);
+                          setAssigneeSearchResults(<></>);
                         }}
                       >
                         <MiniUser
@@ -227,18 +229,13 @@ export const AssigneeSelector = forwardRef(
                     <MiniUser
                       user={me}
                       onClick={() => {
-                        console.log(
-                          assigneeList,
-                          me,
-                          assigneeList.filter((x) => x.id === me.id),
-                        );
                         if (
-                          assigneeList.filter((x) => x.id === me.id).length ===
-                          0
+                          assigneeList.filter((x: User | any) => x.id === me.id)
+                            .length === 0
                         ) {
                           setAssigneeList([...assigneeList, me]);
                         }
-                        setAssigneeSearchResults(null);
+                        setAssigneeSearchResults(<></>);
                       }}
                     />
                     ... boss or others?
@@ -249,7 +246,7 @@ export const AssigneeSelector = forwardRef(
           )}
 
           {assigneeList &&
-            assigneeList.map((assignee) => (
+            assigneeList.map((assignee: User | any) => (
               <div key={assignee.id}>
                 <input type="hidden" name="assignees" value={assignee.id} />
                 <MiniUser user={assignee}></MiniUser>

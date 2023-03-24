@@ -47,7 +47,7 @@ export const RequesterSelector = forwardRef(
     const inputReference = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-      window.onclick = (e) => {
+      window.onclick = (event) => {
         if (
           requesterPopout.current &&
           !requesterPopout.current.contains(event.target as Node)

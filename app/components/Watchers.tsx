@@ -1,21 +1,9 @@
 import { faBell } from '@fortawesome/free-regular-svg-icons';
-import {
-  faCheck,
-  faCircleNotch,
-  faPalette,
-  faPencil,
-  faXmark,
-} from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faCircleNotch } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { User } from '@prisma/client';
 import { useSubmit, useTransition } from '@remix-run/react';
-import React, {
-  Fragment,
-  forwardRef,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { Fragment, forwardRef, useEffect, useState } from 'react';
 
 import { MiniUser } from './User';
 
@@ -35,15 +23,15 @@ export const WatcherList = forwardRef(
     const [watcherList, setWatcherList] = useState(watchers || []);
 
     const [watching, setWatching] = React.useState(
-      watchers.filter((x) => x.id === me.id).length > 0,
+      (watchers || []).filter((x) => x.id === me.id).length > 0,
     );
 
     const submitWatch = useSubmit();
 
     useEffect(() => {
-      setWatcherList(watchers);
-      setWatching(watchers.filter((x) => x.id === me.id).length > 0);
-    }, [watchers]);
+      setWatcherList(watchers || []);
+      setWatching((watchers || []).filter((x) => x.id === me.id).length > 0);
+    }, [watchers, me]);
 
     const transition = useTransition();
 
@@ -95,7 +83,7 @@ export const WatcherList = forwardRef(
           onClick={() => {
             const formData = new FormData();
             formData.append('_action', action);
-            formData.append('watch', !watching);
+            formData.append('watch', (!watching).toString());
 
             submitWatch(formData, { replace: true, method: 'post' });
           }}

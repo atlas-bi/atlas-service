@@ -1,12 +1,12 @@
-export const RelativeDate = ({ date }) => {
+export const RelativeDate = ({ date }: { date: string }) => {
   const thisDate = new Date(date);
   const today = new Date();
 
-  const diffSecs = parseInt((today - thisDate) / 1000);
-  const diffMins = parseInt(diffSecs / 60);
-  const diffHrs = parseInt(diffMins / 60);
-  const diffDays = parseInt(diffHrs / 24);
-  const diffWeeks = parseInt(diffDays / 7);
+  const diffSecs = Math.round((today.valueOf() - thisDate.valueOf()) / 1000);
+  const diffMins = Math.round(diffSecs / 60);
+  const diffHrs = Math.round(diffMins / 60);
+  const diffDays = Math.round(diffHrs / 24);
+  const diffWeeks = Math.round(diffDays / 7);
 
   if (diffSecs < 60) {
     return (

@@ -1,10 +1,13 @@
 import type { Group, User } from '@prisma/client';
 import { MeiliSearch } from 'meilisearch';
+import invariant from 'tiny-invariant';
 import { prisma } from '~/db.server';
 // export type { User, Group } from '@prisma/client';
 import { loadGroup, loadUser } from '~/search.server';
 
 const userIndex = 'atlas-requests-users';
+
+invariant(process.env.MEILISEARCH_URL, 'MEILISEARCH_URL not found');
 
 const client = new MeiliSearch({
   host: process.env.MEILISEARCH_URL,

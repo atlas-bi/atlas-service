@@ -45,7 +45,7 @@ SECRETS="$USER_DIR/secrets.json"
 
 # service names
 WEB_SERVICE=atlas_requests_web.service
-QUIRREL_SERVICE=atlas_requests_querrel.service
+QUIRREL_SERVICE=atlas_requests_quirrel.service
 SEARCH_SERVICE=atlas_requests_search.service
 
 color() {
@@ -186,9 +186,9 @@ load_external_url(){
   if [ "$EXTERNAL_URL" != "undefined" ]
   then
     sed -i -e "s/EXTERNAL_URL=.*//g" $CONFIG > /dev/null
+    sed -i -e "s/QUIRREL_BASE_URL=.*//g" $CONFIG > /dev/null
     cat <<EOT >> $CONFIG
 EXTERNAL_URL=$EXTERNAL_URL
-QUIRREL_BASE_URL=$EXTERNAL_URL
 EOT
   fi
 }
@@ -222,6 +222,7 @@ MEILI_HTTP_ADDR=$SEARCH_HOSTNAME:$SEARCH_INTERNAL_PORT
 HOSTNAME=$HOSTNAME:$PORT
 REDIS_URL=redis://$REDIS_HOSTNAME:$REDIS_PORT/0
 QUIRREL_API_URL=$QUIRREL_HOSTNAME
+QUIRREL_BASE_URL=$( if [ "$SSL_CERTIFICATE" ]; then echo "https://"; else echo "http://"; fi )$SERVER_NAME:
 EOT
 
   # this can only be accessed after the quirrel service is running.
@@ -277,14 +278,17 @@ start_services(){
       systemctl enable redis-server > /dev/null
       systemctl start redis-server > /dev/null
 
+      fmt_green "Starting Nginx!"
       systemctl enable nginx
       systemctl start nginx
       systemctl is-active nginx | grep "inactive" && echo "${RED}!!!Failed to reload Nginx!!!${RESET}" && (exit 1)
 
+      fmt_green "Starting web service!"
       systemctl enable "$WEB_SERVICE"
-      systemctl enable "$SEARCH_SERVICE"
-
       systemctl start "$WEB_SERVICE"
+
+      fmt_green "Starting search service!"
+      systemctl enable "$SEARCH_SERVICE"
       systemctl start "$SEARCH_SERVICE"
 
   else
@@ -307,6 +311,7 @@ start_services(){
 
   fi
 
+  fmt_green "Starting quirrel service!"
   start_quirrel
 }
 

@@ -1,6 +1,17 @@
+import type { User } from '@prisma/client';
 import { Link } from '@remix-run/react';
 
-export const MiniUser = ({ user, linkToUser, onClick, children }) => {
+export const MiniUser = ({
+  user,
+  linkToUser,
+  onClick,
+  children,
+}: {
+  user: string | any;
+  linkToUser?: boolean;
+  onClick?: () => void;
+  children?: element;
+}) => {
   const name = (
     <strong>
       {user.firstName || user.lastName
