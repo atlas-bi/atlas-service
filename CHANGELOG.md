@@ -1,3 +1,8 @@
+## 1.0.0-rc.19 (2023-03-24)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([a4dcbbe](https://github.com/atlas-bi/atlas-requests/commit/a4dcbbe))
+* feat(history): started added a bit of history tracking ([ae8822b](https://github.com/atlas-bi/atlas-requests/commit/ae8822b))
+
 ## 1.0.0-rc.18 (2023-03-23)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([05f7750](https://github.com/atlas-bi/atlas-requests/commit/05f7750))
