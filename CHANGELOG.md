@@ -1,3 +1,8 @@
+## 1.0.0-rc.18 (2023-03-23)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([05f7750](https://github.com/atlas-bi/atlas-requests/commit/05f7750))
+* fix(quirrel): improved quirrel installer ([7c01cc2](https://github.com/atlas-bi/atlas-requests/commit/7c01cc2))
+
 ## 1.0.0-rc.17 (2023-03-21)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([32e0439](https://github.com/atlas-bi/atlas-requests/commit/32e0439))
