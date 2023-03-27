@@ -1,3 +1,8 @@
+## 1.0.0-rc.20 (2023-03-24)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([99ea084](https://github.com/atlas-bi/atlas-requests/commit/99ea084))
+* feat(installer): fixed quirrel base url ([209681f](https://github.com/atlas-bi/atlas-requests/commit/209681f))
+
 ## 1.0.0-rc.19 (2023-03-24)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([a4dcbbe](https://github.com/atlas-bi/atlas-requests/commit/a4dcbbe))
