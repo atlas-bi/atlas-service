@@ -1,71 +1,91 @@
-import type { ActionArgs } from "@remix-run/node";
-import { redirect } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import { Link, useSearchParams } from "@remix-run/react";
-import * as React from "react";
-import type { LoaderArgs } from "@remix-run/server-runtime";
-
-import { verifyLogin } from "~/ldap.server";
 import {
-  getSession,
-  sessionStorage,
-  getUserId,
-  createUserSession,
-} from "~/session.server";
-import { useLoaderData } from "@remix-run/react";
-
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faTriangleExclamation,
-  faLock,
   faAt,
-} from "@fortawesome/free-solid-svg-icons";
+  faLock,
+  faTriangleExclamation,
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  type ActionArgs,
+  type LoaderArgs,
+  type MetaFunction,
+  json,
+  redirect,
+} from '@remix-run/node';
+import {
+  Form,
+  Link,
+  useActionData,
+  useLoaderData,
+  useSearchParams,
+} from '@remix-run/react';
+import * as React from 'react';
+import { verifyLogin } from '~/ldap.server';
+import {
+  createUserSession,
+  getSession,
+  getUserId,
+  sessionStorage,
+} from '~/session.server';
+import { safeRedirect, validateEmail } from '~/utils';
 
-import { Form, useActionData } from "@remix-run/react";
-import { safeRedirect, validateEmail } from "~/utils";
-
-export async function loader({ request }: LoaderArgs) {
+export const loader = async ({ request }: LoaderArgs) => {
   const userId = await getUserId(request);
-  if (userId) return redirect("/");
+  if (userId) {
+    return redirect('/');
+  }
 
   const session = await getSession(request);
-  const loginError = session.get("loginError") || null;
+  const loginError = session.get('loginError') || null;
 
   return json(
     { loginError },
     {
       headers: {
         // only necessary with cookieSessionStorage
-        "Set-Cookie": await sessionStorage.commitSession(session),
+        'Set-Cookie': await sessionStorage.commitSession(session),
       },
-    }
+    },
   );
-}
+};
 
-export async function action({ request }: ActionArgs) {
+export const action = async ({ request }: ActionArgs) => {
   const formData = await request.formData();
-  const email = formData.get("email");
-  const password = formData.get("password");
-  const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
+  const email = formData.get('email') as string;
+  const password = formData.get('password');
+  const redirectTo = safeRedirect(formData.get('redirectTo'), '/');
 
-  let errors = {};
+  const errors: {
+    email?: string;
+    password?: string;
+  } = {};
 
   if (!validateEmail(email)) {
-    errors.email = "Email is invalid";
+    errors.email = 'Email is invalid';
   }
-  if (typeof password !== "string" || password.length === 0) {
-    errors.password = "Password is required";
+  if (typeof password !== 'string' || password.length === 0) {
+    errors.password = 'Password is required';
   }
 
   if (Object.keys(errors).length) {
     return json({ errors: errors }, { status: 400 });
   }
-  const user = await verifyLogin(email, password);
+
+  const { user, error } = await verifyLogin(email, password as string);
+
+  if (error) {
+    const session = await getSession(request);
+    session.flash('loginError', error);
+    throw redirect('/login', {
+      headers: {
+        'Set-Cookie': await sessionStorage.commitSession(session),
+      },
+    });
+  }
 
   if (!user) {
     return json(
-      { errors: { email: "Invalid email or password", password: null } },
-      { status: 400 }
+      { errors: { email: 'Invalid email or password', password: null } },
+      { status: 400 },
     );
   }
 
@@ -75,19 +95,17 @@ export async function action({ request }: ActionArgs) {
     expiration: undefined,
     redirectTo,
   });
-}
-
-export const meta: MetaFunction = () => {
-  return {
-    title: "Login",
-  };
 };
+
+export const meta: MetaFunction = () => ({
+  title: 'Login',
+});
 
 export default function Login() {
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/notes";
+  const redirectTo = searchParams.get('redirectTo') || '/';
 
-  const { loginError } = useLoaderData();
+  const { loginError } = useLoaderData<typeof loader>();
 
   const actionData = useActionData<typeof action>();
 
@@ -106,9 +124,10 @@ export default function Login() {
     <div className="hero ">
       <div className="hero-body">
         <div className="columns is-centered mt-5">
-          <div className="column is-4 mt-5 box">
+          <div className="column is-half-tablet is-one-quarter-desktop is-one-fifth-fullhd mt-5 box">
             <Form method="post" className="form">
               <h1 className="title is-1">Atlas Requests</h1>
+              <input type="hidden" value={redirectTo} name="redirectTo" />
               {loginError ? (
                 <article className="message is-danger ">
                   <div className="message-body p-2 is-flex">

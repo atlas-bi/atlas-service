@@ -1,4 +1,4 @@
-@import "../node_modules/@fontsource/inter/scss/mixins";
+@import '../node_modules/@fontsource/inter/scss/mixins';
 
 /* purgecss start ignore */
 @include fontFace(
@@ -6,7 +6,7 @@
   $weight: 300,
   $display: swap,
   $unicodeMap: latin,
-  $fontDir: "./node_modules/@fontsource/inter/files"
+  $fontDir: './node_modules/@fontsource/inter/files'
 );
 
 @include fontFace(
@@ -14,7 +14,7 @@
   $weight: 400,
   $display: swap,
   $unicodeMap: latin,
-  $fontDir: "./node_modules/@fontsource/inter/files"
+  $fontDir: './node_modules/@fontsource/inter/files'
 );
 
 @include fontFace(
@@ -22,7 +22,7 @@
   $weight: 500,
   $display: swap,
   $unicodeMap: latin,
-  $fontDir: "./node_modules/@fontsource/inter/files"
+  $fontDir: './node_modules/@fontsource/inter/files'
 );
 
 @include fontFace(
@@ -30,7 +30,7 @@
   $weight: 600,
   $display: swap,
   $unicodeMap: latin,
-  $fontDir: "./node_modules/@fontsource/inter/files"
+  $fontDir: './node_modules/@fontsource/inter/files'
 );
 
 @include fontFace(
@@ -38,32 +38,22 @@
   $weight: 700,
   $display: swap,
   $unicodeMap: latin,
-  $fontDir: "./node_modules/@fontsource/inter/files"
-);
-
-@import "../node_modules/@fontsource/rasa/scss/mixins";
-
-@include fontFace(
-  $fontName: Rasa,
-  $weight: 600,
-  $display: swap,
-  $unicodeMap: latin,
-  $fontDir: "./node_modules/@fontsource/rasa/files"
+  $fontDir: './node_modules/@fontsource/inter/files'
 );
 
 /* purgecss end ignore */
-
-$family-monospace: "Source Code Pro", monospace;
-$family-sans-serif: "Inter", blinkmacsystemfont, -apple-system, "Segoe UI",
-  "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
-  "Helvetica Neue", "Helvetica", "Arial", sans-serif;
-$title-family: "Rasa", "Georgia", "Times New Roman", serif;
+$family-monospace: 'Source Code Pro', monospace;
+$family-sans-serif: 'Inter', blinkmacsystemfont, -apple-system, 'Segoe UI',
+  'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+  'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+$title-family: $family-sans-serif; //'Rasa', 'Georgia', 'Times New Roman', serif;
 $weight-normal: 500;
 $weight-light: 400;
 $weight-semibold: 600;
 $weight-bold: 700;
 $dimensions: 16 24 32 48 64 96 128 256;
 $body-size: 14px;
+$success: rgb(40, 151, 61);
 
 h1,
 h2,
@@ -73,11 +63,13 @@ h5,
 h6 {
   font-weight: $weight-bold;
 }
-@import "../node_modules/bulma/sass/utilities/initial-variables";
+@import '../node_modules/bulma/sass/utilities/initial-variables';
 $navbar-height: 4.25rem;
 $navbar-item-img-max-height: auto;
 $navbar-item-hover-background-color: transparent;
 $navbar-dropdown-item-hover-background-color: transparent;
+$hr-background-color: $grey-lighter;
+$hr-height: 1px;
 // $size-1: 2.5rem;
 // $size-2: 2rem;
 // $size-3: 1.5rem;
@@ -88,10 +80,15 @@ $navbar-dropdown-item-hover-background-color: transparent;
 // $sizes: $size-1 $size-2 $size-3 $size-4 $size-5 $size-6 $size-7;
 $block-spacing: 1rem;
 
-@import "../node_modules/bulma/bulma";
+@import '../node_modules/bulma/bulma';
+@import '../node_modules/bulma-switch/src/sass';
+@import '../node_modules/bulma-list/sass/bulma-list';
 
 html {
   height: 100%;
+  &.has-navbar-fixed-top {
+    padding-top: 4.5rem;
+  }
 }
 
 body {
@@ -123,40 +120,251 @@ body {
     padding: 0 15px;
   }
 }
-.atlas-navbar {
-  padding: 16px 0;
+.button {
+  &.is-success {
+    @extend .has-text-weight-semibold;
+  }
+  &.is-short {
+    height: 2.2rem;
+  }
+}
 
-  .navbar-brand {
-    margin-left: 0 !important;
-    a {
-      padding-top: 0;
-      padding-bottom: 0;
+.thread-box {
+  @extend .box;
+  @extend .p-0;
 
-      img {
-        max-height: 50px;
-        height: 50px;
+  shadow-box: unset;
+  filter: drop-shadow(0px 2px 2px $white-ter);
+  position: relative;
+  border: 1px solid $grey-lighter;
+
+  &:not(.new) {
+    @extend .ml-3;
+    &:after {
+      margin-left: 1px;
+      position: absolute;
+      top: 11px;
+      right: 100%;
+      left: -8px;
+      display: block;
+      width: 8px;
+      height: 16px;
+      pointer-events: none;
+      content: ' ';
+      clip-path: polygon(0 50%, 100% 0, 100% 100%);
+      background-color: inherit;
+    }
+    &:before {
+      margin-left: -1px;
+      position: absolute;
+      top: 11px;
+      right: 100%;
+      left: -8px;
+      display: block;
+      width: 8px;
+      height: 16px;
+      pointer-events: none;
+      content: ' ';
+      clip-path: polygon(0 50%, 100% 0, 100% 100%);
+      background-image: linear-gradient(
+        $grey-lighter,
+        $grey-lighter
+      ) !important;
+    }
+  }
+}
+
+.tag > span {
+  height: calc(100% - 4px);
+  + span {
+    @extend .ml-1;
+    @extend .pl-1;
+    @extend .has-background-white;
+    position: relative;
+    margin-right: 2px;
+    padding-right: 1px;
+    &:after {
+      position: absolute;
+      content: '';
+      top: 0;
+      bottom: 0;
+      @extend .has-background-white;
+      border-bottom-right-radius: 99999px;
+      border-top-right-radius: 99999px;
+      height: 100%;
+      aspect-ratio: 1 / 2;
+    }
+  }
+}
+
+.has-border-bottom-grey-lighter {
+  border-bottom: 1px solid $grey-lighter;
+}
+
+.has-border-grey-lighter {
+  border: 1px solid $grey-lighter;
+  border-radius: $radius;
+  > :first-child {
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+  }
+  > :last-child {
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
+  }
+}
+.navbar-dropdown.is-boxed {
+  &:after {
+    margin-left: 1px;
+    position: absolute;
+    top: -7px;
+    left: 16px;
+    display: block;
+    width: 16px;
+    height: 8px;
+    pointer-events: none;
+    content: ' ';
+    clip-path: polygon(0 100%, 50% 0, 100% 100%);
+    background-image: linear-gradient($white, $white) !important;
+  }
+  &.is-right {
+    &:after {
+      left: unset;
+      right: 18px;
+    }
+  }
+  &:before {
+    margin-left: -1px;
+    position: absolute;
+    top: -8px;
+    left: 18px;
+    display: block;
+    width: 16px;
+    height: 8px;
+    pointer-events: none;
+    content: ' ';
+    clip-path: polygon(0 100%, 50% 0, 100% 100%);
+    background-image: linear-gradient($grey-lighter, $grey-lighter) !important;
+  }
+  &.is-right {
+    &:before {
+      left: unset;
+      right: 18px;
+    }
+  }
+}
+.editable {
+  @extend .input;
+  background-color: transparent;
+  border: 0px;
+  box-shadow: none;
+  &:focus,
+  &:active {
+    border: 0;
+    outline: none;
+    box-shadow: none;
+  }
+}
+.typeEditor {
+  .switch + label {
+    display: block;
+  }
+}
+
+.delete {
+  &.is-light {
+    background-color: transparent;
+    &::after,
+    &::before {
+      background-color: $grey;
+    }
+  }
+}
+
+.input {
+  &.semi-disabled:not(:focus) {
+    background-color: $white-bis;
+  }
+}
+
+.modal {
+  &.is-light {
+    .modal-background {
+      background-color: rgba(1, 1, 1, 0.5);
+    }
+    &.is-top {
+      justify-content: initial;
+      .modal-card {
+        margin: 10vh auto;
+      }
+    }
+    > :last-child {
+      border-bottom-right-radius: $radius;
+      border-bottom-left-radius: $radius;
+    }
+  }
+}
+
+.has-shadow {
+  box-shadow: $shadow;
+}
+.emoji-select {
+  @extend .p-2;
+  @extend .is-clickable;
+  &:hover,
+  &.is-active {
+    background-color: $white-ter;
+    color: $link;
+  }
+}
+.is-absolute {
+  position: absolute;
+}
+.popout {
+  position: relative;
+
+  .popout-menu {
+    // opacity: 0;
+    // display: none;
+    border-radius: 6px;
+    border: 1px solid $grey-lighter;
+    box-shadow: $shadow;
+    transform: translateY(0);
+    position: absolute;
+    z-index: 20;
+    width: 300px;
+    left: 0;
+    background-color: $white;
+    overflow: hidden;
+    .popout-content {
+      border-radius: inherit;
+      hr {
+        @extend .m-0;
       }
     }
   }
-  a.navbar-item {
+  &.is-active {
+    .popout-menu {
+      opacity: 1;
+      display: block;
+    }
+  }
+  .popout-trigger {
+    @extend .label;
+    @extend .has-text-grey;
+    @extend .is-flex;
+    @extend .is-justify-content-space-between;
+    @extend .mb-4;
     &:hover {
-      color: $grey-darker;
-    }
-  }
-  .has-dropdown {
-    .navbar-link {
-      &:hover {
-        color: $grey-darker;
-      }
+      @extend .has-text-link;
+      @extend .is-clickable;
     }
   }
 }
 
-@media screen and (min-width: $desktop) {
-  .atlas-navbar .navbar-start {
-    padding-top: 0 !important;
-  }
-}
+// .editor-container {
+//  @extend .has-background-white-ter
+// }
 
 @media screen and (min-width: $desktop) {
   .hide-desktop {
@@ -168,7 +376,76 @@ body {
   height: 1em;
   width: 1em;
 }
-
+.has-text-gold {
+  color: gold;
+}
+figure.is-20x20 {
+  width: 20px;
+  height: 20px;
+}
+.profile {
+  border: 1px solid $grey-lighter;
+}
 /* purgecss start ignore */
-@import "editor";
+@import 'editor';
+.editor-input {
+  @extend .p-3;
+
+  border-radius: $radius;
+  &:not(.readonly) {
+    @extend .m-2;
+    border: 1px solid $grey-lighter;
+    @extend .has-background-white-bis;
+  }
+}
 /* purgecss end ignore */
+
+.timeline {
+  @extend .pb-5;
+  position: relative;
+  &:before {
+    content: '';
+    position: absolute;
+    border-left: 2px solid $grey-lighter;
+    top: 0;
+    bottom: 0;
+    z-index: -1;
+    left: 90px;
+  }
+  & + hr {
+    @extend .mt-0;
+  }
+  & > *:last-child {
+    @extend .pb-0;
+  }
+}
+
+article.media.thread {
+  border-top: none;
+}
+
+.profile-photo {
+  position: relative;
+  .image + .image {
+    position: absolute;
+    top: 20%;
+    left: 20%;
+  }
+}
+
+.history {
+  position: relative;
+  display: flex;
+  margin-left: 82px;
+  @extend .pt-5;
+  padding-bottom: 0;
+  & + .history {
+    // @extend .pb-5;
+    @extend .pt-3;
+    &:last-child {
+    }
+  }
+  & + .media.thread {
+    @extend .pt-5;
+  }
+}

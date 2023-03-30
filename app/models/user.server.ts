@@ -1,102 +1,124 @@
-import type { Password, User } from "@prisma/client";
-import bcrypt from "bcryptjs";
+import type { Group, User } from '@prisma/client';
+import { MeiliSearch } from 'meilisearch';
+import invariant from 'tiny-invariant';
+import { prisma } from '~/db.server';
+// export type { User, Group } from '@prisma/client';
+import { loadGroup, loadUser } from '~/search.server';
 
-import { prisma } from "~/db.server";
+const userIndex = 'atlas-requests-users';
 
-export type { User, Group } from "@prisma/client";
+invariant(process.env.MEILISEARCH_URL, 'MEILISEARCH_URL not found');
 
-export async function getUserById(id: User["id"]) {
+const client = new MeiliSearch({
+  host: process.env.MEILISEARCH_URL,
+  apiKey: process.env.MEILI_MASTER_KEY,
+});
+
+export async function getUserById(id: User['id']) {
   return prisma.user.findUnique({ where: { id }, include: { groups: true } });
 }
 
-export async function getUserByEmail(email: User["email"]) {
+async function getUserByEmail(email: User['email']) {
   return prisma.user.findUnique({ where: { email } });
 }
 
-export async function createUser(email: User["email"]) {
-  return prisma.user.create({
+async function createUser(email: User['email']) {
+  const user = await prisma.user.create({
     data: {
       email,
     },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      profilePhoto: true,
+    },
   });
+
+  await loadUser(user);
+
+  return user;
 }
 
-export async function createGroup(name: Group["name"]) {
-  return await prisma.group.create({
+async function createGroup(name: Group['name']) {
+  const group = await prisma.group.create({
     data: {
       name,
     },
+    select: {
+      id: true,
+      name: true,
+    },
   });
+
+  await loadGroup(group);
+  return group;
 }
-export async function getGroupByName(name: Group["name"]) {
-  return await prisma.group.findUnique({ where: { name } });
+async function getGroupByName(name: Group['name']) {
+  return prisma.group.findUnique({ where: { name } });
 }
 
-export async function getOrCreateGroup(name: Group["name"]) {
-  let group = await getGroupByName(name);
+async function getOrCreateGroup(name: Group['name']) {
+  const group = await getGroupByName(name);
 
   if (group) return group;
 
-  return await createGroup(name);
+  return createGroup(name);
 }
 
-export async function getOrCreateUser(email: User["email"]) {
-  let user = await getUserByEmail(email);
+async function getOrCreateUser(email: User['email']) {
+  const user = await getUserByEmail(email);
   if (user) return user;
 
-  return await createUser(email);
+  return createUser(email);
 }
 
 export async function updateUserProps(
-  email: User["email"],
-  firstName: User["firstName"],
-  lastName: User["lastName"],
-  groups: Groups["name"][]
+  email: User['email'],
+  firstName: User['firstName'],
+  lastName: User['lastName'],
+  groups: Group['name'][],
+  profilePhoto: User['profilePhoto'],
 ) {
-  // create group if not existing
-  // let groupDetails = []
-  // let x = await groups.forEach(async (group) => groupDetails.push(await getOrCreateGroup(group)))
-  // // console.log('x', groupDetails)
   await getOrCreateUser(email);
 
-  groups = await Promise.all(
-    groups.map(async (group) => await getOrCreateGroup(group))
-  );
+  const groupModels = groups
+    ? await Promise.all(groups?.map(async (group) => getOrCreateGroup(group)))
+    : undefined;
 
-  const existing_groups = await prisma.user.findUnique({
+  const existingGroups = await prisma.user.findUnique({
     where: { email },
     select: { groups: { select: { id: true } } },
   });
 
-  const new_group_ids = groups.map((group) => Number(group.id));
-  const removed_groups = existing_groups.groups
-    .filter((group) => {
-      if (!new_group_ids.includes(group.id)) {
-        return true;
-      }
-    })
-    .map((group) => {
-      return { id: group.id };
-    });
+  const newGroupIds = groupModels?.map((group: Group) => Number(group.id));
 
-  return await prisma.user.update({
-    where: { email: email },
+  const user = await prisma.user.update({
+    where: { email },
     data: {
-      firstName: firstName,
-      lastName: lastName,
+      firstName,
+      lastName,
+      profilePhoto,
       groups: {
-        connect: groups.map((group) => {
-          return { id: group.id };
-        }),
-        disconnect: removed_groups,
+        set: groupModels
+          ? groupModels.map((group: Group) => ({
+              id: Number(group.id),
+            }))
+          : [],
       },
     },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      profilePhoto: true,
+    },
   });
-
-  // console.log(email, firstName, lastName);
-  // console.log(groups);
-}
-
-export async function deleteUserByEmail(email: User["email"]) {
-  return prisma.user.delete({ where: { email } });
+  await client
+    .index(userIndex)
+    .addDocuments([user])
+    .then((res) => console.log(res));
+  return user;
 }

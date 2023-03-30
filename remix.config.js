@@ -3,6 +3,6 @@
  */
 module.exports = {
   // cacheDirectory: "./node_modules/.cache/remix",
-  ignoredRouteFiles: ["**/.*", "**/*.css", "**/*.test.{js,jsx,ts,tsx}"],
-  serverDependenciesToBundle: ["simple-ldap-search", "react-markdown"],
+  ignoredRouteFiles: ['**/.*', '**/*.css', '**/*.test.{js,jsx,ts,tsx}'],
+  serverDependenciesToBundle: ['react-markdown'],
 };

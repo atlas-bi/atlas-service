@@ -1,4 +1,5 @@
 from names_generator import generate_name
+import requests
 
 doc = """
 # Root creation
@@ -31,28 +32,33 @@ cn: readers
 objectClass: groupOfNames
 """
 
-for x in range(1,100):
-    name = generate_name(style='capital').split()
+r = requests.get("https://randomuser.me/api/?results=200")
+
+for x, person in enumerate(r.json()["results"]):
+    p = requests.get(person["picture"]["thumbnail"])
+
+    byte_string = ' '.join([str(x) for x in list(p.content)])
     doc += f"""
 
 # User user{x} creation
-dn: cn=user{x},ou=users,dc=example,dc=org
-cn: User{x}
-sn: {name[0].lower()}.{name[1].lower()}@example.org
+dn: cn={person['login']["username"]},ou=users,dc=example,dc=org
+cn: {person["login"]["username"]}
+sn: {person["email"]}
 objectClass: inetOrgPerson
 objectClass: posixAccount
 objectClass: shadowAccount
 userPassword: password
-uid: user{x}
+uid: {person["login"]["username"]}
 uidNumber: {x}
 gidNumber: {x}
-homeDirectory: /home/user{x}
-givenName: {name[0]}
-displayName: {name[1]}
+homeDirectory: /home/{person["login"]["username"]}
+givenName: {person["name"]["first"]}
+displayName: {person["name"]["last"]}
+jpegPhoto: {byte_string}
 
 """
 
-    groups += f"member: cn=user{x},ou=users,dc=example,dc=org\n"
+    groups += f"member: cn={person['login']['username']},ou=users,dc=example,dc=org\n"
 
 doc += groups
 

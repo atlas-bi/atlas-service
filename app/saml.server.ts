@@ -1,36 +1,48 @@
 // saml server
-import * as samlify from "samlify";
 import * as validator from '@authenio/samlify-node-xmllint';
-import fs from "fs";
+import fs from 'fs';
+import * as samlify from 'samlify';
+import type {
+  IdentityProviderSettings,
+  ServiceProviderSettings,
+} from 'samlify/types/src/types';
 
 samlify.setSchemaValidator(validator);
 
-const spData = {
+const spData: ServiceProviderSettings = {
   entityID: process.env.HOSTNAME,
-  authnRequestsSigned: process.env.SAML_SP_AUTHNREQUESTSSIGNED,
-  wantAssertionsSigned: process.env.SAML_SP_WANTASSERTIONSIGNED,
-  wantMessageSigned: process.env.SAML_SP_WANTMESSAGESIGNED,
-  wantLogoutResponseSigned: process.env.SAML_SP_WANTLOGOUTREQUESTSIGNED,
-  wantLogoutRequestSigned: process.env.SAML_SP_WANTLOGOUTRESPONSESIGNED,
-  isAssertionEncrypted: process.env.SAML_SP_ISASSERTIONENCRYPTED,
+  authnRequestsSigned:
+    (process.env.SAML_SP_AUTHNREQUESTSSIGNED || '').toLowerCase() === 'true',
+  wantAssertionsSigned:
+    (process.env.SAML_SP_WANTASSERTIONSIGNED || '').toLowerCase() === 'true',
+  wantMessageSigned:
+    (process.env.SAML_SP_WANTMESSAGESIGNED || '').toLowerCase() === 'true',
+  wantLogoutResponseSigned:
+    (process.env.SAML_SP_WANTLOGOUTREQUESTSIGNED || '').toLowerCase() ===
+    'true',
+  wantLogoutRequestSigned:
+    (process.env.SAML_SP_WANTLOGOUTRESPONSESIGNED || '').toLowerCase() ===
+    'true',
+  isAssertionEncrypted:
+    (process.env.SAML_SP_ISASSERTIONENCRYPTED || '').toLowerCase() === 'true',
   assertionConsumerService: [
     {
-      Binding: "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST",
-      Location: process.env.HOSTNAME + "/auth/asc",
+      Binding: 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
+      Location: process.env.HOSTNAME + '/auth/asc',
     },
     {
-      Binding: "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
-      Location: process.env.HOSTNAME + "/auth/asc",
+      Binding: 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+      Location: process.env.HOSTNAME + '/auth/asc',
     },
   ],
   singleLogoutService: [
     {
-      Binding: "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST",
-      Location: process.env.HOSTNAME + "/auth/slo",
+      Binding: 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
+      Location: process.env.HOSTNAME + '/auth/slo',
     },
     {
-      Binding: "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
-      Location: process.env.HOSTNAME + "/auth/slo",
+      Binding: 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+      Location: process.env.HOSTNAME + '/auth/slo',
     },
   ],
 };
@@ -45,10 +57,13 @@ export const sp = samlify.ServiceProvider(spData);
 
 export async function getIdp() {
   // get IDP metadata XML
-  const IpdXmlFetch = await fetch(process.env.SAML_IDP_METADATA);
-  const Idpxml = await IpdXmlFetch.text();
+  let Idpxml = '';
+  if (process.env.SAML_IDP_METADATA) {
+    const IpdXmlFetch = await fetch(process.env.SAML_IDP_METADATA);
+    Idpxml = await IpdXmlFetch.text();
+  }
 
-  const idpData = {
+  const idpData: IdentityProviderSettings = {
     metadata: Idpxml,
   };
 

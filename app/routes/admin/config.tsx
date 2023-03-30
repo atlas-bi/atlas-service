@@ -1,95 +1,198 @@
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import { authorize } from "~/session.server";
-import { Form, useActionData } from "@remix-run/react";
-import * as React from "react";
-import { useTransition } from "@remix-run/react";
+import type { RequestCategory, RequestType, User } from '@prisma/client';
 import {
-  getRequestTypes,
-  createRequestType,
-  deleteRequestType,
-  getRequestCategories,
+  type ActionArgs,
+  type LoaderArgs,
+  type Session,
+  json,
+} from '@remix-run/node';
+import {
+  Form,
+  useActionData,
+  useLoaderData,
+  useTransition,
+} from '@remix-run/react';
+import * as React from 'react';
+import RequestTypeEditor from '~/components/RequestTypeEditor';
+import {
   createRequestCategory,
+  createRequestType,
   deleteRequestCategory,
+  deleteRequestType,
+  editRequestType,
+  getRequestCategories,
+  getRequestTypes,
   setRequestCategoryDefault,
-} from "~/models/config.server";
-import { getUser } from "~/session.server";
+} from '~/models/config.server';
+import { authorize, requireUser } from '~/session.server';
+
+type Errors = {
+  typeName?: string;
+  categoryName?: string;
+  categoryDefault?: string;
+};
 
 export async function loader({ request, params }: LoaderArgs) {
   return authorize(
     request,
     [process.env.ADMIN_GROUP],
-    async ({ user, session }) => {
+    async ({ user, session }: { user: User; session: Session }) => {
       // should authorizeAdmin here...
+      const editorFields = [
+        { name: 'Description', id: 'showDescription' },
+        { name: 'Purpose', id: 'showPurpose' },
+        { name: 'Criteria', id: 'showCriteria' },
+        { name: 'Parameters', id: 'showParameters' },
+        { name: 'Schedule', id: 'showSchedule' },
+        { name: 'Requester', id: 'showRequester' },
+        { name: 'Recipients', id: 'showRecipients' },
+        { name: 'Labels', id: 'showLabels' },
+        { name: 'Export to Excel', id: 'showExportToExcel' },
+        { name: 'Regulatory', id: 'showRegulatory' },
+        { name: 'Supports an Initiative', id: 'showSupportsInitiative' },
+      ];
 
       const requestTypes = await getRequestTypes();
       const requestCategories = await getRequestCategories();
-      return json({ requestTypes, requestCategories, user });
-    }
+      return json({ requestTypes, requestCategories, user, editorFields });
+    },
   );
 }
 
 export async function action({ request }: ActionArgs) {
-  const user = await getUser(request);
+  const user = await requireUser(request);
   const userId = user.id;
 
-  let formData = await request.formData();
-  let { _action, ...values } = Object.fromEntries(formData);
+  const formData = await request.formData();
+  const { _action, ...values } = Object.fromEntries(formData);
+
+  const errors: Errors = {};
 
   switch (_action) {
-    case "addRequestType": {
-      const name = values.name;
-      let errors = {};
-      if (typeof name !== "string" || name.length === 0) {
-        errors.typeName = "Name is required";
+    case 'editRequestType': {
+      if (typeof values.name !== 'string' || values.name.length === 0) {
+        errors.typeEditorName = 'Name is required';
+        errors.id = Number(values.id);
+      }
+      if (Object.keys(errors).length > 0) {
+        return json({ errors }, { status: 400 });
       }
 
-      if (Object.keys(errors).length > 0) {
-        console.log("leaving early", Object.keys(errors).length, errors);
-        return json({ errors: errors }, { status: 400 });
-      }
-      await createRequestType({ name, userId });
+      const {
+        id,
+        name,
+        description,
+        menuText,
+        showSupportsInitiative,
+        showRegulatory,
+        showExportToExcel,
+        showLabels,
+        showRecipients,
+        showRequester,
+        showSchedule,
+        showParameters,
+        showCriteria,
+        showPurpose,
+        showDescription,
+      } = values;
+
+      await editRequestType({
+        id: Number(id),
+        name,
+        description,
+        menuText,
+        showSupportsInitiative: showSupportsInitiative === 'on',
+        showRegulatory: showRegulatory === 'on',
+        showExportToExcel: showExportToExcel === 'on',
+        showLabels: showLabels === 'on',
+        showRecipients: showRecipients === 'on',
+        showRequester: showRequester === 'on',
+        showSchedule: showSchedule === 'on',
+        showParameters: showParameters === 'on',
+        showCriteria: showCriteria === 'on',
+        showPurpose: showPurpose === 'on',
+        showDescription: showDescription === 'on',
+      });
 
       break;
     }
-    case "addRequestCategory": {
-      const name = values.name;
-      let errors = {};
-      if (typeof name !== "string" || name.length === 0) {
-        errors.categoryName = "Name is required";
+    case 'createRequestType': {
+      if (typeof values.name !== 'string' || values.name.length === 0) {
+        errors.typeCreateName = 'Name is required';
       }
+      if (Object.keys(errors).length > 0) {
+        return json({ errors }, { status: 400 });
+      }
+      const {
+        name,
+        description,
+        menuText,
+        showSupportsInitiative,
+        showRegulatory,
+        showExportToExcel,
+        showLabels,
+        showRecipients,
+        showRequester,
+        showSchedule,
+        showParameters,
+        showCriteria,
+        showPurpose,
+        showDescription,
+      } = values;
+
+      await createRequestType({
+        name,
+        description,
+        menuText,
+        showSupportsInitiative: showSupportsInitiative === 'on',
+        showRegulatory: showRegulatory === 'on',
+        showExportToExcel: showExportToExcel === 'on',
+        showLabels: showLabels === 'on',
+        showRecipients: showRecipients === 'on',
+        showRequester: showRequester === 'on',
+        showSchedule: showSchedule === 'on',
+        showParameters: showParameters === 'on',
+        showCriteria: showCriteria === 'on',
+        showPurpose: showPurpose === 'on',
+        showDescription: showDescription === 'on',
+        userId: user.id,
+      });
+
+      break;
+    }
+    case 'addRequestCategory': {
+      if (typeof values.name !== 'string' || values.name.length === 0) {
+        errors.categoryName = 'Name is required';
+      }
+      const name = values.name as string;
 
       if (Object.keys(errors).length > 0) {
-        console.log("leaving early", Object.keys(errors).length, errors);
-        return json({ errors: errors }, { status: 400 });
+        return json({ errors }, { status: 400 });
       }
       await createRequestCategory({ name, userId });
 
       break;
     }
-    case "deleteRequestType": {
-      await deleteRequestType(parseInt(values.id));
+    case 'deleteRequestType': {
+      await deleteRequestType({ id: Number(values.id) });
       break;
     }
 
-    case "deleteRequestCategory": {
-      await deleteRequestCategory(parseInt(values.id));
+    case 'deleteRequestCategory': {
+      await deleteRequestCategory({ id: Number(values.id) });
       break;
     }
-    case "addRequestCategoryDefault": {
+    case 'addRequestCategoryDefault': {
       const categoryId = values.categoryDefault;
-      console.log(values);
-      let errors = {};
-      if (typeof categoryId !== "string" || categoryId.length === 0) {
-        errors.categoryDefault = "Category is required";
+
+      if (typeof categoryId !== 'string' || categoryId.length === 0) {
+        errors.categoryDefault = 'Category is required';
       }
 
       if (Object.keys(errors).length > 0) {
-        console.log("leaving early", Object.keys(errors).length, errors);
-        return json({ errors: errors }, { status: 400 });
+        return json({ errors }, { status: 400 });
       }
-      await setRequestCategoryDefault(Number(categoryId));
+      await setRequestCategoryDefault({ id: Number(categoryId) });
+      break;
     }
     default: {
       console.log(`Unknown action ${_action}`);
@@ -102,42 +205,45 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function Index() {
-  const { user, requestTypes, requestCategories } =
+  const { requestTypes, requestCategories, editorFields } =
     useLoaderData<typeof loader>();
 
-  const actionData = useActionData<typeof action>();
+  type ActionData = { errors?: Errors } | undefined | null;
+  const actionData = useActionData<ActionData>();
 
   const typeNameRef = React.useRef<HTMLInputElement>(null);
-  const formTypeAddRef = React.useRef();
-  const formCategoryAddRef = React.useRef();
-  const categoryNameRef = React.useRef();
-  const formCategoryDefaultRef = React.useRef();
-  const categoryDefaultRef = React.useRef();
+  const formTypeAddRef = React.useRef<HTMLFormElement>(null);
+  const formCategoryAddRef = React.useRef<HTMLFormElement>(null);
+  const categoryNameRef = React.useRef<HTMLInputElement>(null);
+  const formCategoryDefaultRef = React.useRef<HTMLFormElement>(null);
+  const categoryDefaultRef = React.useRef<HTMLSelectElement>(null);
 
-  let transition = useTransition();
+  const [newTypeHidden, setNewTypeHidden] = React.useState(false);
 
-  let isAddingType =
-    transition.state === "submitting" &&
-    transition.submission.formData.get("_action") === "addRequestType";
+  const transition = useTransition();
 
-  let isAddingCategory =
-    transition.state === "submitting" &&
-    transition.submission.formData.get("_action") === "addRequestCategory";
+  const isCreatingType =
+    transition.state === 'submitting' &&
+    transition.submission.formData.get('_action') === 'createRequestType';
 
-  let isAddingCategoryDefault =
-    transition.state === "submitting" &&
-    transition.submission.formData.get("_action") ===
-      "addRequestCategoryDefault";
+  const isAddingCategory =
+    transition.state === 'submitting' &&
+    transition.submission.formData.get('_action') === 'addRequestCategory';
+
+  const isAddingCategoryDefault =
+    transition.state === 'submitting' &&
+    transition.submission.formData.get('_action') ===
+      'addRequestCategoryDefault';
 
   React.useEffect(() => {
-    if (!isAddingType) {
-      formTypeAddRef.current.reset();
+    if (!isCreatingType) {
+      setNewTypeHidden(false);
     }
-  }, [isAddingType]);
+  }, [isCreatingType]);
 
   React.useEffect(() => {
     if (!isAddingCategory) {
-      formTypeAddRef.current.reset();
+      formTypeAddRef.current?.reset();
     }
   }, [isAddingCategory]);
 
@@ -147,82 +253,89 @@ export default function Index() {
     }
   }, [actionData]);
 
-  const resetInput = function (input) {
-    input.classList.remove("is-danger");
-    input
-      .closest("div.field")
-      ?.querySelector("p.help")
-      ?.classList.add("is-hidden");
-    input.removeAttribute("aria-invalid");
-    input.removeAttribute("aria-errormessage");
+  const resetInput = (input: HTMLInputElement | HTMLTextAreaElement) => {
+    input.classList.remove('is-danger');
+    const field = input.closest('div.field');
+    if (field) {
+      const help = field.querySelector('p.help');
+
+      if (help) {
+        help.classList.add('is-hidden');
+      }
+    }
+    input.removeAttribute('aria-invalid');
+    input.removeAttribute('aria-errormessage');
   };
 
   return (
     <div className="container">
       <h1 className="title is-1">Site Configuration</h1>
+      should ask also if the field is required or not.
       <h2 className="is-2 title">Request Types</h2>
-
-      {requestTypes && (
-        <div className="field is-grouped is-grouped-multiline">
-          {requestTypes.map((rt) => (
-            <div key={rt.id} className="control">
-              <div className="tags has-addons">
-                <a className="tag is-link">{rt.name}</a>
-                <Form method="post">
-                  <input type="hidden" name="id" value={rt.id} />
-                  <button
-                    name="_action"
-                    value="deleteRequestType"
-                    type="submit"
-                    aria-label="delete"
-                    className="tag button is-delete is-ghost"
-                  ></button>
-                </Form>
-              </div>
-            </div>
-          ))}
+      <div className="columns">
+        <div className="column is-narrow pr-0 has-text-right">
+          <label className="label py-3 my-0 mr-3">Name</label>
+          <label className="label py-2 my-0 mr-3">Description</label>
+          <label className="label py-2 my-0 mr-3">Menu Text</label>
+          {editorFields &&
+            editorFields.map((field) => (
+              <React.Fragment key={field.id}>
+                <label className="label py-2 my-0 mr-3" key={field.id}>
+                  {field.name}
+                </label>
+                <hr className="m-0" />
+              </React.Fragment>
+            ))}
         </div>
-      )}
-
-      <Form method="post" className="form" ref={formTypeAddRef}>
-        <div className="field">
-          <label className="label">New Request Type</label>
-          <div className="control">
-            <input
-              name="name"
-              ref={typeNameRef}
-              aria-invalid={actionData?.errors?.typeName ? true : undefined}
-              aria-errormessage={
-                actionData?.errors?.typeName ? "is-danger" : undefined
-              }
-              className={`input ${
-                actionData?.errors?.typeName ? "is-danger" : undefined
-              }`}
-              type="text"
-              placeholder="name"
-              onInput={(event: React.InputEvent<HTMLInputElement>) => {
-                let input = event.target as HTMLInputElement;
-                resetInput(input);
-              }}
-            />
-          </div>
-          {actionData?.errors?.typeName && (
-            <p className="help is-danger">{actionData.errors.typeName}</p>
-          )}
+        {requestTypes.map((rt: RequestType) => (
+          <RequestTypeEditor key={rt.id} rt={rt} fields={editorFields} />
+        ))}
+        <div className="column auto">
+          <button
+            className="button"
+            type="button"
+            onClick={(event) => {
+              setNewTypeHidden(<RequestTypeEditor fields={editorFields} />);
+            }}
+          >
+            New!
+          </button>
+          {newTypeHidden}
         </div>
-        <button className="button" name="_action" value="addRequestType">
-          {isAddingType ? "saving.." : "save"}
-        </button>
-      </Form>
+        {/*
+             <div className="column is-narrow px-0">
+                New Type
+                <span className="icon">
+                  <FontAwesomeIcon icon={faPlus} />
+                </span>
+                <input className="input" disabled />
+                <input className="input" disabled/>
+           
+        {editorFields &&
+              editorFields.map((field) => (
 
+                <div key={field.id} class="field">
+                      <input
+                        id={`${field.id}-new`}
+                        type="checkbox"
+                        name={`${field.id}-new`}
+                        className="switch is-rounded"
+                        disabled
+                      />
+                      <label for={`${field.id}-new`}></label>
+                      <hr className="m-0" />
+                    </div>
+                    ))}
+              </div>*/}
+      </div>
       {requestCategories && (
         <div className="field is-grouped is-grouped-multiline">
-          {requestCategories.map((rt) => (
-            <div key={rt.id} className="control">
+          {requestCategories.map((category: RequestCategory) => (
+            <div key={category.id} className="control">
               <div className="tags has-addons">
-                <a className="tag is-link">{rt.name}</a>
+                <span className="tag is-link">{category.name}</span>
                 <Form method="post">
-                  <input type="hidden" name="id" value={rt.id} />
+                  <input type="hidden" name="id" value={category.id} />
                   <button
                     name="_action"
                     value="deleteRequestCategory"
@@ -246,25 +359,25 @@ export default function Index() {
               ref={categoryNameRef}
               aria-invalid={actionData?.errors?.categoryName ? true : undefined}
               aria-errormessage={
-                actionData?.errors?.categoryName ? "is-danger" : undefined
+                actionData?.errors?.categoryName ? 'is-danger' : undefined
               }
               className={`input ${
-                actionData?.errors?.categoryName ? "is-danger" : undefined
+                actionData?.errors?.categoryName ? 'is-danger' : undefined
               }`}
               type="text"
               placeholder="name"
-              onInput={(event: React.InputEvent<HTMLInputElement>) => {
-                let input = event.target as HTMLInputElement;
+              onInput={(event: React.SyntheticEvent<HTMLInputElement>) => {
+                const input = event.target as HTMLInputElement;
                 resetInput(input);
               }}
             />
           </div>
           {actionData?.errors?.categoryName && (
-            <p className="help is-danger">{actionData.errors.categoryName}</p>
+            <p className="help is-danger">{actionData?.errors?.categoryName}</p>
           )}
         </div>
         <button className="button" name="_action" value="addRequestCategory">
-          {isAddingCategory ? "saving.." : "save"}
+          {isAddingCategory ? 'saving..' : 'save'}
         </button>
       </Form>
       <h2 className="title is-2">Default Category</h2>
@@ -279,21 +392,17 @@ export default function Index() {
                 actionData?.errors?.categoryDefault ? true : undefined
               }
               aria-errormessage={
-                actionData?.errors?.categoryDefault ? "is-danger" : undefined
+                actionData?.errors?.categoryDefault ? 'is-danger' : undefined
               }
               className={`select ${
-                actionData?.errors?.categoryDefault ? "is-danger" : undefined
+                actionData?.errors?.categoryDefault ? 'is-danger' : undefined
               }`}
-              onInput={(event: React.InputEvent<HTMLInputElement>) => {
-                let input = event.target as HTMLInputElement;
-                resetInput(input);
-              }}
             >
               <option value="">None</option>
               {requestCategories &&
-                requestCategories.map((category) => (
+                requestCategories.map((category: RequestCategory) => (
                   <option
-                    selected={category.isDefault && "true"}
+                    selected={category.isDefault ? true : undefined}
                     key={category.id}
                     value={category.id}
                   >
@@ -304,7 +413,7 @@ export default function Index() {
           </div>
           {actionData?.errors?.categoryDefault && (
             <p className="help is-danger">
-              {actionData.errors.categoryDefault}
+              {actionData?.errors?.categoryDefault}
             </p>
           )}
         </div>
@@ -313,12 +422,16 @@ export default function Index() {
           name="_action"
           value="addRequestCategoryDefault"
         >
-          {isAddingCategoryDefault ? "saving.." : "save"}
+          {isAddingCategoryDefault ? 'saving..' : 'save'}
         </button>
       </Form>
       <p className="content">
+        <br />
         other config: - category to auto asign to new tickets - default request
+        <br />
         type - what groups should admin users have/who is admin?
+        <br />
+        who is an admin anyways?
       </p>
     </div>
   );

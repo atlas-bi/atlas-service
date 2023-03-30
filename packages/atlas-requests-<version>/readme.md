@@ -1,6 +1,4 @@
-
 # Ubuntu Build
-
 
 ```sh
 apt-get update
@@ -15,6 +13,7 @@ copy files to ppa repo
 ```
 
 ## To run in local docker
+
 ```sh
 # change into the packages directory.
 cd packages
@@ -32,16 +31,11 @@ bash /tmp/nodesource_setup.sh; \
 apt-get update; \
 apt-get install -y nodejs \
 
-curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | tee /usr/share/keyrings/yarnkey.gpg >/dev/null \
-echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" | tee /etc/apt/sources.list.d/yarn.list \
-apt-get update && apt-get install -y yarn \
-
-
 # change to the "package" folder
 cd /atlas; \
 
 # set the version
-VERSION=0.0.1-rc.4; \
+VERSION=1.0.0-rc.3; \
 
 # uninstall old verions
 apt-get remove atlas-requests -y 2>/dev/null; \
@@ -76,6 +70,6 @@ EXPORT EXTERNAL_URL='https://google.com'; sudo apt install atlas-requests
 ## Where the files should end up
 
 `usr/bin/atlas-requests` > cli application
-`usr/lib/atlas-requests`  > install directory for webapp
+`usr/lib/atlas-requests` > install directory for webapp
 `etc/atlas-requests` > config directory
 `var/log/atlas-requests` > log directory

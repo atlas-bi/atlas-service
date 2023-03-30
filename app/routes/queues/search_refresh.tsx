@@ -1,3 +1,3 @@
-import searchRefreshQueue from "~/queues/search_refresh.server";
+import searchRefreshQueue from '~/queues/search_refresh.server';
 
 export const action = searchRefreshQueue;

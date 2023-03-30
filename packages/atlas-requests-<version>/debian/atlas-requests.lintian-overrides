@@ -1,0 +1,7 @@
+no-manual-page
+copyright-has-url-from-dh_make-boilerplate
+debian-changelog-has-wrong-day-of-week
+control-file-is-empty
+recursive-privilege-change
+section-is-dh_make-template
+maintainer-script-ignores-errors
