@@ -219,6 +219,9 @@ export default function Nav() {
                 <Link className="navbar-item" to="/admin/labels">
                   Labels
                 </Link>
+                <Link className="navbar-item" to="/admin/jobs">
+                  Jobs
+                </Link>
                 <hr className="navbar-divider" />
                 <Link className="navbar-item" to="/logout">
                   Sign out

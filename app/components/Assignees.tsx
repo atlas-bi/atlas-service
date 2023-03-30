@@ -19,11 +19,11 @@ import React, {
 import CheckRemove from './CheckRemove';
 import { MiniUser } from './User';
 
-export const RecipientSelector = forwardRef(
+export const AssigneeSelector = forwardRef(
   (
     {
       me,
-      recipients,
+      assignees,
       actionData,
       MEILISEARCH_URL,
       MEILISEARCH_KEY,
@@ -32,7 +32,7 @@ export const RecipientSelector = forwardRef(
       searchIndex,
     }: {
       me: User;
-      recipients?: User[];
+      assignees?: User[] | string | any;
       MEILISEARCH_URL: string;
       MEILISEARCH_KEY: string;
       actionData: any;
@@ -43,27 +43,27 @@ export const RecipientSelector = forwardRef(
     ref,
   ) => {
     const [watchState, setWatchState] = useState(false);
-    const [recipientList, setRecipientList] = useState(recipients || []);
-    const [showRecipientSearch, setShowRecipientSearch] = useState(false);
-    const recipientPopout = useRef<HTMLDivElement>();
+    const [assigneeList, setAssigneeList] = useState(assignees || []);
+    const [showAssigneeSearch, setShowAssigneeSearch] = useState(false);
+    const assigneePopout = useRef<HTMLDivElement>(null);
     const client = new MeiliSearch({
       host: MEILISEARCH_URL,
       apiKey: MEILISEARCH_KEY,
     });
 
-    const [recipientSearchResults, setRecipientSearchResults] = useState(null);
+    const [assigneeSearchResults, setAssigneeSearchResults] = useState(<></>);
 
     const inputReference = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
       window.addEventListener(
         'click',
-        (e) => {
+        (event) => {
           if (
-            recipientPopout.current &&
-            !recipientPopout.current.contains(event.target as Node)
+            assigneePopout.current &&
+            !assigneePopout.current.contains(event.target as Node)
           ) {
-            setShowRecipientSearch(false);
+            setShowAssigneeSearch(false);
           }
         },
         { capture: true },
@@ -71,7 +71,7 @@ export const RecipientSelector = forwardRef(
       window.addEventListener('keydown', (event) => {
         const e = event || window.event;
         if (e.key === 'Esc' || e.key === 'Escape') {
-          setShowRecipientSearch(false);
+          setShowAssigneeSearch(false);
         }
       });
     }, []);
@@ -85,7 +85,7 @@ export const RecipientSelector = forwardRef(
         onChange();
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [recipientList]);
+    }, [assigneeList]);
 
     const transition = useTransition();
 
@@ -100,28 +100,28 @@ export const RecipientSelector = forwardRef(
 
     useEffect(() => {
       inputReference.current?.focus();
-    }, [showRecipientSearch, recipientList]);
+    }, [showAssigneeSearch, assigneeList]);
 
     return (
       <>
-        <div className="popout" ref={recipientPopout}>
+        <div className="popout" ref={assigneePopout}>
           <label
             className="popout-trigger"
             onClick={(e) => {
-              setShowRecipientSearch(!showRecipientSearch);
+              setShowAssigneeSearch(!showAssigneeSearch);
             }}
           >
-            <span>Recipient List</span>
+            <span>Assigned Analysts</span>
             <span className="icon mr-2">
               <FontAwesomeIcon icon={faPencil} />
             </span>
           </label>
-          {showRecipientSearch && (
+          {showAssigneeSearch && (
             <div className="popout-menu">
               <div className="popout-content has-background-light">
                 <div className="py-2 px-3 is-flex is-justify-content-space-between">
                   <strong className="my-auto">
-                    Add recipients to this report
+                    Add subscribers to this report
                   </strong>
                   {isSaving ? (
                     <span className="icon has-text-warning my-auto is-pulled-right">
@@ -149,29 +149,26 @@ export const RecipientSelector = forwardRef(
                     onChange={async (e) => {
                       const searchInput = e.target;
                       if (searchInput.value.length === 0) {
-                        setRecipientSearchResults(null);
+                        setAssigneeSearchResults(<></>);
                       } else {
                         const matches = await client
                           .index(searchIndex)
                           .search(searchInput.value, { limit: 20 });
 
                         if (matches.hits.length > 0) {
-                          setRecipientSearchResults(
+                          setAssigneeSearchResults(
                             <>
                               {matches.hits.map((user) => (
                                 <MiniUser
                                   key={user.id}
                                   user={user}
                                   onClick={() => {
-                                    if (!recipientList.includes(user)) {
-                                      setRecipientList([
-                                        ...recipientList,
-                                        user,
-                                      ]);
+                                    if (!assigneeList.includes(user)) {
+                                      setAssigneeList([...assigneeList, user]);
                                     }
-                                    setRecipientSearchResults(null);
+                                    setAssigneeSearchResults(<></>);
                                     searchInput.value = '';
-                                    // setShowRecipientSearch(false)
+                                    // setShowAssigneeSearch(false)
                                   }}
                                   linkToUser={false}
                                 />
@@ -179,7 +176,7 @@ export const RecipientSelector = forwardRef(
                             </>,
                           );
                         } else {
-                          setRecipientSearchResults(
+                          setAssigneeSearchResults(
                             <strong className="py-2 px-3 is-block ">
                               No matches.
                             </strong>,
@@ -190,10 +187,10 @@ export const RecipientSelector = forwardRef(
                   />
                 </div>
                 <hr />
-                {recipientList.length > 0 && (
+                {assigneeList.length > 0 && (
                   <>
                     <div
-                      onClick={() => setRecipientList([])}
+                      onClick={() => setAssigneeList([])}
                       className="is-flex has-background-white is-clickable"
                       style={{ height: '35px' }}
                     >
@@ -202,19 +199,21 @@ export const RecipientSelector = forwardRef(
                       </span>
                       <span className="my-auto">Clear List</span>
                     </div>
-                    {recipientList.map((recipient) => (
+                    {assigneeList.map((assignee: User | any) => (
                       <CheckRemove
-                        key={recipient.id}
+                        key={assignee.id}
                         onClick={() => {
-                          setRecipientList(
-                            recipientList.filter((x) => x !== recipient),
+                          setAssigneeList(
+                            assigneeList.filter(
+                              (x: User | any) => x !== assignee,
+                            ),
                           );
-                          setRecipientSearchResults(null);
+                          setAssigneeSearchResults(<></>);
                         }}
                       >
                         <MiniUser
-                          key={recipient.id}
-                          user={recipient}
+                          key={assignee.id}
+                          user={assignee}
                           linkToUser={false}
                         />
                       </CheckRemove>
@@ -223,25 +222,20 @@ export const RecipientSelector = forwardRef(
                   </>
                 )}
 
-                {recipientSearchResults || (
+                {assigneeSearchResults || (
                   <>
                     <strong className="py-2 px-3 is-block ">Suggestions</strong>
                     <hr />
                     <MiniUser
                       user={me}
                       onClick={() => {
-                        console.log(
-                          recipientList,
-                          me,
-                          recipientList.filter((x) => x.id === me.id),
-                        );
                         if (
-                          recipientList.filter((x) => x.id === me.id).length ===
-                          0
+                          assigneeList.filter((x: User | any) => x.id === me.id)
+                            .length === 0
                         ) {
-                          setRecipientList([...recipientList, me]);
+                          setAssigneeList([...assigneeList, me]);
                         }
-                        setRecipientSearchResults(null);
+                        setAssigneeSearchResults(<></>);
                       }}
                     />
                     ... boss or others?
@@ -251,23 +245,23 @@ export const RecipientSelector = forwardRef(
             </div>
           )}
 
-          {recipientList &&
-            recipientList.map((recipient) => (
-              <div key={recipient.id}>
-                <input type="hidden" name="recipients" value={recipient.id} />
-                <MiniUser user={recipient}></MiniUser>
+          {assigneeList &&
+            assigneeList.map((assignee: User | any) => (
+              <div key={assignee.id}>
+                <input type="hidden" name="assignees" value={assignee.id} />
+                <MiniUser user={assignee}></MiniUser>
               </div>
             ))}
 
-          {(!recipientList || recipientList?.length === 0) && (
+          {(!assigneeList || assigneeList?.length === 0) && (
             <>
               {'No one—'}
               <span
                 className="has-text-link is-clickable"
                 onClick={(event) => {
                   event.stopPropagation();
-                  if (!recipientList.includes(me)) {
-                    setRecipientList([...recipientList, me]);
+                  if (!assigneeList.includes(me)) {
+                    setAssigneeList([...assigneeList, me]);
                   }
                 }}
               >
@@ -286,4 +280,4 @@ export const RecipientSelector = forwardRef(
   },
 );
 
-RecipientSelector.displayName = 'Recipient List';
+AssigneeSelector.displayName = 'Assignee List';

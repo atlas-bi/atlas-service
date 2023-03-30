@@ -91,7 +91,10 @@ export const authorize: Policy<{
         },
       });
     } catch {
-      session.flash('loginError', `Could not authenticate you from SAML.`);
+      // only print error if saml is enabled.
+      if (process.env.SAML_IDP_METADATA) {
+        session.flash('loginError', `Could not authenticate you from SAML.`);
+      }
 
       throw redirect('/login', {
         headers: {

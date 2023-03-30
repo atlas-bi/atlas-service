@@ -10,7 +10,7 @@ export function getRequest({ id }: Pick<Request, 'id'>) {
     select: {
       id: true,
       name: true,
-
+      createdAt: true,
       purpose: true,
       schedule: true,
       parameters: true,
@@ -19,6 +19,15 @@ export function getRequest({ id }: Pick<Request, 'id'>) {
       exportToExcel: true,
       supportsInitiative: true,
       regulatory: true,
+      creator: {
+        select: {
+          firstName: true,
+          lastName: true,
+          id: true,
+          email: true,
+          profilePhoto: true,
+        },
+      },
       requester: {
         select: {
           firstName: true,
@@ -29,6 +38,24 @@ export function getRequest({ id }: Pick<Request, 'id'>) {
         },
       },
       recipients: {
+        select: {
+          firstName: true,
+          lastName: true,
+          id: true,
+          email: true,
+          profilePhoto: true,
+        },
+      },
+      assignees: {
+        select: {
+          firstName: true,
+          lastName: true,
+          id: true,
+          email: true,
+          profilePhoto: true,
+        },
+      },
+      watchers: {
         select: {
           firstName: true,
           lastName: true,
@@ -45,6 +72,122 @@ export function getRequest({ id }: Pick<Request, 'id'>) {
           description: true,
         },
       },
+      comments: {
+        select: {
+          id: true,
+          comment: true,
+          createdAt: true,
+          updatedAt: true,
+          creator: {
+            select: {
+              firstName: true,
+              lastName: true,
+              id: true,
+              email: true,
+              profilePhoto: true,
+            },
+          },
+        },
+      },
+      labelHistory: {
+        select: {
+          id: true,
+          label: {
+            select: {
+              id: true,
+              color: true,
+              name: true,
+              description: true,
+            },
+          },
+          creator: {
+            select: {
+              firstName: true,
+              lastName: true,
+              id: true,
+              email: true,
+              profilePhoto: true,
+            },
+          },
+          createdAt: true,
+          added: true,
+        },
+      },
+      assigneeHistory: {
+        select: {
+          id: true,
+          assignee: {
+            select: {
+              firstName: true,
+              lastName: true,
+              id: true,
+              email: true,
+              profilePhoto: true,
+            },
+          },
+          creator: {
+            select: {
+              firstName: true,
+              lastName: true,
+              id: true,
+              email: true,
+              profilePhoto: true,
+            },
+          },
+          createdAt: true,
+          added: true,
+        },
+      },
+      recipientHistory: {
+        select: {
+          id: true,
+          recipient: {
+            select: {
+              firstName: true,
+              lastName: true,
+              id: true,
+              email: true,
+              profilePhoto: true,
+            },
+          },
+          creator: {
+            select: {
+              firstName: true,
+              lastName: true,
+              id: true,
+              email: true,
+              profilePhoto: true,
+            },
+          },
+          createdAt: true,
+          added: true,
+        },
+      },
+      requesterHistory: {
+        select: {
+          id: true,
+          requester: {
+            select: {
+              firstName: true,
+              lastName: true,
+              id: true,
+              email: true,
+              profilePhoto: true,
+            },
+          },
+          creator: {
+            select: {
+              firstName: true,
+              lastName: true,
+              id: true,
+              email: true,
+              profilePhoto: true,
+            },
+          },
+          createdAt: true,
+          added: true,
+        },
+      },
     },
     where: { id: id },
   });
@@ -55,9 +198,29 @@ export const editRequester = async ({
   requestedFor,
   id,
 }: Pick<Request, 'requestedFor'> & { userId: User['id'] }) => {
-  console.log(userId, requestedFor);
+  const currentRequester = await prisma.request.findUnique({
+    where: { id },
+    select: {
+      requester: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
 
-  await prisma.request.update({
+  if (Number(requestedFor) !== currentRequester.requester.id) {
+    await prisma.requestRequesterHistory.create({
+      data: {
+        requestId: id,
+        requesterId: Number(requestedFor),
+        creatorId: userId,
+        added: true,
+      },
+    });
+  }
+
+  return prisma.request.update({
     where: { id },
     data: {
       requester: {
@@ -67,7 +230,6 @@ export const editRequester = async ({
       },
     },
   });
-  return;
 };
 
 export const editLabels = async ({
@@ -75,9 +237,46 @@ export const editLabels = async ({
   labels,
   id,
 }: Pick<Request, 'labels'> & { userId: User['id'] }) => {
-  console.log(userId, labels);
+  const currentLabels = await prisma.label.findMany({
+    where: {
+      requests: {
+        some: { id },
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
 
-  await prisma.request.update({
+  // added labels
+  labels
+    .filter((x) => !currentLabels.map(({ id }) => id).includes(Number(x)))
+    .map(async (labelId) =>
+      prisma.requestLabelHistory.create({
+        data: {
+          requestId: id,
+          labelId: Number(labelId),
+          creatorId: userId,
+          added: true,
+        },
+      }),
+    );
+
+  // removed labels
+  currentLabels
+    .filter(({ id }) => !labels.includes(id.toString()))
+    .map(async (label) =>
+      prisma.requestLabelHistory.create({
+        data: {
+          requestId: id,
+          labelId: label.id,
+          creatorId: userId,
+          added: false,
+        },
+      }),
+    );
+
+  return prisma.request.update({
     where: { id },
     data: {
       labels: {
@@ -85,7 +284,6 @@ export const editLabels = async ({
       },
     },
   });
-  return;
 };
 
 export const editRecipients = async ({
@@ -93,7 +291,46 @@ export const editRecipients = async ({
   recipients,
   id,
 }: Pick<Request, 'recipients'> & { userId: User['id'] }) => {
-  await prisma.request.update({
+  const currentRecipients = await prisma.user.findMany({
+    where: {
+      recievingReports: {
+        some: { id },
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  // added recipient
+  recipients
+    .filter((x) => !currentRecipients.map(({ id }) => id).includes(Number(x)))
+    .map(async (recipientId) =>
+      prisma.requestRecipientHistory.create({
+        data: {
+          requestId: id,
+          recipientId: Number(recipientId),
+          creatorId: userId,
+          added: true,
+        },
+      }),
+    );
+
+  // removed recipient
+  currentRecipients
+    .filter(({ id }) => !recipients.includes(id.toString()))
+    .map(async (recipient) =>
+      prisma.requestRecipientHistory.create({
+        data: {
+          requestId: id,
+          recipientId: recipient.id,
+          creatorId: userId,
+          added: false,
+        },
+      }),
+    );
+
+  return prisma.request.update({
     where: { id },
     data: {
       recipients: {
@@ -101,12 +338,101 @@ export const editRecipients = async ({
       },
     },
   });
-  return;
 };
 
-export function getRequests({ userId }: { userId: User['id'] }) {
+export const editWatch = async ({
+  watch,
+  userId,
+  id,
+}: Pick<Request, 'assignees'> & { userId: User['id']; watch: boolean }) => {
+  if (watch) {
+    return prisma.request.update({
+      where: { id },
+      data: {
+        watchers: {
+          connect: [{ id: userId }],
+        },
+      },
+    });
+  }
+  return prisma.request.update({
+    where: { id },
+    data: {
+      watchers: {
+        disconnect: [{ id: userId }],
+      },
+    },
+  });
+};
+export const editAssignees = async ({
+  userId,
+  assignees,
+  id,
+}: Pick<Request, 'assignees'> & { userId: User['id'] }) => {
+  const currentAssignees = await prisma.user.findMany({
+    where: {
+      myAssignedRequests: {
+        some: { id },
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  // added assignee
+  assignees
+    .filter((x) => !currentAssignees.map(({ id }) => id).includes(Number(x)))
+    .map(async (assigneeId) =>
+      prisma.requestAssigneeHistory.create({
+        data: {
+          requestId: id,
+          assigneeId: Number(assigneeId),
+          creatorId: userId,
+          added: true,
+        },
+      }),
+    );
+
+  // removed assignee
+  currentAssignees
+    .filter(({ id }) => !assignees.includes(id.toString()))
+    .map(async (assignee) =>
+      prisma.requestAssigneeHistory.create({
+        data: {
+          requestId: id,
+          assigneeId: assignee.id,
+          creatorId: userId,
+          added: false,
+        },
+      }),
+    );
+
+  return prisma.request.update({
+    where: { id },
+    data: {
+      assignees: {
+        set: assignees.map((x) => ({ id: Number(x) })),
+      },
+    },
+  });
+};
+
+export function getRequests({
+  userId,
+  assigneeId,
+  watcherId,
+}: {
+  userId?: User['id'];
+  assigneeId?: User['id'];
+  watcherId?: User['id'];
+}) {
   return prisma.request.findMany({
-    where: { OR: [{ requesterId: userId }, { creatorId: userId }] },
+    where: userId
+      ? { OR: [{ requesterId: userId }, { creatorId: userId }] }
+      : assigneeId
+      ? { assignees: { some: { id: assigneeId } } }
+      : { watchers: { some: { id: watcherId } } },
     select: {
       id: true,
       name: true,
@@ -152,7 +478,9 @@ export async function createRequest({
   regulatory,
   requestedFor,
   recipients,
+  assignees,
   labels,
+  watchers,
 }: Pick<
   Request,
   | 'name'
@@ -175,6 +503,7 @@ export async function createRequest({
   initiative: Request['supportsInitiative'];
   recipients: Request['recipients'][];
   labels: Request['labels'][];
+  watchers: Request['watchers'][];
 }) {
   const defaultCategory = await prisma.requestCategory.findFirst({
     where: { isDefault: true },
@@ -210,6 +539,18 @@ export async function createRequest({
       recipients: recipients
         ? {
             connect: recipients.map((x) => ({ id: Number(x) })),
+          }
+        : undefined,
+
+      assignees: assignees
+        ? {
+            connect: assignees.map((x) => ({ id: Number(x) })),
+          }
+        : undefined,
+
+      watchers: watchers
+        ? {
+            connect: watchers.map((x) => ({ id: Number(x) })),
           }
         : undefined,
 
@@ -250,5 +591,19 @@ export function deleteRequest({
   // should authenticate as admin. only admins should have delete button.
   return prisma.request.deleteMany({
     where: { id },
+  });
+}
+
+export function addComment({
+  requestId,
+  comment,
+  userId,
+}: Pick<RequestComments, 'requestId' | 'comment'> & { userId: User['id'] }) {
+  return prisma.requestComments.create({
+    data: {
+      requestId,
+      comment,
+      creatorId: userId,
+    },
   });
 }

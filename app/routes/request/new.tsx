@@ -8,6 +8,7 @@ import {
 } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { $getRoot, type EditorState } from 'lexical';
+import { MeiliSearch } from 'meilisearch';
 import * as React from 'react';
 import { EmojiFinder } from '~/components/Emoji';
 import { getRequestType, getRequestTypes } from '~/models/config.server';
@@ -16,6 +17,7 @@ import { createRequest } from '~/models/request.server';
 import { labelIndex, userIndex } from '~/search.server';
 import { authorize, requireUser } from '~/session.server';
 
+import { AssigneeSelector } from '../../components/Assignees';
 import Editor from '../../components/Editor';
 import { LabelSelector } from '../../components/Labels';
 import { RecipientSelector } from '../../components/Recipients';
@@ -37,11 +39,20 @@ export async function loader({ request }: LoaderArgs) {
         requestTypes.filter((rt: RequestType) => rt.id === defaultType)[0] ||
         requestTypes[0];
 
+      const client = new MeiliSearch({
+        host: process.env.MEILISEARCH_URL,
+        apiKey: process.env.MEILI_MASTER_KEY,
+      });
+      const keys = await client.getKeys();
+
       return json({
         requestTypes,
         user,
         selectedType,
-        ENV: { MEILISEARCH_URL: process.env.MEILISEARCH_URL },
+        MEILISEARCH_URL: process.env.MEILISEARCH_URL,
+        MEILISEARCH_KEY: keys.results.filter(
+          (x) => x.name === 'Default Search API Key',
+        )[0].key,
         search: { labelIndex, userIndex },
       });
     },
@@ -89,6 +100,7 @@ export async function action({ request }: ActionArgs) {
   const requestedFor = formData.get('requestedFor') as string | null;
   const type = formData.get('type') as string;
   const recipients = formData.getAll('recipients') as string[] | null;
+  const assignees = formData.getAll('assignees') as string[] | null;
   const labels = formData.getAll('labels') as string[] | null;
   const excel = formData.get('excel') as string | null;
   const initiative = formData.get('initiative') as string | null;
@@ -200,19 +212,24 @@ export async function action({ request }: ActionArgs) {
     regulatory,
     recipients,
     labels,
+    assignees,
+    watchers: [userId],
   });
 
   return redirect(`/request/${thisRequest.id}`);
 }
 
 export default function NewRequestPage() {
-  const { user, selectedType, ENV, search } = useLoaderData<typeof loader>();
+  const { user, selectedType, MEILISEARCH_URL, MEILISEARCH_KEY, search } =
+    useLoaderData<typeof loader>();
+
   type ActionData = { errors?: Errors; newLabel?: Label } | undefined | null;
 
   const actionData = useActionData<ActionData>();
 
   const [name, setName] = React.useState('');
   const requestedForRef = React.useRef<HTMLInputElement>(null);
+  const assigneeRef = React.useRef<HTMLInputElement>(null);
   const labelRef = React.useRef<HTMLInputElement>(null);
   const typeRef = React.useRef<HTMLSelectElement>(null);
   const nameRef = React.useRef<HTMLInputElement>(null);
@@ -381,7 +398,8 @@ export default function NewRequestPage() {
                     ref={descriptionEditor}
                     userIndex={search.userIndex}
                     activeEditor={activeEditor}
-                    MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                    MEILISEARCH_URL={MEILISEARCH_URL}
+                    MEILISEARCH_KEY={MEILISEARCH_KEY}
                     onChange={(editorState: EditorState) => {
                       setActiveEditor(descriptionEditor);
                       descriptionWarningRef.current?.remove();
@@ -423,7 +441,8 @@ export default function NewRequestPage() {
                     ref={purposeEditor}
                     activeEditor={activeEditor}
                     userIndex={search.userIndex}
-                    MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                    MEILISEARCH_URL={MEILISEARCH_URL}
+                    MEILISEARCH_KEY={MEILISEARCH_KEY}
                     onChange={(editorState: EditorState) => {
                       setActiveEditor(purposeEditor);
                       purposeWarningRef.current?.remove();
@@ -458,7 +477,8 @@ export default function NewRequestPage() {
                   )}
                   <Editor
                     ref={criteriaEditor}
-                    MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                    MEILISEARCH_URL={MEILISEARCH_URL}
+                    MEILISEARCH_KEY={MEILISEARCH_KEY}
                     activeEditor={activeEditor}
                     userIndex={search.userIndex}
                     onChange={(editorState: EditorState) => {
@@ -497,7 +517,8 @@ export default function NewRequestPage() {
                   )}
                   <Editor
                     ref={parametersEditor}
-                    MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                    MEILISEARCH_URL={MEILISEARCH_URL}
+                    MEILISEARCH_KEY={MEILISEARCH_KEY}
                     activeEditor={activeEditor}
                     userIndex={search.userIndex}
                     onChange={(editorState: EditorState) => {
@@ -535,7 +556,8 @@ export default function NewRequestPage() {
                     ref={scheduleEditor}
                     activeEditor={activeEditor}
                     userIndex={search.userIndex}
-                    MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                    MEILISEARCH_URL={MEILISEARCH_URL}
+                    MEILISEARCH_KEY={MEILISEARCH_KEY}
                     onChange={(editorState: EditorState) => {
                       setActiveEditor(scheduleEditor);
                       scheduleWarningRef.current?.remove();
@@ -572,7 +594,8 @@ export default function NewRequestPage() {
                 me={user}
                 user={user}
                 actionData={actionData}
-                MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                MEILISEARCH_URL={MEILISEARCH_URL}
+                MEILISEARCH_KEY={MEILISEARCH_KEY}
                 searchIndex={search.userIndex}
                 action="newRequester"
               />
@@ -580,10 +603,11 @@ export default function NewRequestPage() {
 
             {selectedType.showRecipients && (
               <RecipientSelector
-                ref={requestedForRef}
+                ref={recipientsRef}
                 me={user}
                 actionData={actionData}
-                MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                MEILISEARCH_URL={MEILISEARCH_URL}
+                MEILISEARCH_KEY={MEILISEARCH_KEY}
                 searchIndex={search.userIndex}
                 action="newRecipient"
               />
@@ -593,7 +617,8 @@ export default function NewRequestPage() {
                 ref={labelRef}
                 labels={undefined}
                 actionData={actionData}
-                MEILISEARCH_URL={ENV.MEILISEARCH_URL}
+                MEILISEARCH_URL={MEILISEARCH_URL}
+                MEILISEARCH_KEY={MEILISEARCH_KEY}
                 searchIndex={search.labelIndex}
                 action="newLabel"
               />
@@ -642,6 +667,17 @@ export default function NewRequestPage() {
                 </div>
               </>
             )}
+
+            <AssigneeSelector
+              ref={assigneeRef}
+              me={user}
+              user={user}
+              actionData={actionData}
+              MEILISEARCH_URL={MEILISEARCH_URL}
+              MEILISEARCH_KEY={MEILISEARCH_KEY}
+              searchIndex={search.userIndex}
+              action="newAssignee"
+            />
           </div>
         </div>
       </Form>

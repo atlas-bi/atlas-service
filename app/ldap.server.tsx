@@ -45,7 +45,6 @@ export async function verifyLogin(email: User['email'], password: string) {
     ) {
       try {
         //for bytestrings (8 120 99 ...)
-        console.log(ldapUser);
         if (
           !isNaN(
             ldapUser[process.env.LDAP_PHOTO_FIELD]

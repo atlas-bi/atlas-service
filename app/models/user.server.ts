@@ -1,12 +1,19 @@
 import type { Group, User } from '@prisma/client';
 import { MeiliSearch } from 'meilisearch';
+import invariant from 'tiny-invariant';
 import { prisma } from '~/db.server';
 // export type { User, Group } from '@prisma/client';
 import { loadGroup, loadUser } from '~/search.server';
 
 const userIndex = 'atlas-requests-users';
 
-const client = new MeiliSearch({ host: process.env.MEILISEARCH_URL });
+invariant(process.env.MEILISEARCH_URL, 'MEILISEARCH_URL not found');
+
+const client = new MeiliSearch({
+  host: process.env.MEILISEARCH_URL,
+  apiKey: process.env.MEILI_MASTER_KEY,
+});
+
 export async function getUserById(id: User['id']) {
   return prisma.user.findUnique({ where: { id }, include: { groups: true } });
 }

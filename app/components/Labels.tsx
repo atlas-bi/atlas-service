@@ -8,6 +8,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Label } from '@prisma/client';
 import { useSubmit, useTransition } from '@remix-run/react';
+import { Link } from '@remix-run/react';
 import Color from 'color';
 import { MeiliSearch } from 'meilisearch';
 import React, {
@@ -46,7 +47,7 @@ export const LabelTag = ({
   onClick,
 }: {
   label: Label;
-  onClick: React.MouseEventHandler<HTMLDivElement>;
+  onClick?: React.MouseEventHandler<HTMLDivElement>;
 }) => {
   const parts = label.name.split('::');
   let luminosity = 1;
@@ -80,7 +81,7 @@ export const LabelCreator = ({
   onClose,
   label,
 }: {
-  action: any;
+  action: string;
   name: string | undefined;
   show: boolean;
   label?: Label;
@@ -328,6 +329,7 @@ export const LabelSelector = forwardRef(
       labels,
       actionData,
       MEILISEARCH_URL,
+      MEILISEARCH_KEY,
       onChange,
       searchIndex,
       action,
@@ -335,6 +337,7 @@ export const LabelSelector = forwardRef(
       labels?: Label[];
       actionData: any;
       MEILISEARCH_URL: string;
+      MEILISEARCH_KEY: string;
       onChange?: React.ChangeEvent<HTMLInputElement>;
       searchIndex: string;
       action: string;
@@ -347,7 +350,10 @@ export const LabelSelector = forwardRef(
     const [showLabelSearch, setShowLabelSearch] = useState(false);
     const labelPopout = useRef<HTMLDivElement>();
 
-    const client = new MeiliSearch({ host: MEILISEARCH_URL });
+    const client = new MeiliSearch({
+      host: MEILISEARCH_URL,
+      apiKey: MEILISEARCH_KEY,
+    });
     const [labelSearchResults, setLabelSearchResults] = useState(null);
 
     const inputReference = useRef<HTMLInputElement>(null);
@@ -578,17 +584,15 @@ export const LabelSelector = forwardRef(
                   </>
                 )}
                 <hr />
-                <div
-                  className="has-background-white py-2 px-3 my-auto is-clickable "
-                  onClick={() => {
-                    console.log('blah');
-                  }}
+                <Link
+                  className="has-background-white py-2 px-3 my-auto is-clickable is-block "
+                  to="/admin/labels"
                 >
                   <span className="icon my-auto has-text-grey mx-2">
                     <FontAwesomeIcon icon={faPencil} />
                   </span>
-                  <span>Edit labels</span>
-                </div>
+                  <span className="has-text-grey">Edit labels</span>
+                </Link>
               </div>
             </div>
           )}
