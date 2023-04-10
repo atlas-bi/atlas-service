@@ -65,10 +65,10 @@
     "@lexical/react": "^0.9.0",
     "@next-boost/hybrid-disk-cache": "^0.3.0",
     "@prisma/client": "^4.11.0",
-    "@remix-run/express": "1.14.3",
-    "@remix-run/node": "1.14.3",
-    "@remix-run/react": "1.14.3",
-    "@remix-run/server-runtime": "1.14.3",
+    "@remix-run/express": "1.15.0",
+    "@remix-run/node": "1.15.0",
+    "@remix-run/react": "1.15.0",
+    "@remix-run/server-runtime": "1.15.0",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^8.2.0",
     "bulma": "^0.9.4",
@@ -107,14 +107,14 @@
   "devDependencies": {
     "@faker-js/faker": "^7.6.0",
     "@fullhuman/postcss-purgecss": "^5.0.0",
-    "@remix-run/dev": "1.14.3",
-    "@remix-run/eslint-config": "1.14.3",
+    "@remix-run/dev": "1.15.0",
+    "@remix-run/eslint-config": "1.15.0",
     "@semantic-release/changelog": "6.0.3",
     "@semantic-release/commit-analyzer": "9.0.2",
     "@semantic-release/exec": "6.0.3",
     "@semantic-release/git": "10.0.1",
     "@semantic-release/github": "8.0.7",
-    "@semantic-release/npm": "10.0.2",
+    "@semantic-release/npm": "10.0.3",
     "@semantic-release/release-notes-generator": "10.0.3",
     "@testing-library/cypress": "^9.0.0",
     "@testing-library/dom": "^9.0.1",
@@ -187,5 +187,5 @@
       "npm run format"
     ]
   },
-  "version": "1.0.3"
+  "version": "1.0.4"
 }
