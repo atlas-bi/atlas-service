@@ -20,6 +20,7 @@ model User {
   myAssignedRequests             Request[]                 @relation("RequestAssignees")
   myWatchedRequests              Request[]                 @relation("RequestWatchers")
   myCreatedRequests              Request[]                 @relation("RequestCreator")
+  myUpdatedRequests              Request[]                 @relation("RequestUpdater")
   myRequests                     Request[]                 @relation("RequestRequester")
   requestTypesCreated            RequestType[]
   categoriesCreated              RequestCategory[]
@@ -124,6 +125,8 @@ model Request {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  updater   User?    @relation(name: "RequestUpdater", fields: [updaterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  updaterId Int?
 
   creator   User @relation(name: "RequestCreator", fields: [creatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   creatorId Int

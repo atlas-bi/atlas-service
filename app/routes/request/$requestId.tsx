@@ -21,6 +21,7 @@ import {
 import { $getRoot, CLEAR_HISTORY_COMMAND, type EditorState } from 'lexical';
 import { MeiliSearch } from 'meilisearch';
 import * as React from 'react';
+import { AtSign } from 'react-feather';
 import { namedAction } from 'remix-utils';
 import invariant from 'tiny-invariant';
 import { AssigneeSelector } from '~/components/Assignees';
@@ -250,14 +251,20 @@ export default function RequestDetailsPage() {
                   <div className="p-3 is-flex is-justify-content-space-between has-border-bottom-grey-lighter">
                     <span>
                       <strong>
-                        {thisRequest.creator?.firstName}{' '}
-                        {thisRequest.creator?.lastName}
+                        {thisRequest.creator?.id == user.id ? (
+                          'You'
+                        ) : (
+                          <>
+                            {thisRequest.creator?.firstName}{' '}
+                            {thisRequest.creator?.lastName}
+                          </>
+                        )}
                       </strong>
                       {thisRequest.requester?.id !==
                         thisRequest.creator?.id && (
                         <>
                           {' '}
-                          on behalf of{' '}
+                          created this request on behalf of{' '}
                           <strong>
                             {thisRequest.requester?.firstName}{' '}
                             {thisRequest.requester?.lastName}
@@ -412,7 +419,7 @@ export default function RequestDetailsPage() {
                   ) : item.type === 'assigneeHistory' ? (
                     <div className="history">
                       <span className="icon has-text-grey-lighter mr-3 has-background-white">
-                        <FontAwesomeIcon icon={faAtom} />
+                        <AtSign color="grey" size={12} />
                       </span>
                       <InlineUser user={item.creator} />
                       &nbsp;{item.added ? 'assigned' : 'unassigned'}&nbsp;

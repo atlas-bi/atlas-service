@@ -1,6 +1,9 @@
 import type { Request, User } from '@prisma/client';
 import { prisma } from '~/db.server';
-import smtpQueue from '~/queues/smtp.server';
+import { getUserById } from '~/models/user.server';
+import AssignedRequestEmail from '~/queues/email/request_assigned.server';
+import CommentRequestEmail from '~/queues/email/request_comment.server';
+import NewRequestEmail from '~/queues/email/request_new.server';
 import { loadReport } from '~/search.server';
 
 export type { Request } from '@prisma/client';
@@ -228,6 +231,11 @@ export const editRequester = async ({
           id: requestedFor,
         },
       },
+      updater: {
+        connect: {
+          id: userId,
+        },
+      },
     },
   });
 };
@@ -281,6 +289,11 @@ export const editLabels = async ({
     data: {
       labels: {
         set: labels.map((x) => ({ id: Number(x) })),
+      },
+      updater: {
+        connect: {
+          id: userId,
+        },
       },
     },
   });
@@ -336,6 +349,11 @@ export const editRecipients = async ({
       recipients: {
         set: recipients.map((x) => ({ id: Number(x) })),
       },
+      updater: {
+        connect: {
+          id: userId,
+        },
+      },
     },
   });
 };
@@ -383,16 +401,23 @@ export const editAssignees = async ({
   // added assignee
   assignees
     .filter((x) => !currentAssignees.map(({ id }) => id).includes(Number(x)))
-    .map(async (assigneeId) =>
-      prisma.requestAssigneeHistory.create({
+    .map(async (assigneeId) => {
+      await prisma.requestAssigneeHistory.create({
         data: {
           requestId: id,
           assigneeId: Number(assigneeId),
           creatorId: userId,
           added: true,
         },
-      }),
-    );
+      });
+      return AssignedRequestEmail.enqueue(
+        {
+          request: await getRequest({ id }),
+          user: await getUserById(Number(assigneeId)),
+        },
+        { id: `assigned-request-${id.toString()}-${assigneeId}` },
+      );
+    });
 
   // removed assignee
   currentAssignees
@@ -413,6 +438,11 @@ export const editAssignees = async ({
     data: {
       assignees: {
         set: assignees.map((x) => ({ id: Number(x) })),
+      },
+      updater: {
+        connect: {
+          id: userId,
+        },
       },
     },
   });
@@ -575,9 +605,56 @@ export async function createRequest({
           }
         : undefined,
     },
+    select: {
+      name: true,
+      id: true,
+      creator: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          profilePhoto: true,
+          email: true,
+        },
+      },
+      requester: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          profilePhoto: true,
+          email: true,
+        },
+      },
+      assignees: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          profilePhoto: true,
+          email: true,
+        },
+      },
+    },
   });
 
-  await smtpQueue.enqueue(null); //"me","message");
+  if (request.creator.id !== request.requester.id) {
+    await NewRequestEmail.enqueue(
+      { request },
+      { id: `new-request-${request.id.toString()}` },
+    );
+  }
+
+  request.assignees
+    .filter((x) => request.creator.id !== x.id)
+    .map(async (user) => {
+      await AssignedRequestEmail.enqueue(
+        { request, user },
+        {
+          id: `assigned-request-${request.id.toString()}-${user.id.toString()}`,
+        },
+      );
+    });
 
   // send to search
   await loadReport(request);
@@ -594,16 +671,27 @@ export function deleteRequest({
   });
 }
 
-export function addComment({
+export async function addComment({
   requestId,
   comment,
   userId,
 }: Pick<RequestComments, 'requestId' | 'comment'> & { userId: User['id'] }) {
-  return prisma.requestComments.create({
+  const newComment = await prisma.requestComments.create({
     data: {
       requestId,
       comment,
       creatorId: userId,
     },
   });
+
+  // notify requester
+  await CommentRequestEmail.enqueue(
+    {
+      request: await getRequest({ requestId }),
+      user: await getUserById(userId),
+    },
+    {
+      id: `comment-request-${requestId.toString()}-${userId.toString()}-${newComment.id.toString()}`,
+    },
+  );
 }

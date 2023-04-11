@@ -222,7 +222,7 @@ MEILI_HTTP_ADDR=$SEARCH_HOSTNAME:$SEARCH_INTERNAL_PORT
 HOSTNAME=$HOSTNAME:$PORT
 REDIS_URL=redis://$REDIS_HOSTNAME:$REDIS_PORT/0
 QUIRREL_API_URL=$QUIRREL_HOSTNAME
-QUIRREL_BASE_URL=$( if [ "$SSL_CERTIFICATE" ]; then echo "https://"; else echo "http://"; fi )$SERVER_NAME:
+QUIRREL_BASE_URL=$( if [ "$SSL_CERTIFICATE" ]; then echo "https://"; else echo "http://"; fi )$SERVER_NAME
 EOT
 
   # this can only be accessed after the quirrel service is running.

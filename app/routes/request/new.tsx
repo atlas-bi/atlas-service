@@ -214,6 +214,7 @@ export async function action({ request }: ActionArgs) {
     labels,
     assignees,
     watchers: [userId],
+    requestedFor: Number(requestedFor),
   });
 
   return redirect(`/request/${thisRequest.id}`);
