@@ -1,3 +1,10 @@
+## 1.0.0-rc.21 (2023-03-28)
+
+* fix(deps): fixed lock file ([68bdd2b](https://github.com/atlas-bi/atlas-requests/commit/68bdd2b))
+* fix(installer): fixed backup command ([c773dd0](https://github.com/atlas-bi/atlas-requests/commit/c773dd0))
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([3d6c850](https://github.com/atlas-bi/atlas-requests/commit/3d6c850))
+* updated renovate config ([292ab2f](https://github.com/atlas-bi/atlas-requests/commit/292ab2f))
+
 ## 1.0.0-rc.20 (2023-03-24)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([99ea084](https://github.com/atlas-bi/atlas-requests/commit/99ea084))
