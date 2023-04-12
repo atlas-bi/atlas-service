@@ -524,7 +524,7 @@ EOT
 npm_install_full(){
   cd "$INSTALL_DIR" || exit;
   fmt_blue "Installing packages"
-  npm install --loglevel silent --no-fund --no-audit
+  npm install --save-dev --loglevel silent --no-fund --no-audit
 }
 
 npm_build(){
@@ -537,10 +537,4 @@ npm_migrate(){
   cd "$INSTALL_DIR" || exit;
   fmt_blue "Applying database migrations"
   npx prisma migrate deploy
-}
-
-npm_clean(){
-  cd "$INSTALL_DIR" || exit;
-  fmt_blue "Cleaning up install"
-  npm install --omit=dev --loglevel silent --no-fund --no-audit
 }
