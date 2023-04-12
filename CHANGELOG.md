@@ -1,3 +1,8 @@
+## 1.0.0-rc.24 (2023-04-12)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([54257f3](https://github.com/atlas-bi/atlas-requests/commit/54257f3))
+* fix(installer): fixed reconfigure command to force an app rebuild > required when env changes ([87eaaea](https://github.com/atlas-bi/atlas-requests/commit/87eaaea))
+
 ## 1.0.0-rc.23 (2023-04-12)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([5ce469c](https://github.com/atlas-bi/atlas-requests/commit/5ce469c))
