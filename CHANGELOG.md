@@ -1,3 +1,8 @@
+## 1.0.0-rc.23 (2023-04-12)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([5ce469c](https://github.com/atlas-bi/atlas-requests/commit/5ce469c))
+* feat(notification): added notification for changing requester ([53e7982](https://github.com/atlas-bi/atlas-requests/commit/53e7982))
+
 ## 1.0.0-rc.22 (2023-04-11)
 
 * chore(deps) Update all non-major dependencies ([755624d](https://github.com/atlas-bi/atlas-requests/commit/755624d))
