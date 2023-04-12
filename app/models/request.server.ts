@@ -3,25 +3,93 @@ import { prisma } from '~/db.server';
 import { getUserById } from '~/models/user.server';
 import AssignedRequestEmail from '~/queues/email/request_assigned.server';
 import CommentRequestEmail from '~/queues/email/request_comment.server';
+import CommentMentionEmail from '~/queues/email/request_mention.server';
 import NewRequestEmail from '~/queues/email/request_new.server';
+import ChangedRequesterEmail from '~/queues/email/request_requester.server';
 import { loadReport } from '~/search.server';
 
 export type { Request } from '@prisma/client';
 
-export function getRequest({ id }: Pick<Request, 'id'>) {
-  return prisma.request.findUnique({
+const defaultReportFields = {
+  id: true,
+  name: true,
+  createdAt: true,
+  purpose: true,
+  schedule: true,
+  parameters: true,
+  criteria: true,
+  description: true,
+  exportToExcel: true,
+  supportsInitiative: true,
+  regulatory: true,
+  creator: {
+    select: {
+      firstName: true,
+      lastName: true,
+      id: true,
+      email: true,
+      profilePhoto: true,
+    },
+  },
+  updater: {
+    select: {
+      firstName: true,
+      lastName: true,
+      id: true,
+      email: true,
+      profilePhoto: true,
+    },
+  },
+  requester: {
+    select: {
+      firstName: true,
+      lastName: true,
+      id: true,
+      email: true,
+      profilePhoto: true,
+    },
+  },
+  recipients: {
+    select: {
+      firstName: true,
+      lastName: true,
+      id: true,
+      email: true,
+      profilePhoto: true,
+    },
+  },
+  assignees: {
+    select: {
+      firstName: true,
+      lastName: true,
+      id: true,
+      email: true,
+      profilePhoto: true,
+    },
+  },
+  watchers: {
+    select: {
+      firstName: true,
+      lastName: true,
+      id: true,
+      email: true,
+      profilePhoto: true,
+    },
+  },
+  labels: {
     select: {
       id: true,
+      color: true,
       name: true,
-      createdAt: true,
-      purpose: true,
-      schedule: true,
-      parameters: true,
-      criteria: true,
       description: true,
-      exportToExcel: true,
-      supportsInitiative: true,
-      regulatory: true,
+    },
+  },
+  comments: {
+    select: {
+      id: true,
+      comment: true,
+      createdAt: true,
+      updatedAt: true,
       creator: {
         select: {
           firstName: true,
@@ -31,6 +99,85 @@ export function getRequest({ id }: Pick<Request, 'id'>) {
           profilePhoto: true,
         },
       },
+    },
+  },
+  labelHistory: {
+    select: {
+      id: true,
+      label: {
+        select: {
+          id: true,
+          color: true,
+          name: true,
+          description: true,
+        },
+      },
+      creator: {
+        select: {
+          firstName: true,
+          lastName: true,
+          id: true,
+          email: true,
+          profilePhoto: true,
+        },
+      },
+      createdAt: true,
+      added: true,
+    },
+  },
+  assigneeHistory: {
+    select: {
+      id: true,
+      assignee: {
+        select: {
+          firstName: true,
+          lastName: true,
+          id: true,
+          email: true,
+          profilePhoto: true,
+        },
+      },
+      creator: {
+        select: {
+          firstName: true,
+          lastName: true,
+          id: true,
+          email: true,
+          profilePhoto: true,
+        },
+      },
+      createdAt: true,
+      added: true,
+    },
+  },
+  recipientHistory: {
+    select: {
+      id: true,
+      recipient: {
+        select: {
+          firstName: true,
+          lastName: true,
+          id: true,
+          email: true,
+          profilePhoto: true,
+        },
+      },
+      creator: {
+        select: {
+          firstName: true,
+          lastName: true,
+          id: true,
+          email: true,
+          profilePhoto: true,
+        },
+      },
+      createdAt: true,
+      added: true,
+    },
+  },
+  requesterHistory: {
+    select: {
+      id: true,
       requester: {
         select: {
           firstName: true,
@@ -40,7 +187,7 @@ export function getRequest({ id }: Pick<Request, 'id'>) {
           profilePhoto: true,
         },
       },
-      recipients: {
+      creator: {
         select: {
           firstName: true,
           lastName: true,
@@ -49,149 +196,15 @@ export function getRequest({ id }: Pick<Request, 'id'>) {
           profilePhoto: true,
         },
       },
-      assignees: {
-        select: {
-          firstName: true,
-          lastName: true,
-          id: true,
-          email: true,
-          profilePhoto: true,
-        },
-      },
-      watchers: {
-        select: {
-          firstName: true,
-          lastName: true,
-          id: true,
-          email: true,
-          profilePhoto: true,
-        },
-      },
-      labels: {
-        select: {
-          id: true,
-          color: true,
-          name: true,
-          description: true,
-        },
-      },
-      comments: {
-        select: {
-          id: true,
-          comment: true,
-          createdAt: true,
-          updatedAt: true,
-          creator: {
-            select: {
-              firstName: true,
-              lastName: true,
-              id: true,
-              email: true,
-              profilePhoto: true,
-            },
-          },
-        },
-      },
-      labelHistory: {
-        select: {
-          id: true,
-          label: {
-            select: {
-              id: true,
-              color: true,
-              name: true,
-              description: true,
-            },
-          },
-          creator: {
-            select: {
-              firstName: true,
-              lastName: true,
-              id: true,
-              email: true,
-              profilePhoto: true,
-            },
-          },
-          createdAt: true,
-          added: true,
-        },
-      },
-      assigneeHistory: {
-        select: {
-          id: true,
-          assignee: {
-            select: {
-              firstName: true,
-              lastName: true,
-              id: true,
-              email: true,
-              profilePhoto: true,
-            },
-          },
-          creator: {
-            select: {
-              firstName: true,
-              lastName: true,
-              id: true,
-              email: true,
-              profilePhoto: true,
-            },
-          },
-          createdAt: true,
-          added: true,
-        },
-      },
-      recipientHistory: {
-        select: {
-          id: true,
-          recipient: {
-            select: {
-              firstName: true,
-              lastName: true,
-              id: true,
-              email: true,
-              profilePhoto: true,
-            },
-          },
-          creator: {
-            select: {
-              firstName: true,
-              lastName: true,
-              id: true,
-              email: true,
-              profilePhoto: true,
-            },
-          },
-          createdAt: true,
-          added: true,
-        },
-      },
-      requesterHistory: {
-        select: {
-          id: true,
-          requester: {
-            select: {
-              firstName: true,
-              lastName: true,
-              id: true,
-              email: true,
-              profilePhoto: true,
-            },
-          },
-          creator: {
-            select: {
-              firstName: true,
-              lastName: true,
-              id: true,
-              email: true,
-              profilePhoto: true,
-            },
-          },
-          createdAt: true,
-          added: true,
-        },
-      },
+      createdAt: true,
+      added: true,
     },
+  },
+};
+
+export function getRequest({ id }: Pick<Request, 'id'>) {
+  return prisma.request.findUnique({
+    select: defaultReportFields,
     where: { id: id },
   });
 }
@@ -223,7 +236,7 @@ export const editRequester = async ({
     });
   }
 
-  return prisma.request.update({
+  const request = await prisma.request.update({
     where: { id },
     data: {
       requester: {
@@ -237,7 +250,19 @@ export const editRequester = async ({
         },
       },
     },
+    select: defaultReportFields,
   });
+
+  console.log(request);
+
+  if (request.updater.id !== request.requester.id) {
+    await ChangedRequesterEmail.enqueue(
+      { request },
+      {
+        id: `change-request-requester-${id.toString()}-${Number(requestedFor)}`,
+      },
+    );
+  }
 };
 
 export const editLabels = async ({
@@ -661,14 +686,34 @@ export async function createRequest({
   return request;
 }
 
-export function deleteRequest({
+export async function deleteRequest({
   id,
   userId,
 }: Pick<Request, 'id'> & { userId: User['id'] }) {
   // should authenticate as admin. only admins should have delete button.
+  // remove comments
+
+  await prisma.requestComments.deleteMany({
+    where: { requestId: id },
+  });
+
   return prisma.request.deleteMany({
     where: { id },
   });
+}
+
+function allNodes(obj, key, value, array) {
+  array = array || [];
+  if ('object' === typeof obj) {
+    for (let k in obj) {
+      if (k === key && obj[k] === value) {
+        array.push(obj);
+      } else {
+        allNodes(obj[k], key, value, array);
+      }
+    }
+  }
+  return array;
 }
 
 export async function addComment({
@@ -684,11 +729,30 @@ export async function addComment({
     },
   });
 
+  const request = await getRequest({ id: requestId });
+  const user = await getUserById(userId);
+  // notify mentions
+  allNodes(JSON.parse(comment).root?.children, 'type', 'mention').forEach(
+    async (mention) =>
+      CommentMentionEmail.enqueue(
+        {
+          request,
+          user,
+          mention: await getUserById(mention.userId),
+        },
+        {
+          id: `comment-request-mention-${requestId.toString()}-${userId.toString()}-${newComment.id.toString()}-${
+            mention.userId
+          }`,
+        },
+      ),
+  );
+
   // notify requester
   await CommentRequestEmail.enqueue(
     {
-      request: await getRequest({ requestId }),
-      user: await getUserById(userId),
+      request,
+      user,
     },
     {
       id: `comment-request-${requestId.toString()}-${userId.toString()}-${newComment.id.toString()}`,

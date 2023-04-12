@@ -21,7 +21,7 @@ import {
 import { $getRoot, CLEAR_HISTORY_COMMAND, type EditorState } from 'lexical';
 import { MeiliSearch } from 'meilisearch';
 import * as React from 'react';
-import { AtSign } from 'react-feather';
+import { AtSign, LifeBuoy, Send, Tag } from 'react-feather';
 import { namedAction } from 'remix-utils';
 import invariant from 'tiny-invariant';
 import { AssigneeSelector } from '~/components/Assignees';
@@ -112,7 +112,6 @@ export async function action({ request, params }: ActionArgs) {
     async editLabels() {
       const formData = await request.formData();
       const { _action, ...values } = Object.fromEntries(formData);
-      console.log(formData.getAll('labels'));
       await editLabels({
         labels: formData.getAll('labels'),
         userId,
@@ -123,7 +122,6 @@ export async function action({ request, params }: ActionArgs) {
     async editAssignees() {
       const formData = await request.formData();
       const { _action, ...values } = Object.fromEntries(formData);
-      console.log('edit assignees', values);
       await editAssignees({
         assignees: formData.getAll('assignees'),
         userId,
@@ -132,10 +130,9 @@ export async function action({ request, params }: ActionArgs) {
       return null;
     },
     async editWatcher() {
-      console.log('edit watcher');
       const formData = await request.formData();
       const { _action, ...values } = Object.fromEntries(formData);
-      console.log(values);
+
       await editWatch({
         userId,
         watch: values.watch === 'true',
@@ -151,10 +148,9 @@ export async function action({ request, params }: ActionArgs) {
       return redirect('/');
     },
     async comment() {
-      console.log('comment!');
       const formData = await request.formData();
       const { _action, ...values } = Object.fromEntries(formData);
-      console.log(values);
+
       await addComment({
         requestId: Number(params.requestId),
         comment: values.comment,
@@ -408,7 +404,7 @@ export default function RequestDetailsPage() {
                   ) : item.type === 'labelHistory' ? (
                     <div className="history">
                       <span className="icon has-text-grey-lighter mr-3 has-background-white">
-                        <FontAwesomeIcon icon={faTag} />
+                        <Tag color="grey" size={14} />
                       </span>
                       <InlineUser user={item.creator} />
                       &nbsp;{item.added ? 'added' : 'removed'}&nbsp;
@@ -419,7 +415,7 @@ export default function RequestDetailsPage() {
                   ) : item.type === 'assigneeHistory' ? (
                     <div className="history">
                       <span className="icon has-text-grey-lighter mr-3 has-background-white">
-                        <AtSign color="grey" size={12} />
+                        <AtSign color="grey" size={14} />
                       </span>
                       <InlineUser user={item.creator} />
                       &nbsp;{item.added ? 'assigned' : 'unassigned'}&nbsp;
@@ -430,7 +426,7 @@ export default function RequestDetailsPage() {
                   ) : item.type === 'requesterHistory' ? (
                     <div className="history">
                       <span className="icon has-text-grey-lighter mr-3 has-background-white">
-                        <FontAwesomeIcon icon={faLifeRing} />
+                        <LifeBuoy color="grey" size={14} />
                       </span>
                       <InlineUser user={item.creator} />
                       &nbsp;changed the requester to&nbsp;
@@ -442,7 +438,7 @@ export default function RequestDetailsPage() {
                     item.type === 'recipientHistory' && (
                       <div className="history">
                         <span className="icon has-text-grey-lighter mr-3 has-background-white">
-                          <FontAwesomeIcon icon={faEnvelopesBulk} />
+                          <Send color="grey" size={14} />
                         </span>
                         <InlineUser user={item.creator} />
                         &nbsp;{item.added ? 'added' : 'removed'}

@@ -1,9 +1,9 @@
-import { faBell } from '@fortawesome/free-regular-svg-icons';
 import { faCheck, faCircleNotch } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { User } from '@prisma/client';
 import { useSubmit, useTransition } from '@remix-run/react';
 import React, { Fragment, forwardRef, useEffect, useState } from 'react';
+import { Bell, BellOff } from 'react-feather';
 
 import { MiniUser } from './User';
 
@@ -89,7 +89,7 @@ export const WatcherList = forwardRef(
           }}
         >
           <span className="icon">
-            <FontAwesomeIcon icon={faBell} size="lg" />
+            {watching ? <BellOff size={16} /> : <Bell size={16} />}
           </span>
           <span>{watching && 'un'}subscribe</span>
         </button>

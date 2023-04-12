@@ -1,12 +1,9 @@
-import {
-  faCheck,
-  faCircleNotch,
-  faPencil,
-} from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faCircleNotch } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useTransition } from '@remix-run/react';
 import { MeiliSearch } from 'meilisearch';
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
+import { Edit3 } from 'react-feather';
 
 import { MiniUser } from './User';
 
@@ -101,7 +98,7 @@ export const RequesterSelector = forwardRef(
           >
             <span>Requester</span>
             <span className="icon mr-2">
-              <FontAwesomeIcon icon={faPencil} />
+              <Edit3 size={16} />
             </span>
           </label>
           {showRequesterSearch && (

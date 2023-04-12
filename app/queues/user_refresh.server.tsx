@@ -62,7 +62,14 @@ export default CronJob('/queues/user_refresh', '0 7 * * *', async () => {
     scope: 'sub',
     attributes: Object.keys(attributes),
   };
-
+  function _searchResultToAttributes(pojo) {
+    let object = { dn: pojo.objectName };
+    pojo.attributes.forEach((attribute) => {
+      object[attribute.type] =
+        attribute.values.length == 1 ? attribute.values[0] : attribute.values;
+    });
+    return object;
+  }
   const loadUser = async (user: AttributeType, groups) => {
     let profilePhoto = null;
 
@@ -117,12 +124,14 @@ export default CronJob('/queues/user_refresh', '0 7 * * *', async () => {
 
   const groupResults = await client.searchReturnAll(base, groupConfig);
 
-  groups.push(...groupResults.entries);
+  for (const group of groupResults.entries) {
+    groups.push(_searchResultToAttributes(group.pojo));
+  }
 
   const userPage = await client.searchReturnAll(base, userConfig);
 
   for (const user of userPage.entries) {
-    await loadUser(user, groups);
+    await loadUser(_searchResultToAttributes(user.pojo), groups);
   }
 
   await client.destroy();

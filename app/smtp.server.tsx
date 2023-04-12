@@ -10,7 +10,7 @@ if (
   typeof process.env.SMTP_USERNAME === 'string' &&
   process.env.SMTP_USERNAME.length > 0
 ) {
-  config.auth = {
+  SmtpConfig.auth = {
     user: process.env.SMTP_USERNAME,
     pass: process.env.SMTP_PASSWORD,
   };

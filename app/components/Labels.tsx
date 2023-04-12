@@ -2,7 +2,6 @@ import {
   faCheck,
   faCircleNotch,
   faPalette,
-  faPencil,
   faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -19,6 +18,7 @@ import React, {
   useState,
 } from 'react';
 import { SketchPicker } from 'react-color';
+import { Edit3 } from 'react-feather';
 import { EmojiFinder } from '~/components/Emoji';
 
 import CheckRemove from './CheckRemove';
@@ -457,7 +457,7 @@ export const LabelSelector = forwardRef(
           >
             <span>Labels</span>
             <span className="icon mr-2">
-              <FontAwesomeIcon icon={faPencil} />
+              <Edit3 size={16} />
             </span>
           </label>
           {showLabelSearch && (
@@ -589,7 +589,7 @@ export const LabelSelector = forwardRef(
                   to="/admin/labels"
                 >
                   <span className="icon my-auto has-text-grey mx-2">
-                    <FontAwesomeIcon icon={faPencil} />
+                    <Edit3 size={16} />
                   </span>
                   <span className="has-text-grey">Edit labels</span>
                 </Link>

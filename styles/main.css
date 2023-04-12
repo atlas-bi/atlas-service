@@ -13473,7 +13473,7 @@ i.justify-align {
   content: '';
   position: absolute;
   border-left: 2px solid hsl(0, 0%, 86%);
-  top: 0;
+  top: 2px;
   bottom: 0;
   z-index: -1;
   left: 90px;

@@ -1,7 +1,6 @@
 import {
   faCheck,
   faCircleNotch,
-  faPencil,
   faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -15,6 +14,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { Edit3 } from 'react-feather';
 
 import CheckRemove from './CheckRemove';
 import { MiniUser } from './User';
@@ -113,7 +113,7 @@ export const RecipientSelector = forwardRef(
           >
             <span>Recipient List</span>
             <span className="icon mr-2">
-              <FontAwesomeIcon icon={faPencil} />
+              <Edit3 size={16} />
             </span>
           </label>
           {showRecipientSearch && (

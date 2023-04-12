@@ -317,6 +317,7 @@ export default function MentionsPlugin({
       editor.update(() => {
         const mentionNode = $createMentionNode(
           `/users/${selectedOption.name.id}`,
+          selectedOption.name.id,
         );
         const textNode = $createTextTokenNode(
           `@${selectedOption.name.firstName} ${selectedOption.name.lastName}`,

@@ -34,6 +34,7 @@ export class MentionNode extends ElementNode {
   static clone(node: MentionNode): MentionNode {
     return new MentionNode(
       node.__url,
+      node.__userId,
       {
         rel: node.__rel,
         target: node.__target,
@@ -42,10 +43,11 @@ export class MentionNode extends ElementNode {
     );
   }
 
-  constructor(url: string, attributes = {}, key: NodeKey) {
+  constructor(url: string, userId: string, attributes = {}, key: NodeKey) {
     super(key);
     const { rel = null, target = null } = attributes;
     this.__url = url;
+    this.__userId = userId;
     this.__target = target;
     this.__rel = rel;
   }
@@ -104,7 +106,7 @@ export class MentionNode extends ElementNode {
   }
 
   static importJSON(serializedNode: SerializedMentionNode): MentionNode {
-    const node = $createMentionNode(serializedNode.url, {
+    const node = $createMentionNode(serializedNode.url, serializedNode.userId, {
       rel: serializedNode.rel,
       target: serializedNode.target,
     });
@@ -119,6 +121,7 @@ export class MentionNode extends ElementNode {
       target: this.getTarget(),
       type: 'mention',
       url: this.getURL(),
+      userId: this.getUserId(),
       version: 1,
     };
   }
@@ -130,6 +133,15 @@ export class MentionNode extends ElementNode {
   setURL(url) {
     const writable = this.getWritable();
     writable.__url = url;
+  }
+
+  getUserId() {
+    return this.getLatest().__userId;
+  }
+
+  setUserId(userId) {
+    const writable = this.getWritable();
+    writable.__userId = UserId;
   }
 
   getTarget() {
@@ -157,7 +169,7 @@ export class MentionNode extends ElementNode {
     );
 
     if (lexical.$isElementNode(element)) {
-      const mentionNode = $createMentionNode(this.__url, {
+      const mentionNode = $createMentionNode(this.__url, this.__userId, {
         rel: this.__rel,
         target: this.__target,
       });
@@ -228,10 +240,11 @@ function convertMentionElement(
 
 export function $createMentionNode(
   url: string,
+  userId: string,
   key?: string,
   attributes,
 ): MentionNode {
-  return $applyNodeReplacement(new MentionNode(url, key, attributes));
+  return $applyNodeReplacement(new MentionNode(url, userId, key, attributes));
 }
 
 export function $isMentionNode(

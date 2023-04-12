@@ -3,17 +3,15 @@ import nodemailer from 'nodemailer';
 import type SMTPConnection from 'nodemailer/lib/smtp-connection';
 import { Queue } from 'quirrel/remix';
 import { SmtpConfig } from '~/smtp.server';
-import { Email } from '~/templates/request_assigned';
+import { Email } from '~/templates/request_requester';
 
 /*
 
-Someone was assigned to a request.
-
-This can either be a new request, or an existing request.
+Someone mentioned on a request/comment.
 
 */
 
-export default Queue('/queues/email/request_assigned', async (job, meta) => {
+export default Queue('/queues/email/request_requester', async (job, meta) => {
   console.log('email sending');
   const { request, user } = job;
 
@@ -25,11 +23,9 @@ export default Queue('/queues/email/request_assigned', async (job, meta) => {
     const emailHtml = render(<Email request={request} />);
 
     let info = await transporter.sendMail({
-      from: request.updator
-        ? `"${request.updator.firstName} ${request.updator.lastName}" <${request.updator.email}>`
-        : `"${request.creator.firstName} ${request.creator.lastName}" <${request.creator.email}>`,
-      to: `${user.email}`, // list of receivers
-      subject: `${request.updator.firstName} ${request.updator.lastName} assigned you to a request.`,
+      from: `"${request.updater.firstName} ${request.updater.lastName}" <${request.updater.email}>`,
+      to: `${request.requester.email}`, // list of receivers
+      subject: `${request.updater.firstName} ${request.updater.lastName} transfered a request to you.`,
       html: emailHtml,
     });
 

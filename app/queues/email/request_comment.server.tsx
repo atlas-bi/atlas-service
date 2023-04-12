@@ -26,7 +26,7 @@ export default Queue('/queues/email/request_comment', async (job, meta) => {
   console.log('email sending');
   const { request, user } = job;
 
-  console.log(request);
+  // console.log(request);
   // async..await is not allowed in global scope, must use a wrapper
   async function main() {
     const transporter = nodemailer.createTransport(SmtpConfig);
@@ -38,7 +38,7 @@ export default Queue('/queues/email/request_comment', async (job, meta) => {
         ? `"${request.updator.firstName} ${request.updator.lastName}" <${request.updator.email}>`
         : `"${request.creator.firstName} ${request.creator.lastName}" <${request.creator.email}>`,
       to: `${user.email}`, // list of receivers
-      subject: 'New Request',
+      subject: 'New Comment',
       html: emailHtml,
     });
 

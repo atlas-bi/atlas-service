@@ -11,23 +11,23 @@ Someone mentioned on a request/comment.
 
 */
 
-export default Queue('/queues/email/request_assigned', async (job, meta) => {
+export default Queue('/queues/email/request_mention', async (job, meta) => {
   console.log('email sending');
-  const { request, user } = job;
+  const { request, user, mention } = job;
 
-  console.log(request);
+  // console.log(request);
   // async..await is not allowed in global scope, must use a wrapper
   async function main() {
     const transporter = nodemailer.createTransport(SmtpConfig);
 
-    const emailHtml = render(<Email request={request} />);
+    const emailHtml = render(
+      <Email request={request} user={user} mention={mention} />,
+    );
 
     let info = await transporter.sendMail({
-      from: request.updator
-        ? `"${request.updator.firstName} ${request.updator.lastName}" <${request.updator.email}>`
-        : `"${request.creator.firstName} ${request.creator.lastName}" <${request.creator.email}>`,
-      to: `${user.email}`, // list of receivers
-      subject: 'New Request',
+      from: `"${process.env.SMTP_SENDER_NAME}" <${process.env.SMTP_SENDER_EMAIL}>`,
+      to: `${mention.email}`, // list of receivers
+      subject: `${user.firstName} ${user.lastName} mentioned you.`,
       html: emailHtml,
     });
 
