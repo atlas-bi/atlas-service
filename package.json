@@ -86,6 +86,8 @@
     "color": "^4.2.3",
     "compression": "^1.7.4",
     "cross-env": "^7.0.3",
+    "dotenv": "^16.0.3",
+    "dotenv-cli": "^7.2.1",
     "emojilib": "^3.0.8",
     "express": "^4.18.2",
     "express-prometheus-middleware": "^1.2.0",

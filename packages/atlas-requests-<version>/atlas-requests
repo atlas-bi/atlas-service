@@ -78,6 +78,12 @@ configure(){
     install_configuration
     load_configuration
 
+    fmt_yellow "Building"
+    npm_install_full
+    npm_build
+    npm_migrate
+    npm_clean
+
     fmt_yellow "Configuring Nginx"
     nginx_init
 

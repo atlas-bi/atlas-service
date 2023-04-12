@@ -264,9 +264,15 @@ start_quirrel(){
   fi
 
   quirrel_online
-  cd "$INSTALL_DIR" || exit 1
-  # load cron jobs
-  npm run quirrel:ci
+
+  # if configured, we can try to load cron jobs
+  QUIRREL_TOKEN=$({ grep QUIRREL_TOKEN= || true; } <  $INSTALL_DIR/.env  | sed 's/^.*=//')
+
+  if [ "$QUIRREL_TOKEN" ]; then
+    cd "$INSTALL_DIR" || exit 1
+    # load cron jobs
+    npm run quirrel:ci
+  fi
 }
 
 start_services(){
@@ -405,7 +411,7 @@ EOF
 quirrel_service() {
   cat <<EOT > "/etc/systemd/system/$QUIRREL_SERVICE"
 [Unit]
-Description=Atlas Requests / Querrel
+Description=Atlas Requests / Quirrel
 After=network.target
 
 [Service]
@@ -513,4 +519,28 @@ server {
   }
 }
 EOT
+}
+
+npm_install_full(){
+  cd "$INSTALL_DIR" || exit;
+  fmt_blue "Installing packages"
+  npm install --loglevel silent --no-fund --no-audit
+}
+
+npm_build(){
+  cd "$INSTALL_DIR" || exit;
+  fmt_blue "Building site"
+  npm run build
+}
+
+npm_migrate(){
+  cd "$INSTALL_DIR" || exit;
+  fmt_blue "Applying database migrations"
+  npx prisma migrate deploy
+}
+
+npm_clean(){
+  cd "$INSTALL_DIR" || exit;
+  fmt_blue "Cleaning up install"
+  npm install --omit=dev --loglevel silent --no-fund --no-audit
 }

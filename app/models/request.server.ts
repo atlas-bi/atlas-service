@@ -661,6 +661,7 @@ export async function createRequest({
         },
       },
     },
+    select: defaultReportFields,
   });
 
   if (request.creator.id !== request.requester.id) {
@@ -680,6 +681,25 @@ export async function createRequest({
         },
       );
     });
+
+  [purpose, schedule, parameters, criteria, description]
+    .filter((x) => x !== null)
+    .map((comment) =>
+      // notify mentions
+      allNodes(JSON.parse(comment)?.root?.children, 'type', 'mention').forEach(
+        async (mention) =>
+          CommentMentionEmail.enqueue(
+            {
+              request,
+              user: request.creator,
+              mention: await getUserById(mention.userId),
+            },
+            {
+              id: `comment-request-mention-${request.id.toString()}-${userId.toString()}-${mention.userId.toString()}`,
+            },
+          ),
+      ),
+    );
 
   // send to search
   await loadReport(request);

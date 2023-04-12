@@ -35,21 +35,14 @@ postgres_init
 
 cd "$INSTALL_DIR" || exit;
 
-fmt_blue "Installing packages"
-npm install --loglevel silent --no-fund --no-audit
-
-fmt_blue "Building site"
-npm run build
-
-fmt_blue "Applying database migrations"
-npx prisma migrate deploy
-
-fmt_blue "Cleaning up install"
-npm install --omit=dev --loglevel silent --no-fund --no-audit
+npm_install_full
+npm_build
+npm_migrate
+npm_clean
 
 # stop services if running
 fmt_blue "Stopping services"
-# stop_services
+stop_services
 
 fmt_blue "Installing Meilisearch"
 wget -O - https://install.meilisearch.com -q --show-progress | sh
