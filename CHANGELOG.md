@@ -1,3 +1,8 @@
+## 1.0.0-rc.25 (2023-04-13)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([548fdf5](https://github.com/atlas-bi/atlas-requests/commit/548fdf5))
+* fix(installer): removed npm clean, we need most for building ([1289657](https://github.com/atlas-bi/atlas-requests/commit/1289657))
+
 ## 1.0.0-rc.24 (2023-04-12)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([54257f3](https://github.com/atlas-bi/atlas-requests/commit/54257f3))
