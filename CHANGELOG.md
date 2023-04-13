@@ -1,3 +1,8 @@
+## 1.0.0-rc.26 (2023-04-13)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([eff30dc](https://github.com/atlas-bi/atlas-requests/commit/eff30dc))
+* fix(installer): fixed issues with starting search and quirrel. Fixed ldap profile pic load ([e4eac27](https://github.com/atlas-bi/atlas-requests/commit/e4eac27))
+
 ## 1.0.0-rc.25 (2023-04-13)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([548fdf5](https://github.com/atlas-bi/atlas-requests/commit/548fdf5))
