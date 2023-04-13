@@ -1,10 +1,16 @@
-import { faBarsProgress } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Request, User } from '@prisma/client';
 import { type Session, json } from '@remix-run/node';
 import { NavLink, useLoaderData } from '@remix-run/react';
 import type { LoaderArgs } from '@remix-run/server-runtime';
 import { useState } from 'react';
+import {
+  Activity,
+  AtSign,
+  Bell,
+  Filter,
+  User as UserIcon,
+} from 'react-feather';
+import { LabelTag } from '~/components/Labels';
 import { getRequests } from '~/models/request.server';
 import { authorize } from '~/session.server';
 
@@ -16,15 +22,26 @@ export async function loader({ request }: LoaderArgs) {
       const myRequests = await getRequests({ userId: user.id });
       const assignedRequests = await getRequests({ assigneeId: user.id });
       const watchedRequests = await getRequests({ watcherId: user.id });
-      return json({ user, myRequests, assignedRequests, watchedRequests });
+      const mentionedRequests = await getRequests({ mentionedId: user.id });
+      return json({
+        user,
+        myRequests,
+        assignedRequests,
+        watchedRequests,
+        mentionedRequests,
+      });
     },
   );
 }
 
 export default function Index() {
-  const { user, myRequests, assignedRequests, watchedRequests } =
-    useLoaderData<typeof loader>();
-
+  const {
+    user,
+    myRequests,
+    assignedRequests,
+    watchedRequests,
+    mentionedRequests,
+  } = useLoaderData<typeof loader>();
   const [showTab, setShowTab] = useState('myRequests');
 
   return (
@@ -37,7 +54,7 @@ export default function Index() {
             onClick={() => setShowTab('myRequests')}
           >
             <span className="icon is-small">
-              <i className="fas fa-align-left"></i>
+              <UserIcon size={16} />
             </span>
             <span>My Requests</span>
           </button>
@@ -50,9 +67,23 @@ export default function Index() {
               onClick={() => setShowTab('assignedRequests')}
             >
               <span className="icon is-small">
-                <FontAwesomeIcon icon={faBarsProgress} />
+                <Activity size={16} />
               </span>
               <span>Assigned to Me</span>
+            </button>
+          </p>
+        )}
+        {mentionedRequests.length > 0 && (
+          <p className="control">
+            <button
+              className="button"
+              type="button"
+              onClick={() => setShowTab('mentionedRequests')}
+            >
+              <span className="icon is-small">
+                <AtSign size={16} />
+              </span>
+              <span>Mentions</span>
             </button>
           </p>
         )}
@@ -63,10 +94,19 @@ export default function Index() {
             onClick={() => setShowTab('watchedRequests')}
           >
             <span className="icon is-small">
-              <FontAwesomeIcon icon={faBarsProgress} />
+              <Bell size={16} />
             </span>
             <span>Watching</span>
           </button>
+        </p>
+      </div>
+
+      <div class="field">
+        <p class="control has-icons-left">
+          <input class="input" type="text" placeholder="type to filter" />
+          <span class="icon is-small is-left">
+            <Filter size={16} />
+          </span>
         </p>
       </div>
 
@@ -93,6 +133,13 @@ export default function Index() {
                         <div className="list-item-description">
                           {request.descriptionText}
                         </div>
+                        {request.labels && (
+                          <div className="tags">
+                            {request.labels.map((label) => (
+                              <LabelTag label={label} />
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </NavLink>
                   </div>
@@ -116,6 +163,37 @@ export default function Index() {
                 style={{ '--length': 25 }}
               >
                 {assignedRequests.map((request: Request) => (
+                  <div className="list-item" key={request.id}>
+                    <NavLink to={`/request/` + request.id.toString()}>
+                      <div className="list-item-content">
+                        <div className="list-item-title">
+                          📝 {request.name} {request.id}
+                        </div>
+                        <div className="list-item-description">
+                          {request.descriptionText}
+                        </div>
+                      </div>
+                    </NavLink>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </>
+      )}
+      {showTab === 'mentionedRequests' && (
+        <>
+          {mentionedRequests.length === 0 ? (
+            <p className="p-4">No mentioned requests yet</p>
+          ) : (
+            <>
+              {', '}
+              you have some mentioned requests:
+              <div
+                className="list has-hoverable-list-items  has-overflow-ellipsis"
+                style={{ '--length': 25 }}
+              >
+                {mentionedRequests.map((request: Request) => (
                   <div className="list-item" key={request.id}>
                     <NavLink to={`/request/` + request.id.toString()}>
                       <div className="list-item-content">

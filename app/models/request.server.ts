@@ -477,16 +477,25 @@ export function getRequests({
   userId,
   assigneeId,
   watcherId,
+  mentionedId,
 }: {
   userId?: User['id'];
   assigneeId?: User['id'];
   watcherId?: User['id'];
+  mentionedId?: User['id'];
 }) {
   return prisma.request.findMany({
     where: userId
       ? { OR: [{ requesterId: userId }, { creatorId: userId }] }
       : assigneeId
       ? { assignees: { some: { id: assigneeId } } }
+      : mentionedId
+      ? {
+          OR: [
+            { mentions: { some: { id: mentionedId } } },
+            { comments: { some: { mentions: { some: { id: mentionedId } } } } },
+          ],
+        }
       : { watchers: { some: { id: watcherId } } },
     select: {
       id: true,
@@ -565,6 +574,15 @@ export async function createRequest({
     select: { id: true },
   });
 
+  const mentions = [purpose, schedule, parameters, criteria, description]
+    .filter((x) => x !== null)
+    .map((comment) =>
+      allNodes(JSON.parse(comment || '{}')?.root?.children, 'type', 'mention'),
+    )
+    .flat()
+    .map((mention: { userId: any }) => mention.userId);
+
+  console.log(mentions);
   const request = await prisma.request.create({
     data: {
       name,
@@ -600,6 +618,12 @@ export async function createRequest({
       assignees: assignees
         ? {
             connect: assignees.map((x) => ({ id: Number(x) })),
+          }
+        : undefined,
+
+      mentions: mentions
+        ? {
+            connect: mentions.map((x) => ({ id: Number(x) })),
           }
         : undefined,
 
@@ -682,24 +706,18 @@ export async function createRequest({
       );
     });
 
-  [purpose, schedule, parameters, criteria, description]
-    .filter((x) => x !== null)
-    .map((comment) =>
-      // notify mentions
-      allNodes(JSON.parse(comment)?.root?.children, 'type', 'mention').forEach(
-        async (mention) =>
-          CommentMentionEmail.enqueue(
-            {
-              request,
-              user: request.creator,
-              mention: await getUserById(mention.userId),
-            },
-            {
-              id: `comment-request-mention-${request.id.toString()}-${userId.toString()}-${mention.userId.toString()}`,
-            },
-          ),
-      ),
-    );
+  mentions.map(async (mention: int) =>
+    CommentMentionEmail.enqueue(
+      {
+        request,
+        user: request.creator,
+        mention: await getUserById(mention),
+      },
+      {
+        id: `comment-request-mention-${request.id.toString()}-${userId.toString()}-${mention.toString()}`,
+      },
+    ),
+  );
 
   // send to search
   await loadReport(request);
@@ -722,7 +740,7 @@ export async function deleteRequest({
   });
 }
 
-function allNodes(obj, key, value, array) {
+function allNodes(obj, key, value, array?) {
   array = array || [];
   if ('object' === typeof obj) {
     for (let k in obj) {
@@ -741,31 +759,39 @@ export async function addComment({
   comment,
   userId,
 }: Pick<RequestComments, 'requestId' | 'comment'> & { userId: User['id'] }) {
+  const mentions = allNodes(
+    JSON.parse(comment || '{}')?.root?.children,
+    'type',
+    'mention',
+  ).map((mention: { userId: any }) => mention.userId);
+
   const newComment = await prisma.requestComments.create({
     data: {
       requestId,
       comment,
       creatorId: userId,
+      mentions: mentions
+        ? {
+            connect: mentions.map((x) => ({ id: Number(x) })),
+          }
+        : undefined,
     },
   });
 
   const request = await getRequest({ id: requestId });
   const user = await getUserById(userId);
   // notify mentions
-  allNodes(JSON.parse(comment).root?.children, 'type', 'mention').forEach(
-    async (mention) =>
-      CommentMentionEmail.enqueue(
-        {
-          request,
-          user,
-          mention: await getUserById(mention.userId),
-        },
-        {
-          id: `comment-request-mention-${requestId.toString()}-${userId.toString()}-${newComment.id.toString()}-${
-            mention.userId
-          }`,
-        },
-      ),
+  mentions.map(async (mention) =>
+    CommentMentionEmail.enqueue(
+      {
+        request,
+        user,
+        mention: await getUserById(mention),
+      },
+      {
+        id: `comment-request-mention-${requestId.toString()}-${userId.toString()}-${newComment.id.toString()}-${mention}`,
+      },
+    ),
   );
 
   // notify requester

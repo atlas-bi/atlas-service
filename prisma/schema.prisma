@@ -18,6 +18,7 @@ model User {
 
   groups                         Group[]
   myAssignedRequests             Request[]                 @relation("RequestAssignees")
+  myMentionedRequests            Request[]                 @relation("RequestMentions")
   myWatchedRequests              Request[]                 @relation("RequestWatchers")
   myCreatedRequests              Request[]                 @relation("RequestCreator")
   myUpdatedRequests              Request[]                 @relation("RequestUpdater")
@@ -28,6 +29,7 @@ model User {
   myCreatedLabel                 Label[]                   @relation("LabelCreator")
   myUpdatedComments              RequestComments[]         @relation("CommentUpdater")
   myComments                     RequestComments[]         @relation("CommentCreator")
+  myMentionedComments            RequestComments[]         @relation("CommentMentions")
   RequestLabelHistory            RequestLabelHistory[]
   RequestAssigneeHistoryUpdater  RequestAssigneeHistory[]  @relation("AssigneeHistoryUpdater")
   RequestAssigneeHistory         RequestAssigneeHistory[]
@@ -115,6 +117,7 @@ model Request {
   devNotesText       String?
 
   assignees        User[]                    @relation("RequestAssignees")
+  mentions         User[]                    @relation("RequestMentions")
   recipients       User[]                    @relation("ReportRecipient")
   watchers         User[]                    @relation("RequestWatchers")
   labels           Label[]
@@ -155,6 +158,8 @@ model RequestComments {
   updater   User?     @relation(name: "CommentUpdater", fields: [updaterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   updaterId Int?
   updatedAt DateTime? @updatedAt
+
+  mentions User[] @relation("CommentMentions")
 
   comment String?
 }
