@@ -9,8 +9,12 @@ import type {
 
 samlify.setSchemaValidator(validator);
 
+const host =
+  (process.env.SSL_CERTIFICATE ? 'https://' : 'http://') +
+  process.env.EXTERNAL_URL;
+
 const spData: ServiceProviderSettings = {
-  entityID: process.env.HOSTNAME,
+  entityID: host,
   authnRequestsSigned:
     (process.env.SAML_SP_AUTHNREQUESTSSIGNED || '').toLowerCase() === 'true',
   wantAssertionsSigned:
@@ -28,21 +32,21 @@ const spData: ServiceProviderSettings = {
   assertionConsumerService: [
     {
       Binding: 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
-      Location: process.env.HOSTNAME + '/auth/asc',
+      Location: host + '/auth/asc',
     },
     {
       Binding: 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
-      Location: process.env.HOSTNAME + '/auth/asc',
+      Location: host + '/auth/asc',
     },
   ],
   singleLogoutService: [
     {
       Binding: 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
-      Location: process.env.HOSTNAME + '/auth/slo',
+      Location: host + '/auth/slo',
     },
     {
       Binding: 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
-      Location: process.env.HOSTNAME + '/auth/slo',
+      Location: host + '/auth/slo',
     },
   ],
 };
