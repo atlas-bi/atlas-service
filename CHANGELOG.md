@@ -1,3 +1,8 @@
+## 1.0.0-rc.27 (2023-04-13)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([0f93544](https://github.com/atlas-bi/atlas-requests/commit/0f93544))
+* fix(saml): fixed http/s for saml return urls ([5d48172](https://github.com/atlas-bi/atlas-requests/commit/5d48172))
+
 ## 1.0.0-rc.26 (2023-04-13)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([eff30dc](https://github.com/atlas-bi/atlas-requests/commit/eff30dc))
