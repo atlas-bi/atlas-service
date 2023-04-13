@@ -67,7 +67,7 @@ backup(){
 configure(){
     fmt_blue "Configuring Atlas requests."
     fmt_yellow "Stopping services"
-
+    systemctl daemon-reload
     stop_services
 
     fmt_yellow "Verifying secrets"

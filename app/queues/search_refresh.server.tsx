@@ -13,6 +13,6 @@ export default Queue('/queues/search_refresh', async (job) => {
   await clearSearch();
   await searchSettings();
 
-  loadUsers();
+  await loadUsers();
   await loadLabels();
 });

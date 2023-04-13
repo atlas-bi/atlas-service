@@ -87,11 +87,8 @@ export default CronJob('/queues/user_refresh', '0 7 * * *', async () => {
               .map((e: string) => parseInt(e)),
           ).toString('base64');
         } else {
-          // for true jpeg buffers
-          profilePhoto = Buffer.from(
-            user.raw[process.env.LDAP_PHOTO_FIELD],
-            'binary',
-          ).toString('base64');
+          // for binary
+          profilePhoto = user[process.env.LDAP_PHOTO_FIELD];
         }
       } catch (e) {
         console.log(e);
