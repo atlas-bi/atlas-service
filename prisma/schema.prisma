@@ -17,6 +17,7 @@ model User {
   updatedAt    DateTime @updatedAt
 
   groups                         Group[]
+  jobLogs                        JobLog[]
   myAssignedRequests             Request[]                 @relation("RequestAssignees")
   myMentionedRequests            Request[]                 @relation("RequestMentions")
   myWatchedRequests              Request[]                 @relation("RequestWatchers")
@@ -144,6 +145,20 @@ model Request {
   typeId Int?
 
   comments RequestComments[]
+}
+
+model JobLog {
+  id        Int       @id @default(autoincrement())
+  quirrelId String    @default("-")
+  runBy     User?     @relation(fields: [runById], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  runById   Int?
+  name      String?
+  fail      Int?
+  message   String?
+  started   DateTime?
+  completed DateTime?
+  status    String?
+  createdAt DateTime  @default(now())
 }
 
 model RequestComments {

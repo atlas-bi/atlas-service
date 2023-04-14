@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "JobLog" ADD COLUMN     "runById" INTEGER;
+
+-- AddForeignKey
+ALTER TABLE "JobLog" ADD CONSTRAINT "JobLog_runById_fkey" FOREIGN KEY ("runById") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

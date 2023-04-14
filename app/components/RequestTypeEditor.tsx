@@ -4,7 +4,7 @@ import {
   faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Form, useActionData, useTransition } from '@remix-run/react';
+import { Form, useActionData, useNavigation } from '@remix-run/react';
 import React, { useEffect, useRef, useState } from 'react';
 
 const RequestTypeEditor = ({ rt, fields }: { RequestType?; any }) => {
@@ -15,20 +15,19 @@ const RequestTypeEditor = ({ rt, fields }: { RequestType?; any }) => {
 
   const formRef = useRef<HTMLFormElement>(null);
 
-  const transition = useTransition();
+  const transition = useNavigation();
 
   const isEditingType =
     transition.state === 'submitting' &&
-    ((transition.submission.formData.get('_action') === 'editRequestType' &&
-      transition.submission.formData.get('id') === rt?.id.toString()) ||
-      (transition.submission.formData.get('_action') === 'createRequestType' &&
+    ((transition.formData.get('_action') === 'editRequestType' &&
+      transition.formData.get('id') === rt?.id.toString()) ||
+      (transition.formData.get('_action') === 'createRequestType' &&
         rt === undefined));
 
   const hasEditedType =
     (transition.state === 'loading' || transition.state === 'idle') &&
-    transition.submission &&
-    transition.submission.formData.get('_action') === 'editRequestType' &&
-    transition.submission.formData.get('id') === rt?.id.toString();
+    transition.formData?.get('_action') === 'editRequestType' &&
+    transition.formData?.get('id') === rt?.id.toString();
 
   useEffect(() => {
     if (isEditingType) {

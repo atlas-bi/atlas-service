@@ -10,18 +10,17 @@ import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { $getRoot, type EditorState } from 'lexical';
 import { MeiliSearch } from 'meilisearch';
 import * as React from 'react';
+import { AssigneeSelector } from '~/components/Assignees';
+import Editor from '~/components/Editor';
 import { EmojiFinder } from '~/components/Emoji';
+import { LabelSelector } from '~/components/Labels';
+import { RecipientSelector } from '~/components/Recipients';
+import { RequesterSelector } from '~/components/Requester';
 import { getRequestType, getRequestTypes } from '~/models/config.server';
 import { createLabel } from '~/models/label.server';
 import { createRequest } from '~/models/request.server';
 import { labelIndex, userIndex } from '~/search.server';
 import { authorize, requireUser } from '~/session.server';
-
-import { AssigneeSelector } from '../../components/Assignees';
-import Editor from '../../components/Editor';
-import { LabelSelector } from '../../components/Labels';
-import { RecipientSelector } from '../../components/Recipients';
-import { RequesterSelector } from '../../components/Requester';
 
 export async function loader({ request }: LoaderArgs) {
   return authorize(

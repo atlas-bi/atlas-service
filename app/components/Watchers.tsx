@@ -1,9 +1,9 @@
 import { faCheck, faCircleNotch } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { User } from '@prisma/client';
-import { useSubmit, useTransition } from '@remix-run/react';
+import { useNavigation, useSubmit } from '@remix-run/react';
+import { Bell, BellOff } from 'lucide-react';
 import React, { Fragment, forwardRef, useEffect, useState } from 'react';
-import { Bell, BellOff } from 'react-feather';
 
 import { MiniUser } from './User';
 
@@ -33,16 +33,15 @@ export const WatcherList = forwardRef(
       setWatching((watchers || []).filter((x) => x.id === me.id).length > 0);
     }, [watchers, me]);
 
-    const transition = useTransition();
+    const transition = useNavigation();
 
     const isSaving =
       transition.state === 'submitting' &&
-      transition.submission.formData.get('_action') === action;
+      transition.formData?.get('_action') === action;
 
     const hasSaved =
       (transition.state === 'loading' || transition.state === 'idle') &&
-      transition.submission &&
-      transition.submission.formData.get('_action') === action;
+      transition.formData?.get('_action') === action;
 
     return (
       <>

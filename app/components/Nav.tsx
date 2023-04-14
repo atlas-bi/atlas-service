@@ -213,8 +213,9 @@ export default function Nav() {
                   Settings
                 </Link>
                 <hr className="navbar-divider" />
-                <Link className="navbar-item" to="/admin/config">
-                  Site Configuration
+                <strong className="navbar-item">Configuration</strong>
+                <Link className="navbar-item" to="/admin/request-types">
+                  Request Types
                 </Link>
                 <Link className="navbar-item" to="/admin/labels">
                   Labels

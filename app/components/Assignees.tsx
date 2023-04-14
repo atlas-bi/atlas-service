@@ -5,7 +5,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { User } from '@prisma/client';
-import { useTransition } from '@remix-run/react';
+import { useNavigation } from '@remix-run/react';
+import { Edit3 } from 'lucide-react';
 import { MeiliSearch } from 'meilisearch';
 import React, {
   Fragment,
@@ -14,7 +15,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { Edit3 } from 'react-feather';
 
 import CheckRemove from './CheckRemove';
 import { MiniUser } from './User';
@@ -87,16 +87,16 @@ export const AssigneeSelector = forwardRef(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [assigneeList]);
 
-    const transition = useTransition();
+    const transition = useNavigation();
 
     const isSaving =
       transition.state === 'submitting' &&
-      transition.submission.formData.get('_action') === action;
+      transition.formData.get('_action') === action;
 
     const hasSaved =
       (transition.state === 'loading' || transition.state === 'idle') &&
-      transition.submission &&
-      transition.submission.formData.get('_action') === action;
+      transition &&
+      transition.formData.get('_action') === action;
 
     useEffect(() => {
       inputReference.current?.focus();

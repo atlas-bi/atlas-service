@@ -6,9 +6,10 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Label } from '@prisma/client';
-import { useSubmit, useTransition } from '@remix-run/react';
+import { useNavigation, useSubmit } from '@remix-run/react';
 import { Link } from '@remix-run/react';
 import Color from 'color';
+import { Edit3 } from 'lucide-react';
 import { MeiliSearch } from 'meilisearch';
 import React, {
   Fragment,
@@ -18,7 +19,6 @@ import React, {
   useState,
 } from 'react';
 import { SketchPicker } from 'react-color';
-import { Edit3 } from 'react-feather';
 import { EmojiFinder } from '~/components/Emoji';
 
 import CheckRemove from './CheckRemove';
@@ -431,16 +431,15 @@ export const LabelSelector = forwardRef(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [labelList]);
 
-    const transition = useTransition();
+    const transition = useNavigation();
 
     const isSaving =
       transition.state === 'submitting' &&
-      transition.submission.formData.get('_action') === action;
+      transition.formData.get('_action') === action;
 
     const hasSaved =
       (transition.state === 'loading' || transition.state === 'idle') &&
-      transition.submission &&
-      transition.submission.formData.get('_action') === action;
+      transition.formData.get('_action') === action;
 
     useEffect(() => {
       inputReference.current?.focus();

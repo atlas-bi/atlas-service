@@ -11,7 +11,6 @@ import {
   useActionData,
   useLoaderData,
   useSubmit,
-  useTransition,
 } from '@remix-run/react';
 import { useEffect, useRef, useState } from 'react';
 import { namedAction } from 'remix-utils';

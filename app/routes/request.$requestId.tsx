@@ -13,15 +13,17 @@ import {
 } from '@remix-run/node';
 import {
   Form,
+  isRouteErrorResponse,
   useActionData,
   useCatch,
   useLoaderData,
+  useRouteError,
   useSubmit,
 } from '@remix-run/react';
 import { $getRoot, CLEAR_HISTORY_COMMAND, type EditorState } from 'lexical';
+import { AtSign, LifeBuoy, Send, Tag } from 'lucide-react';
 import { MeiliSearch } from 'meilisearch';
 import * as React from 'react';
-import { AtSign, LifeBuoy, Send, Tag } from 'react-feather';
 import { namedAction } from 'remix-utils';
 import invariant from 'tiny-invariant';
 import { AssigneeSelector } from '~/components/Assignees';
@@ -221,18 +223,18 @@ export default function RequestDetailsPage() {
 
           <div className="timeline">
             <article className="media thread">
-                <div className="media-left profile-photo">
+              <div className="media-left profile-photo">
+                <figure className="image is-48x48">
+                  <ProfilePhoto base64={thisRequest.creator?.profilePhoto} />
+                </figure>
+                {thisRequest.creator?.id !== thisRequest.requester?.id && (
                   <figure className="image is-48x48">
-                    <ProfilePhoto base64={thisRequest.creator?.profilePhoto} />
+                    <ProfilePhoto
+                      base64={thisRequest.requester?.profilePhoto}
+                    />
                   </figure>
-                  {thisRequest.creator?.id !== thisRequest.requester?.id && (
-                    <figure className="image is-48x48">
-                      <ProfilePhoto
-                        base64={thisRequest.requester?.profilePhoto}
-                      />
-                    </figure>
-                  )}
-                </div>
+                )}
+              </div>
               <div className="media-content my-auto">
                 <div
                   className={`thread-box ${
@@ -570,10 +572,35 @@ export default function RequestDetailsPage() {
   );
 }
 
-export function ErrorBoundary({ error }: { error: Error }) {
+export function ErrorBoundary() {
+  const error = useRouteError();
   console.error(error);
 
-  return <div>An unexpected error occurred: {error.message}</div>;
+  // when true, this is what used to go to `CatchBoundary`
+  if (isRouteErrorResponse(error)) {
+    return (
+      <div>
+        <h1>Oops</h1>
+        <p>Status: {error.status}</p>
+        <p>{error.data.message}</p>
+      </div>
+    );
+  }
+
+  // Don't forget to typecheck with your own logic.
+  // Any value can be thrown, not just errors!
+  let errorMessage = 'Unknown error';
+  if (isDefinitelyAnError(error)) {
+    errorMessage = error.message;
+  }
+
+  return (
+    <div>
+      <h1>Uh oh ...</h1>
+      <p>Something went wrong.</p>
+      <pre>{errorMessage}</pre>
+    </div>
+  );
 }
 
 export function CatchBoundary() {

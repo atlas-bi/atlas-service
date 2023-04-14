@@ -9,7 +9,7 @@ import {
   Form,
   useActionData,
   useLoaderData,
-  useTransition,
+  useNavigation,
 } from '@remix-run/react';
 import * as React from 'react';
 import RequestTypeEditor from '~/components/RequestTypeEditor';
@@ -220,20 +220,19 @@ export default function Index() {
 
   const [newTypeHidden, setNewTypeHidden] = React.useState(false);
 
-  const transition = useTransition();
+  const transition = useNavigation();
 
   const isCreatingType =
     transition.state === 'submitting' &&
-    transition.submission.formData.get('_action') === 'createRequestType';
+    transition.formData.get('_action') === 'createRequestType';
 
   const isAddingCategory =
     transition.state === 'submitting' &&
-    transition.submission.formData.get('_action') === 'addRequestCategory';
+    transition.formData.get('_action') === 'addRequestCategory';
 
   const isAddingCategoryDefault =
     transition.state === 'submitting' &&
-    transition.submission.formData.get('_action') ===
-      'addRequestCategoryDefault';
+    transition.formData.get('_action') === 'addRequestCategoryDefault';
 
   React.useEffect(() => {
     if (!isCreatingType) {
@@ -268,7 +267,7 @@ export default function Index() {
   };
 
   return (
-    <div className="container">
+    <>
       <h1 className="title is-1">Site Configuration</h1>
       should ask also if the field is required or not.
       <h2 className="is-2 title">Request Types</h2>
@@ -433,6 +432,6 @@ export default function Index() {
         <br />
         who is an admin anyways?
       </p>
-    </div>
+    </>
   );
 }

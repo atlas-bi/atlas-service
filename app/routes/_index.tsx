@@ -2,14 +2,8 @@ import type { Request, User } from '@prisma/client';
 import { type Session, json } from '@remix-run/node';
 import { NavLink, useLoaderData } from '@remix-run/react';
 import type { LoaderArgs } from '@remix-run/server-runtime';
+import { Activity, AtSign, Bell, Filter, User as UserIcon } from 'lucide-react';
 import { useState } from 'react';
-import {
-  Activity,
-  AtSign,
-  Bell,
-  Filter,
-  User as UserIcon,
-} from 'react-feather';
 import { LabelTag } from '~/components/Labels';
 import { getRequests } from '~/models/request.server';
 import { authorize } from '~/session.server';
@@ -100,16 +94,15 @@ export default function Index() {
           </button>
         </p>
       </div>
-
-      <div class="field">
-        <p class="control has-icons-left">
-          <input class="input" type="text" placeholder="type to filter" />
-          <span class="icon is-small is-left">
+      <div className="field">
+        <p className="control has-icons-left">
+          <input className="input" type="text" placeholder="type to filter" />
+          <span className="icon is-small is-left">
             <Filter size={16} />
           </span>
         </p>
       </div>
-
+      - open/close/other status - Requester - Label - Project - Assigee - Sort
       <h3 className="title is-3">yo {user.firstName}</h3>
       {showTab === 'myRequests' && (
         <>
@@ -136,7 +129,7 @@ export default function Index() {
                         {request.labels && (
                           <div className="tags">
                             {request.labels.map((label) => (
-                              <LabelTag label={label} />
+                              <LabelTag key={label.id} label={label} />
                             ))}
                           </div>
                         )}
@@ -149,7 +142,6 @@ export default function Index() {
           )}
         </>
       )}
-
       {showTab === 'assignedRequests' && (
         <>
           {assignedRequests.length === 0 ? (
