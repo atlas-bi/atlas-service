@@ -1,3 +1,8 @@
+## 1.0.0-rc.29 (2023-04-14)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([a46c4e9](https://github.com/atlas-bi/atlas-requests/commit/a46c4e9))
+* feat(job logs): started added job logs ([4a34be0](https://github.com/atlas-bi/atlas-requests/commit/4a34be0))
+
 ## 1.0.0-rc.28 (2023-04-14)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([9e16754](https://github.com/atlas-bi/atlas-requests/commit/9e16754))
