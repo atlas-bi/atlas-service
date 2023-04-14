@@ -38,7 +38,6 @@ cd "$INSTALL_DIR" || exit;
 npm_install_full
 npm_build
 npm_migrate
-npm_clean
 
 # stop services if running
 fmt_blue "Stopping services"

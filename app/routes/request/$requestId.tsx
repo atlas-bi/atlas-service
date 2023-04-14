@@ -221,8 +221,6 @@ export default function RequestDetailsPage() {
 
           <div className="timeline">
             <article className="media thread">
-              {(thisRequest.creator?.profilePhoto ||
-                thisRequest.requester?.profilePhoto) && (
                 <div className="media-left profile-photo">
                   <figure className="image is-48x48">
                     <ProfilePhoto base64={thisRequest.creator?.profilePhoto} />
@@ -235,7 +233,6 @@ export default function RequestDetailsPage() {
                     </figure>
                   )}
                 </div>
-              )}
               <div className="media-content my-auto">
                 <div
                   className={`thread-box ${
