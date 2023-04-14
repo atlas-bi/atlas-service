@@ -1,3 +1,9 @@
+## 1.0.0-rc.28 (2023-04-14)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([9e16754](https://github.com/atlas-bi/atlas-requests/commit/9e16754))
+* fix(install): removed unused command in installer. Added back profil pic for users without pic ([9c2fe33](https://github.com/atlas-bi/atlas-requests/commit/9c2fe33))
+* feat(mentions): added mention users to db for filtering ([3c4df2e](https://github.com/atlas-bi/atlas-requests/commit/3c4df2e))
+
 ## 1.0.0-rc.27 (2023-04-13)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([0f93544](https://github.com/atlas-bi/atlas-requests/commit/0f93544))
