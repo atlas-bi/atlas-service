@@ -64,9 +64,9 @@
     "@fortawesome/free-regular-svg-icons": "^6.2.1",
     "@fortawesome/free-solid-svg-icons": "^6.2.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "@lexical/clipboard": "^0.9.0",
-    "@lexical/html": "^0.9.0",
-    "@lexical/react": "^0.9.0",
+    "@lexical/clipboard": "^0.10.0",
+    "@lexical/html": "^0.10.0",
+    "@lexical/react": "^0.10.0",
     "@next-boost/hybrid-disk-cache": "^0.3.0",
     "@prisma/client": "^4.11.0",
     "@react-email/button": "^0.0.8",
@@ -104,8 +104,8 @@
     "isbot": "^3.6.3",
     "ldap-authentication": "github:shaozi/ldap-authentication#upgrade-ldapjs-3",
     "ldapjs-promise": "^3.0.0",
-    "lexical": "^0.9.0",
-    "lucide-react": "^0.144.0",
+    "lexical": "^0.10.0",
+    "lucide-react": "^0.171.0",
     "meilisearch": "^0.32.0",
     "meilisearch-medical-synonyms": "^1.2.0",
     "meilisearch-name-synonyms": "^1.1.0",
@@ -204,5 +204,5 @@
       "npm run format"
     ]
   },
-  "version": "1.0.0"
+  "version": "1.0.1"
 }
