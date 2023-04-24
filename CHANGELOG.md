@@ -1,3 +1,14 @@
+## 1.0.0-rc.30 (2023-04-24)
+
+* chore(deps) Update all non-major dependencies ([e25bfea](https://github.com/atlas-bi/atlas-requests/commit/e25bfea))
+* chore(deps) Update all non-major dependencies ([e4fa4bb](https://github.com/atlas-bi/atlas-requests/commit/e4fa4bb))
+* chore(deps) Update dependency @vitejs/plugin-react to v4 ([2e7b886](https://github.com/atlas-bi/atlas-requests/commit/2e7b886))
+* Merge pull request #27 from atlas-bi/renovate/all-minor-patch ([6ea8d84](https://github.com/atlas-bi/atlas-requests/commit/6ea8d84)), closes [#27](https://github.com/atlas-bi/atlas-requests/issues/27)
+* Merge pull request #28 from atlas-bi/renovate/all-minor-patch ([237f447](https://github.com/atlas-bi/atlas-requests/commit/237f447)), closes [#28](https://github.com/atlas-bi/atlas-requests/issues/28)
+* Merge pull request #29 from atlas-bi/renovate/vitejs-plugin-react-4.x ([938ab6e](https://github.com/atlas-bi/atlas-requests/commit/938ab6e)), closes [#29](https://github.com/atlas-bi/atlas-requests/issues/29)
+* merged ([043f691](https://github.com/atlas-bi/atlas-requests/commit/043f691))
+* feat(admin): worked on getting admin screens updated ([03fe298](https://github.com/atlas-bi/atlas-requests/commit/03fe298))
+
 ## 1.0.0-rc.29 (2023-04-14)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([a46c4e9](https://github.com/atlas-bi/atlas-requests/commit/a46c4e9))
