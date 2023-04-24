@@ -32,8 +32,9 @@ export const createLabel = async ({
   color,
   userId,
   groups,
-}: Pick<Label, 'name' | 'description' | 'color' | 'groups'> & {
+}: Pick<Label, 'name' | 'description' | 'color'> & {
   userId: User['id'];
+  groups: string[];
 }) => {
   const label = await prisma.label.create({
     data: {

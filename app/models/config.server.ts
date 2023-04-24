@@ -98,15 +98,235 @@ export async function getRequestCategories() {
 }
 
 export async function createRequestType(
-  props: Pick<RequestType, 'name'> & {
+  props: Pick<
+    RequestType,
+    | 'name'
+    | 'id'
+    | 'description'
+    | 'menuText'
+    | 'showRequester'
+    | 'showLabels'
+    | 'showTextFieldOne'
+    | 'showTextFieldTwo'
+    | 'showTextFieldThree'
+    | 'showTextFieldFour'
+    | 'showTextFieldFive'
+    | 'showBooleanFieldOne'
+    | 'showBooleanFieldTwo'
+    | 'showBooleanFieldThree'
+    | 'showUserFieldOne'
+    | 'showUserFieldTwo'
+    | 'showUserFieldThree'
+    | 'requireTextFieldOne'
+    | 'requireTextFieldTwo'
+    | 'requireTextFieldThree'
+    | 'requireTextFieldFour'
+    | 'requireTextFieldFive'
+    | 'requireUserFieldOne'
+    | 'requireUserFieldTwo'
+    | 'requireUserFieldThree'
+    | 'textFieldOneTitle'
+    | 'textFieldTwoTitle'
+    | 'textFieldThreeTitle'
+    | 'textFieldFourTitle'
+    | 'textFieldFiveTitle'
+    | 'booleanFieldOneTitle'
+    | 'booleanFieldTwoTitle'
+    | 'booleanFieldThreeTitle'
+    | 'userFieldOneTitle'
+    | 'userFieldTwoTitle'
+    | 'userFieldThreeTitle'
+    | 'labelsTitle'
+    | 'requesterTitle'
+  > & {
     userId: User['id'];
+    textFieldOneGroups: string[];
+    textFieldTwoGroups: string[];
+    textFieldThreeGroups: string[];
+    textFieldFourGroups: string[];
+    textFieldFiveGroups: string[];
+    booleanFieldOneGroups: string[];
+    booleanFieldTwoGroups: string[];
+    booleanFieldThreeGroups: string[];
+    userFieldOneGroups: string[];
+    userFieldTwoGroups: string[];
+    userFieldThreeGroups: string[];
+    labelsGroups: string[];
+    requesterGroups: string[];
   },
 ) {
-  const userId = props.userId;
-  delete props.userId;
+  const {
+    id,
+    name,
+    description,
+    menuText,
+    textFieldOneGroups,
+    textFieldTwoGroups,
+    textFieldThreeGroups,
+    textFieldFourGroups,
+    textFieldFiveGroups,
+    booleanFieldOneGroups,
+    booleanFieldTwoGroups,
+    booleanFieldThreeGroups,
+    userFieldOneGroups,
+    userFieldTwoGroups,
+    userFieldThreeGroups,
+    labelsGroups,
+    requesterGroups,
+    showRequester,
+    showLabels,
+    showTextFieldOne,
+    showTextFieldTwo,
+    showTextFieldThree,
+    showTextFieldFour,
+    showTextFieldFive,
+    showBooleanFieldOne,
+    showBooleanFieldTwo,
+    showBooleanFieldThree,
+    showUserFieldOne,
+    showUserFieldTwo,
+    showUserFieldThree,
+    requireTextFieldOne,
+    requireTextFieldTwo,
+    requireTextFieldThree,
+    requireTextFieldFour,
+    requireTextFieldFive,
+    requireUserFieldOne,
+    requireUserFieldTwo,
+    requireUserFieldThree,
+    textFieldOneTitle,
+    textFieldTwoTitle,
+    textFieldThreeTitle,
+    textFieldFourTitle,
+    textFieldFiveTitle,
+    booleanFieldOneTitle,
+    booleanFieldTwoTitle,
+    booleanFieldThreeTitle,
+    userFieldOneTitle,
+    userFieldTwoTitle,
+    userFieldThreeTitle,
+    labelsTitle,
+    requesterTitle,
+    userId,
+  } = props;
   return prisma.requestType.create({
     data: {
-      ...props,
+      name,
+      description,
+      menuText,
+      textFieldOneGroups: textFieldOneGroups
+        ? {
+            connect: textFieldOneGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      textFieldTwoGroups: textFieldTwoGroups
+        ? {
+            connect: textFieldTwoGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      textFieldThreeGroups: textFieldThreeGroups
+        ? {
+            connect: textFieldThreeGroups.map((x: string) => ({
+              id: Number(x),
+            })),
+          }
+        : undefined,
+      textFieldFourGroups: textFieldFourGroups
+        ? {
+            connect: textFieldFourGroups.map((x: string) => ({
+              id: Number(x),
+            })),
+          }
+        : undefined,
+      textFieldFiveGroups: textFieldFiveGroups
+        ? {
+            connect: textFieldFiveGroups.map((x: string) => ({
+              id: Number(x),
+            })),
+          }
+        : undefined,
+      booleanFieldOneGroups: booleanFieldOneGroups
+        ? {
+            connect: booleanFieldOneGroups.map((x: string) => ({
+              id: Number(x),
+            })),
+          }
+        : undefined,
+      booleanFieldTwoGroups: booleanFieldTwoGroups
+        ? {
+            connect: booleanFieldTwoGroups.map((x: string) => ({
+              id: Number(x),
+            })),
+          }
+        : undefined,
+      booleanFieldThreeGroups: booleanFieldThreeGroups
+        ? {
+            connect: booleanFieldThreeGroups.map((x: string) => ({
+              id: Number(x),
+            })),
+          }
+        : undefined,
+      userFieldOneGroups: userFieldOneGroups
+        ? {
+            connect: userFieldOneGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      userFieldTwoGroups: userFieldTwoGroups
+        ? {
+            connect: userFieldTwoGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      userFieldThreeGroups: userFieldThreeGroups
+        ? {
+            connect: userFieldThreeGroups.map((x: string) => ({
+              id: Number(x),
+            })),
+          }
+        : undefined,
+      labelsGroups: labelsGroups
+        ? {
+            connect: labelsGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      requesterGroups: requesterGroups
+        ? {
+            connect: requesterGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      showRequester,
+      showLabels,
+      showTextFieldOne,
+      showTextFieldTwo,
+      showTextFieldThree,
+      showTextFieldFour,
+      showTextFieldFive,
+      showBooleanFieldOne,
+      showBooleanFieldTwo,
+      showBooleanFieldThree,
+      showUserFieldOne,
+      showUserFieldTwo,
+      showUserFieldThree,
+      requireTextFieldOne,
+      requireTextFieldTwo,
+      requireTextFieldThree,
+      requireTextFieldFour,
+      requireTextFieldFive,
+      requireUserFieldOne,
+      requireUserFieldTwo,
+      requireUserFieldThree,
+      textFieldOneTitle,
+      textFieldTwoTitle,
+      textFieldThreeTitle,
+      textFieldFourTitle,
+      textFieldFiveTitle,
+      booleanFieldOneTitle,
+      booleanFieldTwoTitle,
+      booleanFieldThreeTitle,
+      userFieldOneTitle,
+      userFieldTwoTitle,
+      userFieldThreeTitle,
+      labelsTitle,
+      requesterTitle,
       creator: {
         connect: {
           id: userId,
@@ -117,12 +337,170 @@ export async function createRequestType(
 }
 
 export async function editRequestType(props) {
+  console.log(props);
+  const {
+    id,
+    name,
+    description,
+    menuText,
+    textFieldOneGroups,
+    textFieldTwoGroups,
+    textFieldThreeGroups,
+    textFieldFourGroups,
+    textFieldFiveGroups,
+    booleanFieldOneGroups,
+    booleanFieldTwoGroups,
+    booleanFieldThreeGroups,
+    userFieldOneGroups,
+    userFieldTwoGroups,
+    userFieldThreeGroups,
+    labelsGroups,
+    requesterGroups,
+    showRequester,
+    showLabels,
+    showTextFieldOne,
+    showTextFieldTwo,
+    showTextFieldThree,
+    showTextFieldFour,
+    showTextFieldFive,
+    showBooleanFieldOne,
+    showBooleanFieldTwo,
+    showBooleanFieldThree,
+    showUserFieldOne,
+    showUserFieldTwo,
+    showUserFieldThree,
+    requireTextFieldOne,
+    requireTextFieldTwo,
+    requireTextFieldThree,
+    requireTextFieldFour,
+    requireTextFieldFive,
+    requireUserFieldOne,
+    requireUserFieldTwo,
+    requireUserFieldThree,
+    textFieldOneTitle,
+    textFieldTwoTitle,
+    textFieldThreeTitle,
+    textFieldFourTitle,
+    textFieldFiveTitle,
+    booleanFieldOneTitle,
+    booleanFieldTwoTitle,
+    booleanFieldThreeTitle,
+    userFieldOneTitle,
+    userFieldTwoTitle,
+    userFieldThreeTitle,
+    labelsTitle,
+    requesterTitle,
+    userId,
+  } = props;
   await prisma.requestType.update({
     where: {
-      id: props.id,
+      id,
     },
     data: {
-      ...props,
+      name,
+      description,
+      menuText,
+      textFieldOneGroups: textFieldOneGroups
+        ? {
+            set: textFieldOneGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      textFieldTwoGroups: textFieldTwoGroups
+        ? {
+            set: textFieldTwoGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      textFieldThreeGroups: textFieldThreeGroups
+        ? {
+            set: textFieldThreeGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      textFieldFourGroups: textFieldFourGroups
+        ? {
+            set: textFieldFourGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      textFieldFiveGroups: textFieldFiveGroups
+        ? {
+            set: textFieldFiveGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      booleanFieldOneGroups: booleanFieldOneGroups
+        ? {
+            set: booleanFieldOneGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      booleanFieldTwoGroups: booleanFieldTwoGroups
+        ? {
+            set: booleanFieldTwoGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      booleanFieldThreeGroups: booleanFieldThreeGroups
+        ? {
+            set: booleanFieldThreeGroups.map((x: string) => ({
+              id: Number(x),
+            })),
+          }
+        : undefined,
+      userFieldOneGroups: userFieldOneGroups
+        ? {
+            set: userFieldOneGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      userFieldTwoGroups: userFieldTwoGroups
+        ? {
+            set: userFieldTwoGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      userFieldThreeGroups: userFieldThreeGroups
+        ? {
+            set: userFieldThreeGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      labelsGroups: labelsGroups
+        ? {
+            set: labelsGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      requesterGroups: requesterGroups
+        ? {
+            set: requesterGroups.map((x: string) => ({ id: Number(x) })),
+          }
+        : undefined,
+      showRequester,
+      showLabels,
+      showTextFieldOne,
+      showTextFieldTwo,
+      showTextFieldThree,
+      showTextFieldFour,
+      showTextFieldFive,
+      showBooleanFieldOne,
+      showBooleanFieldTwo,
+      showBooleanFieldThree,
+      showUserFieldOne,
+      showUserFieldTwo,
+      showUserFieldThree,
+      requireTextFieldOne,
+      requireTextFieldTwo,
+      requireTextFieldThree,
+      requireTextFieldFour,
+      requireTextFieldFive,
+      requireUserFieldOne,
+      requireUserFieldTwo,
+      requireUserFieldThree,
+      textFieldOneTitle,
+      textFieldTwoTitle,
+      textFieldThreeTitle,
+      textFieldFourTitle,
+      textFieldFiveTitle,
+      booleanFieldOneTitle,
+      booleanFieldTwoTitle,
+      booleanFieldThreeTitle,
+      userFieldOneTitle,
+      userFieldTwoTitle,
+      userFieldThreeTitle,
+      labelsTitle,
+      requesterTitle,
     },
   });
 }

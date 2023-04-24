@@ -83,6 +83,7 @@ $block-spacing: 1rem;
 @import '../node_modules/bulma/bulma';
 @import '../node_modules/bulma-switch/src/sass';
 @import '../node_modules/bulma-list/sass/bulma-list';
+@import '../node_modules/@creativebulma/bulma-tooltip/src/sass';
 
 html {
   height: 100%;
@@ -468,4 +469,8 @@ article.media.thread {
   .field-body.is-normal {
     padding-top: 0.375em;
   }
+}
+
+*[data-tooltip] {
+  border-bottom: none !important;
 }

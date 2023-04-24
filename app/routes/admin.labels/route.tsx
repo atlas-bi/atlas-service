@@ -1,5 +1,6 @@
 import { faMagnifyingGlass, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { Group, Label, User } from '@prisma/client';
 import {
   type ActionArgs,
   type LoaderArgs,
@@ -26,6 +27,8 @@ import {
 import { groupIndex } from '~/search.server';
 import { authorize, requireUser } from '~/session.server';
 
+type LabelCount = Label & { _count: { requests: number }; groups: Group[] };
+
 export async function loader({ request, params }: LoaderArgs) {
   return authorize(
     request,
@@ -33,7 +36,7 @@ export async function loader({ request, params }: LoaderArgs) {
     async ({ user, session }: { user: User; session: Session }) => {
       const labels = await getLabels();
       const client = new MeiliSearch({
-        host: process.env.MEILISEARCH_URL,
+        host: process.env.MEILISEARCH_URL || '',
         apiKey: process.env.MEILI_MASTER_KEY,
       });
       const keys = await client.getKeys();
@@ -63,7 +66,7 @@ export async function action({ request }: ActionArgs) {
         name: name as string,
         description: description as string | null,
         color: color as string | null,
-        groups: JSON.parse(groups || '[]'),
+        groups: JSON.parse(groups.toString() || '[]'),
       });
       return null;
     },
@@ -76,7 +79,7 @@ export async function action({ request }: ActionArgs) {
         name,
         description,
         color,
-        groups: JSON.parse(groups || '[]'),
+        groups: JSON.parse(groups.toString() || '[]'),
       });
       return null;
     },
@@ -97,10 +100,10 @@ export default function Index() {
   const [filter, setFilter] = useState('');
   const [showNewLabelModal, setShowNewLabelModal] = useState(false);
   const [showEditLabelModal, setShowEditLabelModal] = useState(false);
-  const [editLabel, setEditLabel] = useState(null);
+  const [editLabel, setEditLabel] = useState<LabelCount | undefined>(undefined);
   const [emojiBox, setEmojiBox] = useState(null);
   const submitDelete = useSubmit();
-  const filterInput = useRef();
+  const filterInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setLabelList(labels);
@@ -120,7 +123,7 @@ export default function Index() {
                   setFilter(e.target.value);
                   setLabelList(
                     labels.filter(
-                      (label) =>
+                      (label: Label) =>
                         label.name
                           .toLowerCase()
                           .indexOf(e.target.value.toLowerCase()) !== -1,
@@ -184,64 +187,64 @@ export default function Index() {
         </div>
         <hr className="m-0" />
         {labelList &&
-          labelList.map((label) => {
-            return (
-              <div className="list-item" key={label.id}>
-                <div className="columns is-flex-grow-1">
-                  <div className="column">
-                    <LabelTag label={label} />
-                  </div>
+          labelList.map((label: LabelCount) => (
+            <div className="list-item" key={label.id}>
+              <div className="columns is-flex-grow-1">
+                <div className="column">
+                  <LabelTag label={label} />
+                </div>
 
-                  <div className="column">{label.description}</div>
+                <div className="column">{label.description}</div>
 
-                  <div className="column">
-                    {label._count?.requests > 0 &&
-                      `${label._count?.requests} open request${
-                        label._count?.requests > 1 ? 's' : ''
-                      } with this tag`}
-                  </div>
-                  <div className="column">
-                    {label.groups?.length > 0 ? (
-                      <div className="tags">
-                        {label.groups.map((group) => (
-                          <span className="tag">{group.name}</span>
-                        ))}
-                      </div>
-                    ) : (
-                      'all users'
-                    )}
-                  </div>
+                <div className="column">
+                  {label._count?.requests > 0 &&
+                    `${label._count?.requests} open request${
+                      label._count?.requests > 1 ? 's' : ''
+                    } with this tag`}
+                </div>
+                <div className="column">
+                  {label.groups?.length > 0 ? (
+                    <div className="tags">
+                      {label.groups.map((group: Group) => (
+                        <span key={group.id} className="tag">
+                          {group.name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    'all users'
+                  )}
+                </div>
 
-                  <div className="column is-narrow">
-                    <span
-                      className="is-clickable mr-5"
-                      onClick={() => {
-                        setEditLabel(label);
-                        setShowEditLabelModal(true);
-                      }}
-                    >
-                      Edit
-                    </span>
+                <div className="column is-narrow">
+                  <span
+                    className="is-clickable mr-5"
+                    onClick={() => {
+                      setEditLabel(label);
+                      setShowEditLabelModal(true);
+                    }}
+                  >
+                    Edit
+                  </span>
 
-                    <span
-                      className="is-clickable"
-                      onClick={() => {
-                        const formData = new FormData();
-                        formData.append('_action', 'delete');
-                        formData.append('id', label.id);
-                        submitDelete(formData, {
-                          replace: true,
-                          method: 'post',
-                        });
-                      }}
-                    >
-                      Delete
-                    </span>
-                  </div>
+                  <span
+                    className="is-clickable"
+                    onClick={() => {
+                      const formData = new FormData();
+                      formData.append('_action', 'delete');
+                      formData.append('id', label.id.toString());
+                      submitDelete(formData, {
+                        replace: true,
+                        method: 'post',
+                      });
+                    }}
+                  >
+                    Delete
+                  </span>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
       </div>
       <LabelCreator
         action="create"

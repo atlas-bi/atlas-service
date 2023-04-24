@@ -86,12 +86,13 @@ export const LabelCreator = ({
   searchIndex,
 }: {
   action: string;
-  name: string | undefined;
+  name?: string;
   show: boolean;
   label?: Label;
   MEILISEARCH_URL: string;
   MEILISEARCH_KEY: string;
   searchIndex: string;
+  onClose: () => void;
 }) => {
   const [showNewLabelModal, setShowNewLabelModal] = useState(show);
   const [labelDescription, setLabelDescription] = useState<string>(
@@ -166,7 +167,7 @@ export const LabelCreator = ({
   useEffect(() => {
     if (label) {
       setLabelName(label.name || '');
-      setIdValue(label.id);
+      setIdValue(label.id.toString());
       setLabelDescription(label.description || '');
       setColorPickerColor(label.color || '');
       setLabelColor(label.color || '');

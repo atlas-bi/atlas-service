@@ -214,7 +214,7 @@ export default function Nav() {
                 </Link>
                 <hr className="navbar-divider" />
                 <strong className="navbar-item">Configuration</strong>
-                <Link className="navbar-item" to="/admin/request-types">
+                <Link className="navbar-item" to="/admin/types">
                   Request Types
                 </Link>
                 <Link className="navbar-item" to="/admin/labels">

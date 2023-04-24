@@ -148,6 +148,7 @@ export default function Index() {
                 <th>Status</th>
                 <th>Message</th>
                 <th>Run By</th>
+                <th>Date</th>
               </tr>
               {logs.map((log) => (
                 <tr key={log.id} className={`{log.fail ? 'is-danger' : ''`}>
@@ -181,6 +182,7 @@ export default function Index() {
                   <td>
                     {log.runBy ? <MiniUser user={log.runBy} /> : 'system'}
                   </td>
+                  <td>{log.completed || log.started || log.created}</td>
                 </tr>
               ))}
             </tbody>
