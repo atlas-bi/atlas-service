@@ -1,3 +1,8 @@
+## 1.0.0-rc.31 (2023-04-24)
+
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([4cdcdfa](https://github.com/atlas-bi/atlas-requests/commit/4cdcdfa))
+* feat(request type): made the options more flexible ([853d63a](https://github.com/atlas-bi/atlas-requests/commit/853d63a))
+
 ## 1.0.0-rc.30 (2023-04-24)
 
 * chore(deps) Update all non-major dependencies ([e25bfea](https://github.com/atlas-bi/atlas-requests/commit/e25bfea))
