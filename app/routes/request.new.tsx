@@ -19,7 +19,7 @@ import { RequesterSelector } from '~/components/Requester';
 import { getRequestType, getRequestTypes } from '~/models/config.server';
 import { createLabel } from '~/models/label.server';
 import { createRequest } from '~/models/request.server';
-import { labelIndex, userIndex } from '~/search.server';
+import { groupIndex, labelIndex, userIndex } from '~/search.server';
 import { authorize, requireUser } from '~/session.server';
 
 export async function loader({ request }: LoaderArgs) {
@@ -52,7 +52,7 @@ export async function loader({ request }: LoaderArgs) {
         MEILISEARCH_KEY: keys.results.filter(
           (x) => x.name === 'Default Search API Key',
         )[0].key,
-        search: { labelIndex, userIndex },
+        search: { labelIndex, userIndex, groupIndex },
       });
     },
   );
@@ -78,9 +78,7 @@ export async function action({ request }: ActionArgs) {
   const { _action } = Object.fromEntries(formData);
 
   if (_action === 'newLabel') {
-    console.log('new label');
-
-    const { name, description, color } = Object.fromEntries(formData);
+    const { name, description, color, groups } = Object.fromEntries(formData);
 
     return json(
       {
@@ -89,6 +87,7 @@ export async function action({ request }: ActionArgs) {
           name: name as string,
           description: description as string | null,
           color: color as string | null,
+          groups: JSON.parse(groups || '[]'),
         }),
       },
       { status: 200 },
@@ -620,6 +619,7 @@ export default function NewRequestPage() {
                 MEILISEARCH_URL={MEILISEARCH_URL}
                 MEILISEARCH_KEY={MEILISEARCH_KEY}
                 searchIndex={search.labelIndex}
+                groupIndex={search.groupIndex}
                 action="newLabel"
               />
             )}

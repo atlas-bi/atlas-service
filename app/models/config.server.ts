@@ -3,26 +3,78 @@ import { prisma } from '~/db.server';
 
 export type { Note, RequestType } from '@prisma/client';
 
+const defaultRequestTypeFields = {
+  id: true,
+  name: true,
+  menuText: true,
+  description: true,
+  createdAt: true,
+  updatedAt: true,
+  showRequester: true,
+  requesterGroups: { select: { id: true, name: true } },
+  requesterTitle: true,
+  showLabels: true,
+  labelsTitle: true,
+  labelsGroups: { select: { id: true, name: true } },
+
+  showTextFieldOne: true,
+  requireTextFieldOne: true,
+  textFieldOneTitle: true,
+  textFieldOneGroups: { select: { id: true, name: true } },
+
+  showTextFieldTwo: true,
+  requireTextFieldTwo: true,
+  textFieldTwoTitle: true,
+  textFieldTwoGroups: { select: { id: true, name: true } },
+
+  showTextFieldThree: true,
+  requireTextFieldThree: true,
+  textFieldThreeTitle: true,
+  textFieldThreeGroups: { select: { id: true, name: true } },
+
+  showTextFieldFour: true,
+  requireTextFieldFour: true,
+  textFieldFourTitle: true,
+  textFieldFourGroups: { select: { id: true, name: true } },
+
+  showTextFieldFive: true,
+  requireTextFieldFive: true,
+  textFieldFiveTitle: true,
+  textFieldFiveGroups: { select: { id: true, name: true } },
+
+  showBooleanFieldOne: true,
+  booleanFieldOneTitle: true,
+  booleanFieldOneGroups: { select: { id: true, name: true } },
+
+  showBooleanFieldTwo: true,
+  booleanFieldTwoTitle: true,
+  booleanFieldTwoGroups: { select: { id: true, name: true } },
+
+  showBooleanFieldThree: true,
+  booleanFieldThreeTitle: true,
+  booleanFieldThreeGroups: { select: { id: true, name: true } },
+
+  showUserFieldOne: true,
+  requireUserFieldOne: true,
+  userFieldOneTitle: true,
+  userFieldOneGroups: { select: { id: true, name: true } },
+
+  showUserFieldTwo: true,
+  requireUserFieldTwo: true,
+  userFieldTwoTitle: true,
+  userFieldTwoGroups: { select: { id: true, name: true } },
+
+  showUserFieldThree: true,
+  requireUserFieldThree: true,
+  userFieldThreeTitle: true,
+  userFieldThreeGroups: { select: { id: true, name: true } },
+};
+
 export async function getRequestTypes() {
   return prisma.requestType.findMany({
-    select: {
-      id: true,
-      name: true,
-      menuText: true,
-      description: true,
-      createdAt: true,
-      updatedAt: true,
-      showPurpose: true,
-      showCriteria: true,
-      showParameters: true,
-      showSchedule: true,
-      showRecipients: true,
-      showExportToExcel: true,
-      showRegulatory: true,
-      showSupportsInitiative: true,
-      showDescription: true,
-      showRequester: true,
-      showLabels: true,
+    select: defaultRequestTypeFields,
+    orderBy: {
+      id: 'asc',
     },
   });
 }
@@ -30,26 +82,7 @@ export async function getRequestTypes() {
 export async function getRequestType({ id }) {
   return prisma.requestType.findUnique({
     where: { id },
-    select: {
-      id: true,
-      name: true,
-      menuText: true,
-      description: true,
-      createdAt: true,
-      updatedAt: true,
-      requests: true,
-      showPurpose: true,
-      showCriteria: true,
-      showParameters: true,
-      showSchedule: true,
-      showRecipients: true,
-      showExportToExcel: true,
-      showRegulatory: true,
-      showSupportsInitiative: true,
-      showDescription: true,
-      showRequester: true,
-      showLabels: true,
-    },
+    select: defaultRequestTypeFields,
   });
 }
 

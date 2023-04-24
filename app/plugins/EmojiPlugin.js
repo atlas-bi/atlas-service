@@ -144,7 +144,6 @@ export default function EmojiPlugin() {
               selectedIndex !== matches.length - 1 ? selectedIndex + 1 : 0;
             // updateSelectedIndex(newSelectedIndex);
             const option = matches[newSelectedIndex];
-            console.log('down');
 
             if (option.ref != null && option.ref.current) {
               editor.dispatchCommand(
@@ -168,7 +167,7 @@ export default function EmojiPlugin() {
         lexical.KEY_ARROW_UP_COMMAND,
         (payload) => {
           const event = payload;
-          console.log('up');
+
           if (matches !== null && matches.length && selectedIndex !== null) {
             const newSelectedIndex =
               selectedIndex !== 0 ? selectedIndex - 1 : matches.length - 1;

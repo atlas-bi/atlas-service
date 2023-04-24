@@ -1,4 +1,5 @@
 import {
+  fa1,
   faCheck,
   faCircleNotch,
   faPalette,
@@ -80,16 +81,25 @@ export const LabelCreator = ({
   show,
   onClose,
   label,
+  MEILISEARCH_URL,
+  MEILISEARCH_KEY,
+  searchIndex,
 }: {
   action: string;
   name: string | undefined;
   show: boolean;
   label?: Label;
+  MEILISEARCH_URL: string;
+  MEILISEARCH_KEY: string;
+  searchIndex: string;
 }) => {
   const [showNewLabelModal, setShowNewLabelModal] = useState(show);
   const [labelDescription, setLabelDescription] = useState<string>(
     label?.description || '',
   );
+  const [labelGroups, setLabelGroups] = useState(label?.groups || []);
+  const [groupSearch, setGroupSearch] = useState([]);
+  const [groupSearchInput, setGroupSearchInput] = useState('');
   const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
   const [idValue, setIdValue] = useState<string>(label?.id || '');
   const [labelColor, setLabelColor] = useState<string>(label?.color || '');
@@ -104,10 +114,15 @@ export const LabelCreator = ({
   const colorPicker = useRef(null);
   const labelNameRef = useRef<HTMLInputElement>();
   const labelDescriptionRef = useRef<HTMLInputElement>();
+  const labelGroupsRef = useRef<HTMLInputElement>();
   const labelModal = useRef<HTMLDivElement>();
   const [previewLabel, setPreviewLabel] = useState({
     color: undefined,
     name,
+  });
+  const client = new MeiliSearch({
+    host: MEILISEARCH_URL,
+    apiKey: MEILISEARCH_KEY,
   });
 
   const submitNewLabel = useSubmit();
@@ -156,6 +171,7 @@ export const LabelCreator = ({
       setColorPickerColor(label.color || '');
       setLabelColor(label.color || '');
       setPreviewLabel(label);
+      setLabelGroups(label.groups || []);
     }
   }, [label]);
 
@@ -228,6 +244,83 @@ export const LabelCreator = ({
                 value={labelDescription}
                 setter={setLabelDescription}
               />
+            </div>
+          </div>
+          <div className="field">
+            <label className="label">Visible To</label>
+            <small className="is-block pb-2">
+              Limit visiblity to users in specific groups.
+            </small>
+            {labelGroups?.length > 0 && (
+              <div className="field is-grouped is-grouped-multiline">
+                {labelGroups.map((group) => (
+                  <div className="control" key={group.id}>
+                    <div className="tags has-addons">
+                      <a className="tag is-link">{group.name}</a>
+                      <a
+                        className="tag is-delete"
+                        onClick={() => {
+                          setLabelGroups(
+                            labelGroups.filter((x: Group | any) => x !== group),
+                          );
+                        }}
+                      ></a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="control is-relative">
+              <input
+                ref={labelGroupsRef}
+                className="input semi-disabled"
+                placeholder="type to search.."
+                value={groupSearchInput}
+                onChange={async (e) => {
+                  // setLabelGroups({...labelGroups, e.target.value});
+                  setGroupSearchInput(e.target.value);
+                  if (e.target.value == '') {
+                    setGroupSearch([]);
+                  } else {
+                    const matches = await client
+                      .index(searchIndex)
+                      .search(e.target.value, { limit: 20 });
+                    setGroupSearch(matches.hits);
+                  }
+                }}
+              />
+              {groupSearch?.length > 0 && (
+                <div
+                  className="is-absolute"
+                  style={{ zIndex: 9999, bottom: '-5px', left: 0, right: 0 }}
+                >
+                  <div
+                    style={{
+                      position: 'fixed',
+                      maxHeight: '300px',
+                      overflowY: 'scroll',
+                    }}
+                    className="has-background-white has-shadow has-border-grey-lighter"
+                  >
+                    {groupSearch.map((group) => (
+                      <div
+                        key={group.id}
+                        className=" is-clickable py-2 my-0 px-2 is-clickable has-background-white  has-background-hover-white-bis has-border-none"
+                        style={{ height: '35px' }}
+                        onClick={() => {
+                          if (!labelGroups.includes(group)) {
+                            setLabelGroups([...labelGroups, group]);
+                          }
+                          setGroupSearchInput('');
+                          setGroupSearch(<></>);
+                        }}
+                      >
+                        {group.name}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -307,6 +400,12 @@ export const LabelCreator = ({
                 if (idValue) {
                   formData.append('id', idValue);
                 }
+                if (labelGroups.length > 0) {
+                  formData.append(
+                    'groups',
+                    JSON.stringify(labelGroups.map((x) => x.id)),
+                  );
+                }
                 submitNewLabel(formData, { replace: true, method: 'post' });
                 setLabelName('');
                 onClose();
@@ -332,6 +431,7 @@ export const LabelSelector = forwardRef(
       MEILISEARCH_KEY,
       onChange,
       searchIndex,
+      groupIndex,
       action,
     }: {
       labels?: Label[];
@@ -340,6 +440,7 @@ export const LabelSelector = forwardRef(
       MEILISEARCH_KEY: string;
       onChange?: React.ChangeEvent<HTMLInputElement>;
       searchIndex: string;
+      groupIndex: string;
       action: string;
     },
     ref,
@@ -435,11 +536,11 @@ export const LabelSelector = forwardRef(
 
     const isSaving =
       transition.state === 'submitting' &&
-      transition.formData.get('_action') === action;
+      transition.formData?.get('_action') === action;
 
     const hasSaved =
       (transition.state === 'loading' || transition.state === 'idle') &&
-      transition.formData.get('_action') === action;
+      transition.formData?.get('_action') === action;
 
     useEffect(() => {
       inputReference.current?.focus();
@@ -616,6 +717,9 @@ export const LabelSelector = forwardRef(
           action={action}
           name={labelName}
           show={showNewLabelModal}
+          MEILISEARCH_URL={MEILISEARCH_URL}
+          MEILISEARCH_KEY={MEILISEARCH_KEY}
+          searchIndex={groupIndex}
           onClose={() => {
             setShowNewLabelModal(false);
             setShowLabelSearch(true);

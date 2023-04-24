@@ -14,7 +14,14 @@ import {
   useSubmit,
 } from '@remix-run/react';
 import { UserCog } from 'lucide-react';
-import { Activity, CheckCheck, ScreenShareOff, Slash } from 'lucide-react';
+import {
+  Activity,
+  CheckCheck,
+  ScreenShareOff,
+  Search,
+  Slash,
+} from 'lucide-react';
+import { Queue } from 'quirrel/remix';
 import { useEffect, useRef, useState } from 'react';
 import { namedAction } from 'remix-utils';
 import { EmojiFinder } from '~/components/Emoji';
@@ -27,6 +34,7 @@ import {
   getLabels,
   updateLabel,
 } from '~/models/label.server';
+import searchRefreshQueue from '~/queues/search_refresh.server';
 import userRefreshQueue from '~/queues/user_refresh.server';
 import { authorize, requireUser } from '~/session.server';
 
@@ -48,8 +56,11 @@ export async function action({ request }: ActionArgs) {
       await userRefreshQueue.enqueue(user);
       return null;
     },
+    async searchData() {
+      await searchRefreshQueue.enqueue(user);
+      return null;
+    },
     async refreshLogs() {
-      console.log('refreshing');
       return json({ jobLogs: await getLogs() });
     },
   });
@@ -59,16 +70,30 @@ export default function Index() {
   const { user, jobLogs } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [logs, setLogs] = useState(jobLogs);
+  const [count, setCount] = useState(0);
+  const fetcher = useFetcher();
 
   useEffect(() => {
-    if (actionData?.jobLogs) {
-      setLogs(actionData.jobLogs);
+    const timer = setTimeout(() => {
+      setCount(count + 1);
+      const formData = new FormData();
+      formData.append('_action', 'refreshLogs');
+      const x = fetcher.submit(formData, {
+        replace: true,
+        method: 'post',
+      });
+    }, 1e3);
+    return () => clearTimeout(timer);
+  }, [count, actionData]);
+
+  useEffect(() => {
+    if (fetcher?.data?.jobLogs) {
+      setLogs(fetcher.data.jobLogs);
     }
-  }, [actionData]);
+  }, [fetcher]);
 
   const submitForm = useSubmit();
   const filterInput = useRef();
-  // const fetcher = useFetcher();
 
   return (
     <>
@@ -91,25 +116,29 @@ export default function Index() {
           </span>
           <span>Load Users</span>
         </button>
+
+        <button
+          type="button"
+          className="button"
+          onClick={() => {
+            const formData = new FormData();
+            formData.append('_action', 'searchData');
+            submitForm(formData, {
+              replace: true,
+              method: 'post',
+            });
+          }}
+        >
+          <span className="icon">
+            <Search size={14} />
+          </span>
+          <span>Refresh Search</span>
+        </button>
       </div>
+
       {logs.length > 0 && (
         <>
           <h3 className="title is-3">Job History</h3>
-          <button
-            type="button"
-            className="button"
-            onClick={() => {
-              const formData = new FormData();
-              formData.append('_action', 'refreshLogs');
-              const x = submitForm(formData, {
-                replace: true,
-                method: 'post',
-              });
-              console.log(x);
-            }}
-          >
-            refresh
-          </button>
           <table className="table">
             <tbody>
               <tr>
@@ -124,7 +153,11 @@ export default function Index() {
                 <tr key={log.id} className={`{log.fail ? 'is-danger' : ''`}>
                   <td>
                     <span className="icon">
-                      {log.fail || log.status === 'failed' ? (
+                      {log.fail ||
+                      (new Date(log.createdAt) <
+                        new Date(new Date().getTime() - 24 * 60 * 60 * 1000) &&
+                        log.status === 'started') ||
+                      log.status === 'failed' ? (
                         <Slash size={14} color="red" />
                       ) : log.status === 'started' ? (
                         <Activity size={14} color="green" />
@@ -137,7 +170,13 @@ export default function Index() {
                   </td>
                   <td>{log.name}</td>
                   <td>{log.quirrelId}</td>
-                  <td>{log.status}</td>
+                  <td>
+                    {new Date(log.createdAt) <
+                      new Date(new Date().getTime() - 24 * 60 * 60 * 1000) &&
+                    log.status === 'started'
+                      ? 'failed'
+                      : log.status}
+                  </td>
                   <td>{log.message}</td>
                   <td>
                     {log.runBy ? <MiniUser user={log.runBy} /> : 'system'}

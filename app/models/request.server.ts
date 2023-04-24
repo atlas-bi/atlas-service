@@ -10,7 +10,7 @@ import { loadReport } from '~/search.server';
 
 export type { Request } from '@prisma/client';
 
-const defaultReportFields = {
+const defaultReportFields = (user) => ({
   id: true,
   name: true,
   createdAt: true,
@@ -77,7 +77,17 @@ const defaultReportFields = {
     },
   },
   labels: {
+    // if user is admin, should include all groups
+    where: {
+      OR: [
+        { groups: { some: { users: { some: { id: user.id } } } } },
+        { groups: { none: {} } },
+      ],
+    },
     select: {
+      groups: {
+        select: { id: true, name: true },
+      },
       id: true,
       color: true,
       name: true,
@@ -102,6 +112,15 @@ const defaultReportFields = {
     },
   },
   labelHistory: {
+    // if user is admin, should include all groups
+    where: {
+      label: {
+        OR: [
+          // {groups:{some: {users: {some: {id: user.id}}}}},
+          { groups: { none: {} } },
+        ],
+      },
+    },
     select: {
       id: true,
       label: {
@@ -200,11 +219,11 @@ const defaultReportFields = {
       added: true,
     },
   },
-};
+});
 
-export function getRequest({ id }: Pick<Request, 'id'>) {
+export function getRequest({ id, user }: Pick<Request, 'id'>) {
   return prisma.request.findUnique({
-    select: defaultReportFields,
+    select: defaultReportFields(user),
     where: { id: id },
   });
 }
@@ -252,8 +271,6 @@ export const editRequester = async ({
     },
     select: defaultReportFields,
   });
-
-  console.log(request);
 
   if (request.updater.id !== request.requester.id) {
     await ChangedRequesterEmail.enqueue(
@@ -582,7 +599,6 @@ export async function createRequest({
     .flat()
     .map((mention: { userId: any }) => mention.userId);
 
-  console.log(mentions);
   const request = await prisma.request.create({
     data: {
       name,

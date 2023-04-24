@@ -14,7 +14,6 @@ This can either be a new request, or an existing request.
 */
 
 export default Queue('/queues/email/request_assigned', async (job, meta) => {
-  console.log('email sending');
   const { request, user } = job;
 
   // console.log(request);

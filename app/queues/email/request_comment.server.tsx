@@ -23,7 +23,6 @@ Not:
 */
 
 export default Queue('/queues/email/request_comment', async (job, meta) => {
-  console.log('email sending');
   const { request, user } = job;
 
   // console.log(request);

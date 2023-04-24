@@ -12,7 +12,6 @@ import * as React from 'react';
 import invariant from 'tiny-invariant';
 
 export function Email(props) {
-  console.log(props);
   const { request, type } = props;
 
   invariant(process.env.EXTERNAL_URL, 'EXTERNAL_URL must be set');

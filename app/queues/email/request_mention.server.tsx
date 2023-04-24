@@ -12,7 +12,6 @@ Someone mentioned on a request/comment.
 */
 
 export default Queue('/queues/email/request_mention', async (job, meta) => {
-  console.log('email sending');
   const { request, user, mention } = job;
 
   // console.log(request);

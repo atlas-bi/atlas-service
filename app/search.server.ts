@@ -123,6 +123,46 @@ export const loadGroup = async (group: Group) =>
     .addDocuments([group])
     .then((res) => console.log(res));
 
+export const loadGroups = async () => {
+  let chunk = await prisma.group.findMany({
+    take: chunkSize,
+    select: {
+      id: true,
+      name: true,
+    },
+    orderBy: {
+      id: 'asc',
+    },
+  });
+  await client
+    .index(groupIndex)
+    .addDocuments(chunk)
+    .then((res) => console.log(res));
+
+  while (chunk.length) {
+    const cursor = chunk[chunk.length - 1].id;
+
+    chunk = await prisma.group.findMany({
+      take: chunkSize,
+      skip: 1, // Skip the cursor
+      cursor: {
+        id: cursor,
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: {
+        id: 'asc',
+      },
+    });
+    await client
+      .index(groupIndex)
+      .addDocuments(chunk)
+      .then((res) => console.log(res));
+  }
+};
+
 export const loadUsers = async () => {
   let chunk = await prisma.user.findMany({
     take: chunkSize,

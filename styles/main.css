@@ -9005,6 +9005,7 @@ a.has-text-danger-dark:focus {
 }
 
 .has-background-white-bis,
+.has-background-hover-white-bis:hover,
 .editor-input:not(.readonly) {
   background-color: hsl(0, 0%, 98%) !important;
 }
@@ -13496,4 +13497,16 @@ article.media.thread {
   display: flex;
   margin-left: 82px;
   padding-bottom: 0;
+}
+.columns.is-bordered > .column {
+  border-right: 1px solid hsl(0, 0%, 86%);
+}
+.columns.is-bordered > .column:last-of-type {
+  border-right: none;
+}
+
+@media print, screen and (min-width: 769px) {
+  .field-body.is-normal {
+    padding-top: 0.375em;
+  }
 }

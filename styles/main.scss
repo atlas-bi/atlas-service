@@ -449,3 +449,23 @@ article.media.thread {
     @extend .pt-5;
   }
 }
+
+.has-background-hover-white-bis {
+  &:hover {
+    @extend .has-background-white-bis;
+  }
+}
+
+.columns.is-bordered {
+  > .column {
+    border-right: 1px solid $grey-lighter;
+    &:last-of-type {
+      border-right: none;
+    }
+  }
+}
+@media print, screen and (min-width: 769px) {
+  .field-body.is-normal {
+    padding-top: 0.375em;
+  }
+}

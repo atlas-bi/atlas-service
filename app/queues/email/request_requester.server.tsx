@@ -12,7 +12,6 @@ Someone mentioned on a request/comment.
 */
 
 export default Queue('/queues/email/request_requester', async (job, meta) => {
-  console.log('email sending');
   const { request, user } = job;
 
   // console.log(request);

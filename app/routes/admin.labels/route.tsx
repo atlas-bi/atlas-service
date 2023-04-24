@@ -12,6 +12,7 @@ import {
   useLoaderData,
   useSubmit,
 } from '@remix-run/react';
+import { MeiliSearch } from 'meilisearch';
 import { useEffect, useRef, useState } from 'react';
 import { namedAction } from 'remix-utils';
 import { EmojiFinder } from '~/components/Emoji';
@@ -22,6 +23,7 @@ import {
   getLabels,
   updateLabel,
 } from '~/models/label.server';
+import { groupIndex } from '~/search.server';
 import { authorize, requireUser } from '~/session.server';
 
 export async function loader({ request, params }: LoaderArgs) {
@@ -30,7 +32,21 @@ export async function loader({ request, params }: LoaderArgs) {
     [process.env.ADMIN_GROUP],
     async ({ user, session }: { user: User; session: Session }) => {
       const labels = await getLabels();
-      return json({ labels, user });
+      const client = new MeiliSearch({
+        host: process.env.MEILISEARCH_URL,
+        apiKey: process.env.MEILI_MASTER_KEY,
+      });
+      const keys = await client.getKeys();
+
+      return json({
+        labels,
+        user,
+        MEILISEARCH_URL: process.env.MEILISEARCH_URL,
+        MEILISEARCH_KEY: keys.results.filter(
+          (x) => x.name === 'Default Search API Key',
+        )[0].key,
+        search: { groupIndex },
+      });
     },
   );
 }
@@ -41,19 +57,27 @@ export async function action({ request }: ActionArgs) {
   return namedAction(request, {
     async create() {
       const formData = await request.formData();
-      const { name, description, color } = Object.fromEntries(formData);
+      const { name, description, color, groups } = Object.fromEntries(formData);
       await createLabel({
         userId: user.id,
         name: name as string,
         description: description as string | null,
         color: color as string | null,
+        groups: JSON.parse(groups || '[]'),
       });
       return null;
     },
     async update() {
       const formData = await request.formData();
-      const { id, name, description, color } = Object.fromEntries(formData);
-      await updateLabel({ id: Number(id), name, description, color });
+      const { id, name, description, color, groups } =
+        Object.fromEntries(formData);
+      await updateLabel({
+        id: Number(id),
+        name,
+        description,
+        color,
+        groups: JSON.parse(groups || '[]'),
+      });
       return null;
     },
     async delete() {
@@ -66,7 +90,8 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function Index() {
-  const { labels } = useLoaderData<typeof loader>();
+  const { labels, MEILISEARCH_URL, MEILISEARCH_KEY, search } =
+    useLoaderData<typeof loader>();
 
   const [labelList, setLabelList] = useState(labels);
   const [filter, setFilter] = useState('');
@@ -138,9 +163,25 @@ export default function Index() {
         </button>
       </div>
       <div className="has-border-grey-lighter my-5">
-        <strong className="is-block has-background-white-ter py-4 px-3">
-          {labelList.length} labels
-        </strong>
+        <div className="columns is-flex-grow-1 m-0 has-background-white-ter">
+          <div className="column">
+            <strong>{labelList.length} labels</strong>
+          </div>
+          <div className="column">
+            <strong>Description</strong>
+          </div>
+          <div className="column">
+            <strong>Open Requests</strong>
+          </div>
+          <div className="column">
+            <strong>Visible To</strong>
+          </div>
+          <div className="column is-narrow">
+            <span style={{ visibility: 'hidden' }}>
+              <span className="mr-5">Edit</span>Delete
+            </span>
+          </div>
+        </div>
         <hr className="m-0" />
         {labelList &&
           labelList.map((label) => {
@@ -158,6 +199,17 @@ export default function Index() {
                       `${label._count?.requests} open request${
                         label._count?.requests > 1 ? 's' : ''
                       } with this tag`}
+                  </div>
+                  <div className="column">
+                    {label.groups?.length > 0 ? (
+                      <div className="tags">
+                        {label.groups.map((group) => (
+                          <span className="tag">{group.name}</span>
+                        ))}
+                      </div>
+                    ) : (
+                      'all users'
+                    )}
                   </div>
 
                   <div className="column is-narrow">
@@ -195,13 +247,19 @@ export default function Index() {
         action="create"
         show={showNewLabelModal}
         onClose={() => setShowNewLabelModal(false)}
+        MEILISEARCH_URL={MEILISEARCH_URL}
+        MEILISEARCH_KEY={MEILISEARCH_KEY}
+        searchIndex={search.groupIndex}
         name={filter}
       />
       <LabelCreator
         action="update"
         show={showEditLabelModal}
         onClose={() => setShowEditLabelModal(false)}
+        searchIndex={search.groupIndex}
         label={editLabel}
+        MEILISEARCH_URL={MEILISEARCH_URL}
+        MEILISEARCH_KEY={MEILISEARCH_KEY}
       />
     </div>
   );

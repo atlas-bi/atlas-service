@@ -91,12 +91,12 @@ export const AssigneeSelector = forwardRef(
 
     const isSaving =
       transition.state === 'submitting' &&
-      transition.formData.get('_action') === action;
+      transition.formData?.get('_action') === action;
 
     const hasSaved =
       (transition.state === 'loading' || transition.state === 'idle') &&
       transition &&
-      transition.formData.get('_action') === action;
+      transition.formData?.get('_action') === action;
 
     useEffect(() => {
       inputReference.current?.focus();

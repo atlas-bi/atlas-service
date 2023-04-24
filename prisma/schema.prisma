@@ -47,7 +47,25 @@ model Group {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users User[]
+  users  User[]
+  labels Label[]
+
+  requestTypeTextFieldOne   RequestType[] @relation("RequestTypeTextFieldOne")
+  requestTypeTextFieldTwo   RequestType[] @relation("RequestTypeTextFieldTwo")
+  requestTypeTextFieldThree RequestType[] @relation("RequestTypeTextFieldThree")
+  requestTypeTextFieldFour  RequestType[] @relation("RequestTypeTextFieldFour")
+  requestTypeTextFieldFive  RequestType[] @relation("RequestTypeTextFieldFive")
+
+  requestTypeBooleanFieldOne   RequestType[] @relation("RequestTypeBooleanFieldOne")
+  requestTypeBooleanFieldTwo   RequestType[] @relation("RequestTypeBooleanFieldTwo")
+  requestTypeBooleanFieldThree RequestType[] @relation("RequestTypeBooleanFieldThree")
+
+  requestTypeUserFieldOne   RequestType[] @relation("RequestTypeUserFieldOne")
+  requestTypeUserFieldTwo   RequestType[] @relation("RequestTypeUserFieldTwo")
+  requestTypeUserFieldThree RequestType[] @relation("RequestTypeUserFieldThree")
+
+  requestTypeRequester RequestType[] @relation("RequestTypeRequester")
+  requestTypeLabels    RequestType[] @relation("RequestTypeLabels")
 }
 
 model RequestCategory {
@@ -63,26 +81,82 @@ model RequestCategory {
 }
 
 model RequestType {
-  id                     Int       @id @default(autoincrement())
-  name                   String
-  menuText               String?
-  description            String?
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
-  requests               Request[]
-  showPurpose            Boolean   @default(true)
-  showCriteria           Boolean   @default(true)
-  showParameters         Boolean   @default(true)
-  showSchedule           Boolean   @default(true)
-  showRecipients         Boolean   @default(true)
-  showExportToExcel      Boolean   @default(true)
-  showRegulatory         Boolean   @default(true)
-  showSupportsInitiative Boolean   @default(true)
-  showDescription        Boolean   @default(true)
-  showRequester          Boolean   @default(true)
-  showLabels             Boolean   @default(true)
-  creator                User      @relation(fields: [creatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  creatorId              Int
+  id          Int       @id @default(autoincrement())
+  name        String
+  menuText    String?
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  requests    Request[]
+
+  showRequester   Boolean @default(true)
+  requesterGroups Group[] @relation("RequestTypeRequester")
+  requesterTitle  String  @default("Requester")
+
+  showLabels   Boolean @default(true)
+  labelsGroups Group[] @relation("RequestTypeLabels")
+  labelsTitle  String  @default("Labels")
+
+  creator   User @relation(fields: [creatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  creatorId Int
+
+  // text fields
+
+  showTextFieldOne    Boolean @default(true)
+  requireTextFieldOne Boolean @default(false)
+  textFieldOneGroups  Group[] @relation("RequestTypeTextFieldOne")
+  textFieldOneTitle   String  @default("Description")
+
+  showTextFieldTwo    Boolean @default(true)
+  requireTextFieldTwo Boolean @default(false)
+  textFieldTwoGroups  Group[] @relation("RequestTypeTextFieldTwo")
+  textFieldTwoTitle   String  @default("Purpose")
+
+  showTextFieldThree    Boolean @default(true)
+  requireTextFieldThree Boolean @default(false)
+  textFieldThreeGroups  Group[] @relation("RequestTypeTextFieldThree")
+  textFieldThreeTitle   String  @default("Criteria")
+
+  showTextFieldFour    Boolean @default(true)
+  requireTextFieldFour Boolean @default(false)
+  textFieldFourGroups  Group[] @relation("RequestTypeTextFieldFour")
+  textFieldFourTitle   String  @default("Parameters")
+
+  showTextFieldFive    Boolean @default(true)
+  requireTextFieldFive Boolean @default(false)
+  textFieldFiveGroups  Group[] @relation("RequestTypeTextFieldFive")
+  textFieldFiveTitle   String  @default("Schedule")
+
+  // boolean fields
+
+  showBooleanFieldOne   Boolean @default(true)
+  booleanFieldOneGroups Group[] @relation("RequestTypeBooleanFieldOne")
+  booleanFieldOneTitle  String  @default("Export To Excel")
+
+  showBooleanFieldTwo   Boolean @default(true)
+  booleanFieldTwoGroups Group[] @relation("RequestTypeBooleanFieldTwo")
+  booleanFieldTwoTitle  String  @default("Regulatory")
+
+  showBooleanFieldThree   Boolean @default(true)
+  booleanFieldThreeGroups Group[] @relation("RequestTypeBooleanFieldThree")
+  booleanFieldThreeTitle  String  @default("Supports Initiative")
+
+  // user fields
+
+  showUserFieldOne    Boolean @default(true)
+  requireUserFieldOne Boolean @default(false)
+  userFieldOneGroups  Group[] @relation("RequestTypeUserFieldOne")
+  userFieldOneTitle   String  @default("Recipients")
+
+  showUserFieldTwo    Boolean @default(true)
+  requireUserFieldTwo Boolean @default(false)
+  userFieldTwoGroups  Group[] @relation("RequestTypeUserFieldTwo")
+  userFieldTwoTitle   String  @default("Members")
+
+  showUserFieldThree    Boolean @default(true)
+  requireUserFieldThree Boolean @default(false)
+  userFieldThreeGroups  Group[] @relation("RequestTypeUserFieldThree")
+  userFieldThreeTitle   String  @default("Committee")
 }
 
 model Label {
@@ -91,6 +165,7 @@ model Label {
   color               String?
   description         String?
   createdAt           DateTime              @default(now())
+  groups              Group[]
   requests            Request[]
   creator             User                  @relation(name: "LabelCreator", fields: [creatorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   creatorId           Int

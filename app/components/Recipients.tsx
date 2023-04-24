@@ -229,11 +229,6 @@ export const RecipientSelector = forwardRef(
                     <MiniUser
                       user={me}
                       onClick={() => {
-                        console.log(
-                          recipientList,
-                          me,
-                          recipientList.filter((x) => x.id === me.id),
-                        );
                         if (
                           recipientList.filter((x) => x.id === me.id).length ===
                           0

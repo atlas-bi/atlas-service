@@ -9,6 +9,12 @@ export const getLabels = async () => {
       name: true,
       color: true,
       description: true,
+      groups: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
 
       _count: {
         select: { requests: true },
@@ -25,7 +31,8 @@ export const createLabel = async ({
   description,
   color,
   userId,
-}: Pick<Label, 'name'> & {
+  groups,
+}: Pick<Label, 'name' | 'description' | 'color' | 'groups'> & {
   userId: User['id'];
 }) => {
   const label = await prisma.label.create({
@@ -37,6 +44,11 @@ export const createLabel = async ({
         connect: {
           id: userId,
         },
+      },
+      groups: {
+        connect: groups.map((x) => {
+          return { id: Number(x) };
+        }),
       },
     },
     select: {
@@ -56,5 +68,17 @@ export const deleteLabel = async ({ id }: Pick<Label, 'id'>) =>
     where: { id },
   });
 
-export const updateLabel = async (label: Label) =>
-  prisma.label.update({ where: { id: label.id }, data: label });
+export const updateLabel = async ({ id, name, description, color, groups }) =>
+  prisma.label.update({
+    where: { id },
+    data: {
+      name,
+      description,
+      color,
+      groups: {
+        set: groups.map((x) => {
+          return { id: Number(x) };
+        }),
+      },
+    },
+  });

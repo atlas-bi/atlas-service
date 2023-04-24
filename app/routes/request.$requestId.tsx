@@ -37,6 +37,7 @@ import { RecipientSelector } from '~/components/Recipients';
 import { RequesterSelector } from '~/components/Requester';
 import { InlineUser } from '~/components/User';
 import { WatcherList } from '~/components/Watchers';
+import { createLabel } from '~/models/label.server';
 import {
   addComment,
   deleteRequest,
@@ -47,7 +48,7 @@ import {
   editWatch,
   getRequest,
 } from '~/models/request.server';
-import { labelIndex, userIndex } from '~/search.server';
+import { groupIndex, labelIndex, userIndex } from '~/search.server';
 import { authorize, requireUser } from '~/session.server';
 
 export async function loader({ request, params }: LoaderArgs) {
@@ -59,11 +60,11 @@ export async function loader({ request, params }: LoaderArgs) {
 
       const thisRequest = await getRequest({
         id: Number(params.requestId),
+        user,
       });
       if (!thisRequest) {
         throw new Response('Not Found', { status: 404 });
       }
-
       const client = new MeiliSearch({
         host: process.env.MEILISEARCH_URL,
         apiKey: process.env.MEILI_MASTER_KEY,
@@ -77,7 +78,7 @@ export async function loader({ request, params }: LoaderArgs) {
         MEILISEARCH_KEY: keys.results.filter(
           (x) => x.name === 'Default Search API Key',
         )[0].key,
-        search: { labelIndex, userIndex },
+        search: { labelIndex, userIndex, groupIndex },
       });
     },
   );
@@ -143,7 +144,6 @@ export async function action({ request, params }: ActionArgs) {
       return null;
     },
     async delete() {
-      console.log('deleting');
       await deleteRequest({
         id: Number(params.requestId),
       });
@@ -159,6 +159,23 @@ export async function action({ request, params }: ActionArgs) {
         userId,
       });
       return null;
+    },
+    async newLabel() {
+      const formData = await request.formData();
+      const { name, description, color, groups } = Object.fromEntries(formData);
+
+      return json(
+        {
+          newLabel: await createLabel({
+            userId,
+            name: name as string,
+            description: description as string | null,
+            color: color as string | null,
+            groups: JSON.parse(groups || '[]'),
+          }),
+        },
+        { status: 200 },
+      );
     },
   });
 }
@@ -542,7 +559,8 @@ export default function RequestDetailsPage() {
               MEILISEARCH_URL={MEILISEARCH_URL}
               MEILISEARCH_KEY={MEILISEARCH_KEY}
               searchIndex={search.labelIndex}
-              action="editLabels"
+              groupIndex={search.groupIndex}
+              action="newLabel"
             />
           </Form>
           <Form method="post" ref={changeAssignees}>
