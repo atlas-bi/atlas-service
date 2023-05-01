@@ -105,7 +105,7 @@
     "ldap-authentication": "github:shaozi/ldap-authentication#upgrade-ldapjs-3",
     "ldapjs-promise": "^3.0.0",
     "lexical": "^0.10.0",
-    "lucide-react": "^0.171.0",
+    "lucide-react": "^0.186.0",
     "meilisearch": "^0.32.0",
     "meilisearch-medical-synonyms": "^1.2.0",
     "meilisearch-name-synonyms": "^1.1.0",
@@ -205,5 +205,5 @@
       "npm run format"
     ]
   },
-  "version": "1.0.0-rc.31"
+  "version": "1.0.0"
 }
