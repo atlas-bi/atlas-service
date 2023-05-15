@@ -127,7 +127,7 @@
   },
   "devDependencies": {
     "@creativebulma/bulma-tooltip": "^1.2.0",
-    "@faker-js/faker": "^7.6.0",
+    "@faker-js/faker": "^8.0.0",
     "@fullhuman/postcss-purgecss": "^5.0.0",
     "@remix-run/dev": "1.16.0",
     "@remix-run/eslint-config": "1.16.0",
@@ -205,5 +205,5 @@
       "npm run format"
     ]
   },
-  "version": "1.0.4"
+  "version": "1.0.5"
 }
