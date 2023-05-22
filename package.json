@@ -80,10 +80,10 @@
     "@react-email/render": "^0.0.7",
     "@react-email/section": "0.0.9",
     "@react-email/text": "0.0.5",
-    "@remix-run/express": "1.16.0",
-    "@remix-run/node": "1.16.0",
-    "@remix-run/react": "1.16.0",
-    "@remix-run/server-runtime": "1.16.0",
+    "@remix-run/express": "1.16.1",
+    "@remix-run/node": "1.16.1",
+    "@remix-run/react": "1.16.1",
+    "@remix-run/server-runtime": "1.16.1",
     "autoprefixer": "^10.4.14",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^8.3.0",
@@ -105,7 +105,7 @@
     "ldap-authentication": "github:shaozi/ldap-authentication#upgrade-ldapjs-3",
     "ldapjs-promise": "^3.0.0",
     "lexical": "^0.10.0",
-    "lucide-react": "^0.216.0",
+    "lucide-react": "^0.220.0",
     "meilisearch": "^0.32.0",
     "meilisearch-medical-synonyms": "^1.2.0",
     "meilisearch-name-synonyms": "^1.1.0",
@@ -129,8 +129,8 @@
     "@creativebulma/bulma-tooltip": "^1.2.0",
     "@faker-js/faker": "^8.0.0",
     "@fullhuman/postcss-purgecss": "^5.0.0",
-    "@remix-run/dev": "1.16.0",
-    "@remix-run/eslint-config": "1.16.0",
+    "@remix-run/dev": "1.16.1",
+    "@remix-run/eslint-config": "1.16.1",
     "@semantic-release/changelog": "6.0.3",
     "@semantic-release/commit-analyzer": "9.0.2",
     "@semantic-release/exec": "6.0.3",
@@ -205,5 +205,5 @@
       "npm run format"
     ]
   },
-  "version": "1.0.5"
+  "version": "1.0.6"
 }
