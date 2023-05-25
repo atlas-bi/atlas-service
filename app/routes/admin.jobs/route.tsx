@@ -1,5 +1,5 @@
-import { faMagnifyingGlass, faXmark } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// import { faMagnifyingGlass, faXmark } from '@fortawesome/free-solid-svg-icons';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   type ActionArgs,
   type LoaderArgs,

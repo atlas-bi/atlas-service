@@ -1,5 +1,5 @@
-import { faMagnifyingGlass, faXmark } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// import { faMagnifyingGlass, faXmark } from '@fortawesome/free-solid-svg-icons';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Group, Label, User } from '@prisma/client';
 import {
   type ActionArgs,
@@ -137,7 +137,7 @@ export default function Index() {
                 setter={setFilter}
               />
               <span className="icon is-small is-left">
-                <FontAwesomeIcon icon={faMagnifyingGlass} />
+                {/*<FontAwesomeIcon icon={faMagnifyingGlass} />*/}
               </span>
             </p>
           </div>
@@ -150,7 +150,7 @@ export default function Index() {
               }}
             >
               <span className="icon">
-                <FontAwesomeIcon icon={faXmark} />
+                {/*<FontAwesomeIcon icon={faXmark} />*/}
               </span>
               <span>Clear Filter</span>
             </span>

@@ -1,5 +1,5 @@
-import { faCheck, faCircleNotch } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// import { faCheck, faCircleNotch } from '@fortawesome/free-solid-svg-icons';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigation } from '@remix-run/react';
 import { Edit3 } from 'lucide-react';
 import { MeiliSearch } from 'meilisearch';
@@ -196,7 +196,7 @@ export const RequesterSelector = forwardRef(
 
               {isSaving ? (
                 <span className="icon has-text-warning my-auto is-pulled-right">
-                  <FontAwesomeIcon icon={faCircleNotch} size="lg" spin />
+                  {/*<FontAwesomeIcon icon={faCircleNotch} size="lg" spin />*/}
                 </span>
               ) : (
                 <span
@@ -207,7 +207,7 @@ export const RequesterSelector = forwardRef(
                     opacity: hasSaved ? '1' : '0',
                   }}
                 >
-                  <FontAwesomeIcon icon={faCheck} size="lg" />
+                  {/*<FontAwesomeIcon icon={faCheck} size="lg" />*/}
                 </span>
               )}
             </>

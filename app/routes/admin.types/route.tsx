@@ -181,7 +181,6 @@ export async function action({ request }: ActionArgs) {
 
       await createRequestType({
         name: name.toString(),
-        name,
         description,
         menuText,
         /* groups */

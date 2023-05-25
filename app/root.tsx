@@ -15,15 +15,17 @@ import {
   useLoaderData,
 } from '@remix-run/react';
 import remixImageStyles from 'remix-image/remix-image.css';
+// import appStyles from './styles/main.css';
+import stylesheet from '~/globals.css';
 import { getRequestTypesLite } from '~/models/config.server';
 
-import Nav from './components/Nav';
+import Nav from './components/nav/Nav';
 import { getSession, getUser, sessionStorage } from './session.server';
-import appStyles from './styles/main.css';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: remixImageStyles },
-  { rel: 'stylesheet', href: appStyles },
+  // { rel: 'stylesheet', href: appStyles },
+  { rel: 'stylesheet', href: stylesheet },
 ];
 
 export const meta: MetaFunction = () => [
@@ -47,7 +49,7 @@ export async function loader({ request }: LoaderArgs) {
   });
 }
 
-export default function App() {
+const App = () => {
   const { user, navRequestTypes } = useLoaderData<typeof loader>();
   return (
     <html lang="en" className={`${user ? 'has-navbar-fixed-top' : ''}`}>
@@ -62,7 +64,7 @@ export default function App() {
             />
           ))}
       </head>
-      <body className="main">
+      <body>
         {user && <Nav />}
         <Outlet />
         <ScrollRestoration />
@@ -72,4 +74,6 @@ export default function App() {
       </body>
     </html>
   );
-}
+};
+
+export default App;

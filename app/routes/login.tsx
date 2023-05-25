@@ -1,9 +1,9 @@
-import {
-  faAt,
-  faLock,
-  faTriangleExclamation,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// import {
+//   faAt,
+//   faLock,
+//   faTriangleExclamation,
+// } from '@fortawesome/free-solid-svg-icons';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   type ActionArgs,
   type LoaderArgs,
@@ -132,7 +132,7 @@ export default function Login() {
                 <article className="message is-danger ">
                   <div className="message-body p-2 is-flex">
                     <span className="icon mr-2">
-                      <FontAwesomeIcon icon={faTriangleExclamation} />
+                      {/*<FontAwesomeIcon icon={faTriangleExclamation} />*/}
                     </span>
 
                     <span>{loginError}</span>
@@ -149,7 +149,7 @@ export default function Login() {
                     autoComplete="off"
                   />
                   <span className="icon is-small is-left">
-                    <FontAwesomeIcon icon={faAt} />
+                    {/*<FontAwesomeIcon icon={faAt} />*/}
                   </span>
                 </div>
                 {actionData?.errors?.email && (
@@ -166,7 +166,7 @@ export default function Login() {
                     name="password"
                   />
                   <span className="icon is-small is-left">
-                    <FontAwesomeIcon icon={faLock} />
+                    {/*<FontAwesomeIcon icon={faLock} />*/}
                   </span>
                 </div>
                 {actionData?.errors?.password && (

@@ -1,0 +1,114 @@
+import type { User as userType } from '@prisma/client';
+import { useLoaderData } from '@remix-run/react';
+import { Link } from '@remix-run/react';
+import {
+  Inbox,
+  LogOut,
+  PlusCircle,
+  Settings,
+  Settings2,
+  User,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import { Button } from '~/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from '~/components/ui/dropdown-menu';
+
+import type { loader } from '../root';
+
+export function UserNav() {
+  const { user } = useLoaderData<typeof loader>();
+
+  const [activeUser, setActiveUser] = useState(user);
+
+  useEffect(() => {
+    setActiveUser(user);
+  }, [user]);
+
+  const initials = (user: userType) => {
+    return user.firstName.slice(0, 1) + user.lastName.slice(0, 1);
+  };
+
+  return (
+    <>
+      {activeUser && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="m-auto relative h-8 w-8 rounded-full ring-2 ring-offset-2 ring-[#54BBCB] focus-visible:ring-[#54BBCB]"
+            >
+              <Avatar className="h-8 w-8">
+                <AvatarImage
+                  src={`data:image/*;base64,${activeUser.profilePhoto}`}
+                  alt={initials(activeUser)}
+                />
+                <AvatarFallback>{initials(activeUser)}</AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56 mt-1" align="end" forceMount>
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">
+                  {activeUser.firstName} {activeUser.lastName}
+                </p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {activeUser.email}
+                </p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem>
+                <Link to="/profile" prefetch="intent" className="flex grow">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                  <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link to="/profile" prefetch="intent" className="flex grow">
+                  <Inbox className="mr-2 h-4 w-4" />
+                  <span>Notifications</span>
+                  <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Link to="/profile" prefetch="intent" className="flex grow">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                  <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link to="/admin" prefetch="intent" className="flex grow">
+                  <Settings2 className="mr-2 h-4 w-4" />
+                  <span>Site Config</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <Link to="/profile" prefetch="intent" className="flex grow">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+                <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+    </>
+  );
+}

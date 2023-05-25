@@ -1,10 +1,10 @@
-import {
-  faAtom,
-  faEnvelopesBulk,
-  faLifeRing,
-  faTag,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// import {
+//   faAtom,
+//   faEnvelopesBulk,
+//   faLifeRing,
+//   faTag,
+// } from '@fortawesome/free-solid-svg-icons';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   type ActionArgs,
   type LoaderArgs,

@@ -1,9 +1,9 @@
-import {
-  faCheck,
-  faCircleNotch,
-  faXmark,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// import {
+//   faCheck,
+//   faCircleNotch,
+//   faXmark,
+// } from '@fortawesome/free-solid-svg-icons';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { User } from '@prisma/client';
 import { useNavigation } from '@remix-run/react';
 import { Edit3 } from 'lucide-react';
@@ -124,7 +124,7 @@ export const RecipientSelector = forwardRef(
                   </strong>
                   {isSaving ? (
                     <span className="icon has-text-warning my-auto is-pulled-right">
-                      <FontAwesomeIcon icon={faCircleNotch} size="lg" spin />
+                      {/*<FontAwesomeIcon icon={faCircleNotch} size="lg" spin />*/}
                     </span>
                   ) : (
                     <span
@@ -135,7 +135,7 @@ export const RecipientSelector = forwardRef(
                         opacity: hasSaved ? '1' : '0',
                       }}
                     >
-                      <FontAwesomeIcon icon={faCheck} size="lg" />
+                      {/*<FontAwesomeIcon icon={faCheck} size="lg" />*/}
                     </span>
                   )}
                 </div>
@@ -197,7 +197,7 @@ export const RecipientSelector = forwardRef(
                       style={{ height: '35px' }}
                     >
                       <span className="icon my-auto has-text-grey mx-2">
-                        <FontAwesomeIcon icon={faXmark} />
+                        {/*<FontAwesomeIcon icon={faXmark} />*/}
                       </span>
                       <span className="my-auto">Clear List</span>
                     </div>

@@ -1,9 +1,9 @@
-import {
-  faCheck,
-  faCircleNotch,
-  faXmark,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// import {
+//   faCheck,
+//   faCircleNotch,
+//   faXmark,
+// } from '@fortawesome/free-solid-svg-icons';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Form, useActionData, useNavigation } from '@remix-run/react';
 import {
   CircleSlash,
@@ -372,12 +372,12 @@ const RequestTypeEditor = ({
           <span className="mr-2">
             {isEditingType ? (
               <span className="icon has-text-warning my-auto">
-                <FontAwesomeIcon icon={faCircleNotch} size="lg" spin />
+                {/*<FontAwesomeIcon icon={faCircleNotch} size="lg" spin />*/}
               </span>
             ) : nameError && !save ? (
               <div className="icon-text  my-auto has-text-danger is-flex-shrink-0">
                 <span className="icon">
-                  <FontAwesomeIcon icon={faXmark} size="sm" />
+                  {/*<FontAwesomeIcon icon={faXmark} size="sm" />*/}
                 </span>
                 <small style={{ whiteSpace: 'nowrap' }}>{nameError}</small>
               </div>
@@ -391,7 +391,7 @@ const RequestTypeEditor = ({
                     opacity: hasEditedType ? '1' : '0',
                   }}
                 >
-                  <FontAwesomeIcon icon={faCheck} size="lg" />
+                  {/*<FontAwesomeIcon icon={faCheck} size="lg" />*/}
                 </span>
                 <button
                   form={`${rt?.id || 'new'}-form`}

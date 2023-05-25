@@ -1,11 +1,11 @@
-import {
-  fa1,
-  faCheck,
-  faCircleNotch,
-  faPalette,
-  faXmark,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// import {
+//   fa1,
+//   faCheck,
+//   faCircleNotch,
+//   faPalette,
+//   faXmark,
+// } from '@fortawesome/free-solid-svg-icons';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Label } from '@prisma/client';
 import { useNavigation, useSubmit } from '@remix-run/react';
 import { Link } from '@remix-run/react';
@@ -359,7 +359,7 @@ export const LabelCreator = ({
                   onClick={() => setShowColorPicker(true)}
                 >
                   <span className="icon">
-                    <FontAwesomeIcon icon={faPalette} />
+                    {/*<FontAwesomeIcon icon={faPalette} />*/}
                   </span>
                 </button>
               </div>
@@ -570,7 +570,7 @@ export const LabelSelector = forwardRef(
                   </strong>
                   {isSaving ? (
                     <span className="icon has-text-warning my-auto is-pulled-right">
-                      <FontAwesomeIcon icon={faCircleNotch} size="lg" spin />
+                      {/*<FontAwesomeIcon icon={faCircleNotch} size="lg" spin />*/}
                     </span>
                   ) : (
                     <span
@@ -581,7 +581,7 @@ export const LabelSelector = forwardRef(
                         opacity: hasSaved ? '1' : '0',
                       }}
                     >
-                      <FontAwesomeIcon icon={faCheck} size="lg" />
+                      {/*<FontAwesomeIcon icon={faCheck} size="lg" />*/}
                     </span>
                   )}
                 </div>
@@ -649,7 +649,7 @@ export const LabelSelector = forwardRef(
                       style={{ height: '35px' }}
                     >
                       <span className="icon my-auto has-text-grey mx-2">
-                        <FontAwesomeIcon icon={faXmark} />
+                        {/*<FontAwesomeIcon icon={faXmark} />*/}
                       </span>
                       <span className="my-auto">Clear List</span>
                     </div>
