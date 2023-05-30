@@ -1,3 +1,22 @@
+## 1.0.0-rc.32 (2023-05-25)
+
+* chore(deps) Update all non-major dependencies ([33904fd](https://github.com/atlas-bi/atlas-requests/commit/33904fd))
+* chore(deps) Update all non-major dependencies ([bb729fb](https://github.com/atlas-bi/atlas-requests/commit/bb729fb))
+* chore(deps) Update dependency @faker-js/faker to v8 ([d2be851](https://github.com/atlas-bi/atlas-requests/commit/d2be851))
+* chore(deps) Update dependency @semantic-release/release-notes-generator to v11 ([61ff5a4](https://github.com/atlas-bi/atlas-requests/commit/61ff5a4))
+* chore(deps) Update dependency lucide-react to ^0.186.0 ([56338be](https://github.com/atlas-bi/atlas-requests/commit/56338be))
+* chore(deps) Update dependency lucide-react to ^0.216.0 ([4cb89ee](https://github.com/atlas-bi/atlas-requests/commit/4cb89ee))
+* chore(deps) Update test packages to ^0.31.0 ([1993edc](https://github.com/atlas-bi/atlas-requests/commit/1993edc))
+* Merge pull request #30 from atlas-bi/renovate/all-minor-patch ([5539424](https://github.com/atlas-bi/atlas-requests/commit/5539424)), closes [#30](https://github.com/atlas-bi/atlas-requests/issues/30)
+* Merge pull request #31 from atlas-bi/renovate/all-minor-patch ([44b151d](https://github.com/atlas-bi/atlas-requests/commit/44b151d)), closes [#31](https://github.com/atlas-bi/atlas-requests/issues/31)
+* Merge pull request #32 from atlas-bi/renovate/test-packages ([277f6cd](https://github.com/atlas-bi/atlas-requests/commit/277f6cd)), closes [#32](https://github.com/atlas-bi/atlas-requests/issues/32)
+* Merge pull request #33 from atlas-bi/renovate/major-11-semantic-release-monorepo ([4273ea9](https://github.com/atlas-bi/atlas-requests/commit/4273ea9)), closes [#33](https://github.com/atlas-bi/atlas-requests/issues/33)
+* Merge pull request #34 from atlas-bi/renovate/all-minor-patch ([4e25186](https://github.com/atlas-bi/atlas-requests/commit/4e25186)), closes [#34](https://github.com/atlas-bi/atlas-requests/issues/34)
+* Merge pull request #35 from atlas-bi/renovate/faker-js-faker-8.x ([5188daa](https://github.com/atlas-bi/atlas-requests/commit/5188daa)), closes [#35](https://github.com/atlas-bi/atlas-requests/issues/35)
+* Merge pull request #36 from atlas-bi/renovate/all-minor-patch ([d30cd59](https://github.com/atlas-bi/atlas-requests/commit/d30cd59)), closes [#36](https://github.com/atlas-bi/atlas-requests/issues/36)
+* merged ([fd390aa](https://github.com/atlas-bi/atlas-requests/commit/fd390aa))
+* feat(deisng): swapped icons ([66ab9c8](https://github.com/atlas-bi/atlas-requests/commit/66ab9c8))
+
 ## 1.0.0-rc.31 (2023-04-24)
 
 * Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([4cdcdfa](https://github.com/atlas-bi/atlas-requests/commit/4cdcdfa))
