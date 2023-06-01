@@ -25,7 +25,7 @@ import {
   getSession,
   getUserId,
   sessionStorage,
-} from '~/session.server';
+} from '~/services/session.server';
 import { safeRedirect, validateEmail } from '~/utils';
 
 export const loader = async ({ request }: LoaderArgs) => {

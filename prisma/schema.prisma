@@ -10,12 +10,13 @@ generator client {
 model User {
   id           Int      @id @default(autoincrement())
   email        String   @unique
+  slug         String   @unique
   firstName    String?
   lastName     String?
   profilePhoto String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
+  bio          String?
   groups                         Group[]
   jobLogs                        JobLog[]
   myAssignedRequests             Request[]                 @relation("RequestAssignees")

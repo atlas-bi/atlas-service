@@ -9,7 +9,7 @@ export const Notifications = () => {
         <Inbox size={20} />
         <Circle
           size={14}
-          className="absolute top-1 right-3 h-3 w-3 fill-blue-base text-blue-base "
+          className="absolute top-1 right-3 h-3 w-3 fill-blueBase text-blueBase "
         />
       </Link>
     </Button>

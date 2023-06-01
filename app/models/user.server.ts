@@ -1,6 +1,8 @@
 import type { Group, User } from '@prisma/client';
 import { MeiliSearch } from 'meilisearch';
+import slugify from 'slugify';
 import invariant from 'tiny-invariant';
+import { ProfilePhoto } from '~/components/Photo';
 import { prisma } from '~/db.server';
 // export type { User, Group } from '@prisma/client';
 import { loadGroup, loadUser } from '~/search.server';
@@ -14,32 +16,57 @@ const client = new MeiliSearch({
   apiKey: process.env.MEILI_MASTER_KEY,
 });
 
+const slimUserFields = {
+  id: true,
+  email: true,
+  lastName: true,
+  firstName: true,
+  slug: true,
+  profilePhoto: true,
+};
+
+const fullUserFields = { ...slimUserFields, bio: true };
+
+const slugger = (email: string) => {
+  return slugify(email.substring(0, email.indexOf('@')).replace('.', '-'), {
+    lower: true, // convert to lower case, defaults to `false`
+    strict: true,
+  });
+};
+
 export async function getUserById(id: User['id']) {
   return prisma.user.findUnique({ where: { id }, include: { groups: true } });
 }
 
 async function getUserByEmail(email: User['email']) {
-  return prisma.user.findUnique({ where: { email } });
+  return prisma.user.findUnique({ where: { email }, select: slimUserFields });
 }
 
 async function createUser(email: User['email']) {
   const user = await prisma.user.create({
     data: {
       email,
+      slug: slugger(email),
     },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      profilePhoto: true,
-    },
+    select: slimUserFields,
   });
 
   await loadUser(user);
 
   return user;
 }
+
+export const updateBio = async ({
+  id,
+  bio,
+}: {
+  id: User['id'];
+  bio: User['bio'];
+}) =>
+  prisma.user.update({
+    where: { id },
+    data: { bio },
+  });
 
 async function createGroup(name: Group['name']) {
   const group = await prisma.group.create({
@@ -57,6 +84,10 @@ async function createGroup(name: Group['name']) {
 }
 async function getGroupByName(name: Group['name']) {
   return prisma.group.findUnique({ where: { name } });
+}
+
+export async function getUserBySlug(slug: User['slug']) {
+  return prisma.user.findUnique({ where: { slug }, select: fullUserFields });
 }
 
 async function getOrCreateGroup(name: Group['name']) {
@@ -107,14 +138,9 @@ export async function updateUserProps(
             }))
           : [],
       },
+      slug: slugger(email),
     },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      profilePhoto: true,
-    },
+    select: slimUserFields,
   });
   await client
     .index(userIndex)

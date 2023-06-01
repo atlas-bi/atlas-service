@@ -172,6 +172,7 @@ export const loadUsers = async () => {
       lastName: true,
       email: true,
       profilePhoto: true,
+      slug: true,
     },
     orderBy: {
       id: 'asc',
@@ -197,6 +198,7 @@ export const loadUsers = async () => {
         lastName: true,
         email: true,
         profilePhoto: true,
+        slug: true,
       },
       orderBy: {
         id: 'asc',

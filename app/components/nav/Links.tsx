@@ -110,11 +110,9 @@ export function Links() {
           </NavigationMenuContent>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <Link to="/docs">
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Documentation
-            </NavigationMenuLink>
-          </Link>
+          <NavigationMenuLink className={navigationMenuTriggerStyle()} asChild>
+            <Link to="/docs">Documentation</Link>
+          </NavigationMenuLink>
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>

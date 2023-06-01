@@ -1,0 +1,23 @@
+import type { ActionFunction, LoaderFunction } from '@remix-run/node';
+import { authenticator } from '~/services/auth.server';
+
+export let action: ActionFunction = ({ request }) => login(request);
+export let loader: LoaderFunction = ({ request }) => login(request);
+
+async function login(request: Request) {
+  let successRedirect = '/';
+
+  try {
+    // if relay state was set we can redirect to it.
+    const newRequest = request.clone();
+    const formData = await newRequest.formData();
+    const body = Object.fromEntries(formData);
+    successRedirect = (formData.get('RelayState') || '/').toString();
+  } catch (e) {}
+
+  // call authenticate to complete the login and set returnTo as the successRedirect
+  return authenticator.authenticate('saml', request, {
+    successRedirect,
+    failureRedirect: '/access-denied',
+  });
+}

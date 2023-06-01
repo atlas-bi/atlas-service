@@ -36,4 +36,21 @@ const H2 = React.forwardRef<HTMLElement, HProps>(
 );
 
 H2.displayName = 'H2';
-export { H1, H2 };
+
+const H3 = React.forwardRef<HTMLElement, HProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <h3
+        className={cn(
+          'scroll-m-20 text-xl font-semibold tracking-tight',
+          className,
+        )}
+        ref={ref}
+        {...props}
+      />
+    );
+  },
+);
+
+H3.displayName = 'H3';
+export { H1, H2, H3 };

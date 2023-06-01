@@ -1,8 +1,7 @@
-import { metadata } from '~/saml.server';
+import { metadata } from '~/services/auth.server';
 
 export const loader = async () => {
-  const meta = metadata();
-  return new Response(meta, {
+  return new Response(metadata, {
     status: 200,
     headers: {
       'Content-Type': 'text/xml',

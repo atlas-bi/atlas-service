@@ -19,7 +19,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
 
@@ -45,7 +44,7 @@ export function UserNav() {
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="m-auto relative h-8 w-8 rounded-full ring-2 ring-offset-2 ring-[#54BBCB] focus-visible:ring-[#54BBCB]"
+              className="m-auto relative h-8 w-8 rounded-full ring-2 ring-offset-2 ring-blueBase focus-visible:ring-blueBase"
             >
               <Avatar className="h-8 w-8">
                 <AvatarImage
@@ -69,29 +68,30 @@ export function UserNav() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Link to="/profile" prefetch="intent" className="flex grow">
+              <DropdownMenuItem asChild>
+                <Link
+                  to={`/${activeUser.slug}`}
+                  prefetch="intent"
+                  className="flex grow"
+                >
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
-                  <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link to="/profile" prefetch="intent" className="flex grow">
+              <DropdownMenuItem asChild>
+                <Link to="/" prefetch="intent" className="flex grow">
                   <Inbox className="mr-2 h-4 w-4" />
                   <span>Notifications</span>
-                  <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Link to="/profile" prefetch="intent" className="flex grow">
+              <DropdownMenuItem asChild>
+                <Link to="/" prefetch="intent" className="flex grow">
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
-                  <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link to="/admin" prefetch="intent" className="flex grow">
                   <Settings2 className="mr-2 h-4 w-4" />
                   <span>Site Config</span>
@@ -99,11 +99,10 @@ export function UserNav() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Link to="/profile" prefetch="intent" className="flex grow">
+            <DropdownMenuItem asChild>
+              <Link to="/logout" prefetch="intent" className="flex grow">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
-                <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>

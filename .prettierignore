@@ -11,3 +11,4 @@ node_modules
 /app/styles/main.css
 
 CHANGELOG.md
+package-lock.json
