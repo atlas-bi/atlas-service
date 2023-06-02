@@ -1,3 +1,9 @@
+## 1.0.0-rc.33 (2023-06-01)
+
+* feat(ui): added profile, ([1c91e93](https://github.com/atlas-bi/atlas-requests/commit/1c91e93))
+* added form ([b10730a](https://github.com/atlas-bi/atlas-requests/commit/b10730a))
+* merged ([b2d2256](https://github.com/atlas-bi/atlas-requests/commit/b2d2256))
+
 ## 1.0.0-rc.32 (2023-05-25)
 
 * chore(deps) Update all non-major dependencies ([33904fd](https://github.com/atlas-bi/atlas-requests/commit/33904fd))
