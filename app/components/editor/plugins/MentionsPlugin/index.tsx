@@ -3,16 +3,15 @@ import {
   LexicalTypeaheadMenuPlugin,
   type QueryMatch,
   TypeaheadOption,
-  useBasicTypeaheadTriggerMatch,
 } from '@lexical/react/LexicalTypeaheadMenuPlugin';
-import { $createTextNode, type TextNode } from 'lexical';
+import { $createTextNode, type TextNode, COMMAND_PRIORITY_LOW, FOCUS_COMMAND } from 'lexical';
 import { type Hit, type Hits } from 'meilisearch';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Separator } from '~/components/ui/separator';
-
+import {mergeRegister} from '@lexical/utils'
 import { $createMentionNode } from '../../nodes/MentionNode';
 
 const PUNCTUATION =
@@ -234,9 +233,13 @@ export default function MentionsPlugin(): JSX.Element | null {
 
   const results = useMentionLookupService(queryString);
 
-  const checkForSlashTriggerMatch = useBasicTypeaheadTriggerMatch('/', {
-    minLength: 0,
-  });
+  const [hasFocus, setHasFocus] = useState(true);
+
+  useLayoutEffect(() => {
+     return mergeRegister(
+       editor.registerCommand(FOCUS_COMMAND, () => {setHasFocus(true); return false},COMMAND_PRIORITY_LOW),
+     );
+  }, [editor]);
 
   const options = useMemo(
     () =>
@@ -269,7 +272,6 @@ export default function MentionsPlugin(): JSX.Element | null {
         }
         mentionNode.insertAfter(spaceNode);
         spaceNode.select();
-        console.log('closing');
         closeMenu();
       });
     },
@@ -278,11 +280,9 @@ export default function MentionsPlugin(): JSX.Element | null {
 
   const checkForMentionMatch = useCallback(
     (text: string) => {
-      const mentionMatch = getPossibleQueryMatch(text);
-      const slashMatch = checkForSlashTriggerMatch(text, editor);
-      return !slashMatch && mentionMatch ? mentionMatch : null;
+      return getPossibleQueryMatch(text);
     },
-    [checkForSlashTriggerMatch, editor],
+    [editor],
   );
 
   return (
@@ -295,7 +295,34 @@ export default function MentionsPlugin(): JSX.Element | null {
         anchorElementRef,
         { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex },
       ) =>
-        anchorElementRef?.current && results.length
+        {
+           const handleHideDropdown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+              setHasFocus(false);
+            } else {
+              setHasFocus(true);
+            }
+          };
+
+          const handleClickOutside = (event: Event) => {
+            if (editor.getRootElement() && !editor.getRootElement()?.contains(event.target as Node) &&
+              !anchorElementRef.current?.contains(event.target as Node)) {
+              setHasFocus(false);
+            } else {
+              setHasFocus(true);
+            }
+          };
+
+          useEffect(() => {
+            document.addEventListener('keydown', handleHideDropdown, true);
+            document.addEventListener('mousedown', handleClickOutside, true);
+            return () => {
+              document.removeEventListener('keydown', handleHideDropdown, true);
+              document.removeEventListener('mousedown', handleClickOutside, true);
+            };
+          });
+
+          return anchorElementRef?.current && results.length && hasFocus
           ? ReactDOM.createPortal(
               <div style={{ marginTop: '25px' }}>
                 <div className="bg-white border rounded shadow w-min-[150px] w-max">
@@ -319,8 +346,10 @@ export default function MentionsPlugin(): JSX.Element | null {
               </div>,
               anchorElementRef.current,
             )
-          : null
+          : null}
       }
+      // anchorClassName={`${hasFocus ? '' : "!hidden h-0"}`}
+
     />
   );
 }

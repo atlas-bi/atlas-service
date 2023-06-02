@@ -3,7 +3,6 @@ import {
   LexicalTypeaheadMenuPlugin,
   type QueryMatch,
   TypeaheadOption,
-  useBasicTypeaheadTriggerMatch,
 } from '@lexical/react/LexicalTypeaheadMenuPlugin';
 import emoji from 'emojilib';
 import { $createTextNode, type TextNode } from 'lexical';
@@ -77,16 +76,20 @@ const SUGGESTION_LIST_LENGTH_LIMIT = 5;
 
 const emojiCache = new Map();
 
+type Emoji={
+  [x: string]: Array<string>
+  }
+
 const emojiLookupService = {
   search(
     name: string,
-    callback: (results: Array<string, string>) => void,
+    callback: (results: [string, unknown][]) => void,
   ): void {
     setTimeout(async () => {
       const results = Object.entries(
-        Object.keys(emoji).reduce((filtered, k) => {
-          if (emoji[k].filter((x) => x.indexOf(name) !== -1).length > 0) {
-            filtered[k] = emoji[k][0];
+        Object.keys(emoji).reduce((filtered: {[x:string]: string}, k: string) => {
+          if ((emoji as Emoji)[k].filter((x: string) => x.indexOf(name) !== -1).length > 0) {
+            filtered[k] = (emoji as Emoji)[k][0].toString();
           }
 
           return filtered;
@@ -103,7 +106,7 @@ const emojiLookupService = {
 };
 
 function useEmojiLookupService(queryString: string | null) {
-  const [results, setResults] = useState<Array<string, string>>([]);
+  const [results, setResults] = useState<[string, unknown][]>([]);
 
   useEffect(() => {
     const cachedResults = emojiCache.get(queryString);
@@ -193,7 +196,7 @@ function EmojiTypeaheadMenuItem({
   }
 
   return (
-    <React.Fragment key={option.name.slug}>
+    <React.Fragment key={option.name[0]}>
       <div
         tabIndex={-1}
         className={className}
@@ -221,9 +224,7 @@ export default function EmojiPlugin(): JSX.Element | null {
 
   const results = useEmojiLookupService(queryString);
 
-  const checkForSlashTriggerMatch = useBasicTypeaheadTriggerMatch('/', {
-    minLength: 0,
-  });
+  const [hasFocus, setHasFocus] = useState(true);
 
   const options = useMemo(
     () =>
@@ -253,11 +254,9 @@ export default function EmojiPlugin(): JSX.Element | null {
 
   const checkForEmojiMatch = useCallback(
     (text: string) => {
-      const mentionMatch = getPossibleQueryMatch(text);
-      const slashMatch = checkForSlashTriggerMatch(text, editor);
-      return !slashMatch && mentionMatch ? mentionMatch : null;
+      return getPossibleQueryMatch(text);
     },
-    [checkForSlashTriggerMatch, editor],
+    [editor],
   );
 
   return (
@@ -270,7 +269,33 @@ export default function EmojiPlugin(): JSX.Element | null {
         anchorElementRef,
         { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex },
       ) =>
-        anchorElementRef && results.length
+      {
+        const handleHideDropdown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+              setHasFocus(false);
+            } else {
+              setHasFocus(true);
+            }
+          };
+
+          const handleClickOutside = (event: Event) => {
+            if (editor.getRootElement() && !editor.getRootElement()?.contains(event.target as Node) &&
+              !anchorElementRef.current?.contains(event.target as Node)) {
+              setHasFocus(false);
+            } else {
+              setHasFocus(true);
+            }
+          };
+
+          useEffect(() => {
+            document.addEventListener('keydown', handleHideDropdown, true);
+            document.addEventListener('mousedown', handleClickOutside, true);
+            return () => {
+              document.removeEventListener('keydown', handleHideDropdown, true);
+              document.removeEventListener('mousedown', handleClickOutside, true);
+            };
+          });
+       return anchorElementRef?.current && results.length && hasFocus
           ? ReactDOM.createPortal(
               <div style={{ marginTop: '25px' }}>
                 <div className="bg-white border rounded shadow w-min-[150px] w-max">
@@ -286,7 +311,7 @@ export default function EmojiPlugin(): JSX.Element | null {
                       onMouseEnter={() => {
                         setHighlightedIndex(i);
                       }}
-                      key={option.name.slug}
+                      key={option.name[0]}
                       option={option}
                     />
                   ))}
@@ -295,6 +320,8 @@ export default function EmojiPlugin(): JSX.Element | null {
               anchorElementRef.current,
             )
           : null
+
+      }
       }
     />
   );
