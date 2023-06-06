@@ -76,24 +76,27 @@ const SUGGESTION_LIST_LENGTH_LIMIT = 5;
 
 const emojiCache = new Map();
 
-type Emoji={
-  [x: string]: Array<string>
-  }
+type Emoji = {
+  [x: string]: Array<string>;
+};
 
 const emojiLookupService = {
-  search(
-    name: string,
-    callback: (results: [string, unknown][]) => void,
-  ): void {
+  search(name: string, callback: (results: [string, unknown][]) => void): void {
     setTimeout(async () => {
       const results = Object.entries(
-        Object.keys(emoji).reduce((filtered: {[x:string]: string}, k: string) => {
-          if ((emoji as Emoji)[k].filter((x: string) => x.indexOf(name) !== -1).length > 0) {
-            filtered[k] = (emoji as Emoji)[k][0].toString();
-          }
+        Object.keys(emoji).reduce(
+          (filtered: { [x: string]: string }, k: string) => {
+            if (
+              (emoji as Emoji)[k].filter((x: string) => x.indexOf(name) !== -1)
+                .length > 0
+            ) {
+              filtered[k] = (emoji as Emoji)[k][0].toString();
+            }
 
-          return filtered;
-        }, {}),
+            return filtered;
+          },
+          {},
+        ),
       ).slice(0, SUGGESTION_LIST_LENGTH_LIMIT);
 
       if (results) {
@@ -268,34 +271,36 @@ export default function EmojiPlugin(): JSX.Element | null {
       menuRenderFn={(
         anchorElementRef,
         { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex },
-      ) =>
-      {
+      ) => {
         const handleHideDropdown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-              setHasFocus(false);
-            } else {
-              setHasFocus(true);
-            }
-          };
+          if (event.key === 'Escape') {
+            setHasFocus(false);
+          } else {
+            setHasFocus(true);
+          }
+        };
 
-          const handleClickOutside = (event: Event) => {
-            if (editor.getRootElement() && !editor.getRootElement()?.contains(event.target as Node) &&
-              !anchorElementRef.current?.contains(event.target as Node)) {
-              setHasFocus(false);
-            } else {
-              setHasFocus(true);
-            }
-          };
+        const handleClickOutside = (event: Event) => {
+          if (
+            editor.getRootElement() &&
+            !editor.getRootElement()?.contains(event.target as Node) &&
+            !anchorElementRef.current?.contains(event.target as Node)
+          ) {
+            setHasFocus(false);
+          } else {
+            setHasFocus(true);
+          }
+        };
 
-          useEffect(() => {
-            document.addEventListener('keydown', handleHideDropdown, true);
-            document.addEventListener('mousedown', handleClickOutside, true);
-            return () => {
-              document.removeEventListener('keydown', handleHideDropdown, true);
-              document.removeEventListener('mousedown', handleClickOutside, true);
-            };
-          });
-       return anchorElementRef?.current && results.length && hasFocus
+        useEffect(() => {
+          document.addEventListener('keydown', handleHideDropdown, true);
+          document.addEventListener('mousedown', handleClickOutside, true);
+          return () => {
+            document.removeEventListener('keydown', handleHideDropdown, true);
+            document.removeEventListener('mousedown', handleClickOutside, true);
+          };
+        });
+        return anchorElementRef?.current && results.length && hasFocus
           ? ReactDOM.createPortal(
               <div style={{ marginTop: '25px' }}>
                 <div className="bg-white border rounded shadow w-min-[150px] w-max">
@@ -319,10 +324,8 @@ export default function EmojiPlugin(): JSX.Element | null {
               </div>,
               anchorElementRef.current,
             )
-          : null
-
-      }
-      }
+          : null;
+      }}
     />
   );
 }

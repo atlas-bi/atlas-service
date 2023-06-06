@@ -1,13 +1,20 @@
 import type { User } from '@prisma/client';
 import { useEffect, useState } from 'react';
+import { FullUserFields, SlimUserFields } from '~/models/user.server';
 
 import { Editor } from './edit';
 import { Meta } from './meta';
 
-export function Sidebar({ profile, user }: { profile: User; user: User }) {
+export function Sidebar({
+  profile,
+  user,
+}: {
+  profile: FullUserFields;
+  user: SlimUserFields;
+}) {
   const [editing, setEditing] = useState(false);
-  const [activeUser, setActiveUser] = useState<User>(user);
-  const [activeProfile, setActiveProfile] = useState<User>(profile);
+  const [activeUser, setActiveUser] = useState<SlimUserFields>(user);
+  const [activeProfile, setActiveProfile] = useState<FullUserFields>(profile);
 
   useEffect(() => setActiveProfile(profile), [profile]);
   useEffect(() => setActiveUser(user), [user]);

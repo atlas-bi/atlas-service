@@ -1,11 +1,4 @@
-// import { faMagnifyingGlass, faXmark } from '@fortawesome/free-solid-svg-icons';
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  type ActionArgs,
-  type LoaderArgs,
-  type Session,
-  json,
-} from '@remix-run/node';
+import { type ActionArgs, type LoaderArgs, json } from '@remix-run/node';
 import {
   Form,
   useActionData,
@@ -21,36 +14,28 @@ import {
   Search,
   Slash,
 } from 'lucide-react';
-import { Queue } from 'quirrel/remix';
 import { useEffect, useRef, useState } from 'react';
 import { namedAction } from 'remix-utils';
-import { EmojiFinder } from '~/components/Emoji';
-import { LabelCreator, LabelTag } from '~/components/Labels';
 import { MiniUser } from '~/components/User';
 import { getLogs } from '~/models/joblog.server';
-import {
-  createLabel,
-  deleteLabel,
-  getLabels,
-  updateLabel,
-} from '~/models/label.server';
 import searchRefreshQueue from '~/queues/search_refresh.server';
 import userRefreshQueue from '~/queues/user_refresh.server';
 import { authenticator } from '~/services/auth.server';
-import { requireUser } from '~/services/session.server';
 
 export async function loader({ request, params }: LoaderArgs) {
-  console.log('url', request.url);
-  const user = await authenticator.isAuthenticated(request, {
-    failureRedirect: `/auth/saml/?returnTo=${encodeURI(request.url)}`,
+  await authenticator.isAuthenticated(request, {
+    failureRedirect: `/auth/?returnTo=${encodeURI(
+      new URL(request.url).pathname,
+    )}`,
   });
-  return json({ user, jobLogs: await getLogs() });
+  return json({ jobLogs: await getLogs() });
 }
 
 export async function action({ request }: ActionArgs) {
-  console.log('in action');
   const user = await authenticator.isAuthenticated(request, {
-    failureRedirect: `/auth/saml/?returnTo=${encodeURI(request.url)}`,
+    failureRedirect: `/auth/?returnTo=${encodeURI(
+      new URL(request.url).pathname,
+    )}`,
   });
 
   return namedAction(request, {
@@ -69,7 +54,7 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function Index() {
-  const { user, jobLogs } = useLoaderData<typeof loader>();
+  const { jobLogs } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [logs, setLogs] = useState(jobLogs);
   const [count, setCount] = useState(0);
@@ -95,7 +80,6 @@ export default function Index() {
   }, [fetcher]);
 
   const submitForm = useSubmit();
-  const filterInput = useRef();
 
   return (
     <>

@@ -16,16 +16,32 @@ const client = new MeiliSearch({
   apiKey: process.env.MEILI_MASTER_KEY,
 });
 
+export type SlimUserFields = {
+  id: number;
+  email: string;
+  lastName: string | null;
+  firstName: string | null;
+  slug: string;
+};
+
+// used for the auth user
 const slimUserFields = {
   id: true,
   email: true,
   lastName: true,
   firstName: true,
   slug: true,
-  profilePhoto: true,
 };
 
-const fullUserFields = { ...slimUserFields, bio: true };
+export type FullUserFields = SlimUserFields & {
+  profilePhoto: string | null;
+  bio: string | null;
+};
+export const fullUserFields = {
+  ...slimUserFields,
+  profilePhoto: true,
+  bio: true,
+};
 
 const slugger = (email: string) => {
   return slugify(email.substring(0, email.indexOf('@')).replace('.', '-'), {
@@ -111,19 +127,12 @@ export async function updateUserProps(
   lastName: User['lastName'],
   groups: Group['name'][],
   profilePhoto: User['profilePhoto'],
-) {
+): Promise<SlimUserFields> {
   await getOrCreateUser(email);
 
   const groupModels = groups
     ? await Promise.all(groups?.map(async (group) => getOrCreateGroup(group)))
     : undefined;
-
-  const existingGroups = await prisma.user.findUnique({
-    where: { email },
-    select: { groups: { select: { id: true } } },
-  });
-
-  const newGroupIds = groupModels?.map((group: Group) => Number(group.id));
 
   const user = await prisma.user.update({
     where: { email },
@@ -133,7 +142,7 @@ export async function updateUserProps(
       profilePhoto,
       groups: {
         set: groupModels
-          ? groupModels.map((group: Group) => ({
+          ? groupModels.map((group: { id: number }) => ({
               id: Number(group.id),
             }))
           : [],

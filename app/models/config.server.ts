@@ -86,11 +86,17 @@ export async function getRequestType({ id }) {
   });
 }
 
-export async function getRequestTypesLite() {
-  return prisma.requestType.findMany({
+export type requestTypeLite = {
+  id: number;
+  name: string;
+  menuText: string;
+};
+
+export const getRequestTypesLite = async (): Promise<requestTypeLite[]> =>
+  prisma.requestType.findMany({
     select: { id: true, name: true, menuText: true },
   });
-}
+
 export async function getRequestCategories() {
   return prisma.requestCategory.findMany({
     select: { id: true, name: true, isDefault: true },

@@ -1,19 +1,18 @@
-import { cn } from '@/lib/utils';
-import { Link, useLoaderData } from '@remix-run/react';
-import { useEffect, useRef, useState } from 'react';
-import * as React from 'react';
+import type { RequestType } from '@prisma/client';
+import { Link } from '@remix-run/react';
 import Image from 'remix-image';
+import { requestTypeLite } from '~/models/config.server';
 
-import type { loader } from '../root';
 import { Links } from './Links';
 import { Notifications } from './Notifications';
 import { Search } from './Search';
 import { UserNav } from './UserNav';
 
-export default function Nav() {
-  const requestDropdownMenu = useRef<HTMLDivElement>(null);
-  const profileDropdownMenu = useRef<HTMLDivElement>(null);
-
+export default function Nav({
+  requestTypes,
+}: {
+  requestTypes: requestTypeLite[];
+}) {
   return (
     <div className="border-b">
       <div className="flex h-16 items-center px-4 container">
@@ -28,7 +27,6 @@ export default function Nav() {
                     width: 35,
                     height: 35,
                   },
-                  placeholder: 'blur',
                   maxWidth: 35,
                 },
               ]}

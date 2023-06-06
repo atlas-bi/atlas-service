@@ -3,7 +3,9 @@ import { sharpTransformer } from 'remix-image-sharp';
 import { MemoryCache, imageLoader } from 'remix-image/server';
 
 const config = {
-  selfUrl: 'http://' + process.env.HOSTNAME,
+  selfUrl:
+    (process.env.SSL_CERTIFICATE ? 'https://' : 'http://') +
+    process.env.HOSTNAME,
   cache: new MemoryCache(),
   transformer: sharpTransformer,
 };

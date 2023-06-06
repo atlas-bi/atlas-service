@@ -16,6 +16,7 @@ async function login(request: Request) {
   } catch (e) {}
 
   // call authenticate to complete the login and set returnTo as the successRedirect
+  // in the access-denied we should have a button to try ldap login
   return authenticator.authenticate('saml', request, {
     successRedirect,
     failureRedirect: '/access-denied',

@@ -1,10 +1,5 @@
-import type { RequestCategory, RequestType, User } from '@prisma/client';
-import {
-  type ActionArgs,
-  type LoaderArgs,
-  type Session,
-  json,
-} from '@remix-run/node';
+import type { RequestCategory } from '@prisma/client';
+import { type ActionArgs, type LoaderArgs, json } from '@remix-run/node';
 import {
   Form,
   useActionData,
@@ -12,16 +7,10 @@ import {
   useNavigation,
 } from '@remix-run/react';
 import * as React from 'react';
-import RequestTypeEditor from '~/components/RequestTypeEditor';
 import {
   createRequestCategory,
-  createRequestType,
   deleteRequestCategory,
-  deleteRequestType,
-  editRequestType,
   getRequestCategories,
-  getRequestTypes,
-  setRequestCategoryDefault,
 } from '~/models/config.server';
 import { authenticator } from '~/services/auth.server';
 import { requireUser } from '~/services/session.server';
@@ -34,13 +23,10 @@ type Errors = {
 
 export async function loader({ request, params }: LoaderArgs) {
   const user = await authenticator.isAuthenticated(request, {
-    failureRedirect: `/auth/saml/?returnTo=${encodeURI(request.url)}`,
-
-    // or to go back to the root `/`
-    //failureRedirect: "/auth/saml/",
+    failureRedirect: `/auth/?returnTo=${encodeURI(
+      new URL(request.url).pathname,
+    )}`,
   });
-
-  // should authorizeAdmin here...
   const requestCategories = await getRequestCategories();
   return json({ requestCategories, user });
 }

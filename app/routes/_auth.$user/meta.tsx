@@ -1,24 +1,31 @@
 import type { User } from '@prisma/client';
 import { Link } from '@remix-run/react';
 import { Mail } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Dispatch, useEffect, useState } from 'react';
 import SlimEditor from '~/components/editor/SlimEditor';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
 import { Separator } from '~/components/ui/separator';
 import { H1, H3 } from '~/components/ui/typography';
+import { FullUserFields, SlimUserFields } from '~/models/user.server';
 
-import { Editor } from './edit';
-
-const initials = (user: User) => {
+const initials = (user: User | FullUserFields | SlimUserFields) => {
   return (
     (user.firstName?.slice(0, 1) || 'U') + (user.lastName?.slice(0, 1) || '')
   );
 };
 
-export function Meta({ user, profile, setter }: { user: User; profile: User }) {
-  const [activeUser, setActiveUser] = useState<User>(user);
-  const [activeProfile, setActiveProfile] = useState<User>(profile);
+export function Meta({
+  user,
+  profile,
+  setter,
+}: {
+  user: SlimUserFields;
+  profile: FullUserFields;
+  setter: Dispatch<boolean>;
+}) {
+  const [activeUser, setActiveUser] = useState<SlimUserFields>(user);
+  const [activeProfile, setActiveProfile] = useState<FullUserFields>(profile);
 
   useEffect(() => setActiveProfile(profile), [profile]);
   useEffect(() => setActiveUser(user), [user]);
@@ -43,7 +50,9 @@ export function Meta({ user, profile, setter }: { user: User; profile: User }) {
 
       <div className="space-y-5 flex flex-col">
         <div className="flex flex-col space-y-4">
-          <SlimEditor value={activeProfile.bio} readonly={true} />
+          {activeProfile.bio && (
+            <SlimEditor value={activeProfile.bio} readonly={true} />
+          )}
           {activeUser.id === activeProfile.id && (
             <Button variant="secondary" onMouseUp={() => setter(true)}>
               Edit Profile

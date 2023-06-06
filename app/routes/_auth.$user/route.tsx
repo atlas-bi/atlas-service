@@ -10,7 +10,12 @@ import { MeiliSearch } from 'meilisearch';
 import { useEffect, useState } from 'react';
 import { namedAction } from 'remix-utils';
 import invariant from 'tiny-invariant';
-import { getUserBySlug } from '~/models/user.server';
+import { ComingSoon } from '~/components/ComingSoon';
+import {
+  FullUserFields,
+  SlimUserFields,
+  getUserBySlug,
+} from '~/models/user.server';
 import { updateBio as updateUserBio } from '~/models/user.server';
 import { userIndex } from '~/search.server';
 import { authenticator } from '~/services/auth.server';
@@ -18,16 +23,18 @@ import { authenticator } from '~/services/auth.server';
 import { Sidebar } from './sidebar';
 
 export async function action({ request }: ActionArgs) {
-  console.log('in action');
   const user = await authenticator.isAuthenticated(request, {
-    failureRedirect: `/auth/saml/?returnTo=${encodeURI(request.url)}`,
+    failureRedirect: `/auth/?returnTo=${encodeURI(
+      new URL(request.url).pathname,
+    )}`,
   });
 
   return namedAction(request, {
     async updateBio() {
       const formData = await request.formData();
       const { bio, id } = Object.fromEntries(formData);
-      if (Number(id) === user.id) updateUserBio({ id: user.id, bio });
+      if (Number(id) === user.id)
+        updateUserBio({ id: user.id, bio: bio.toString() });
       return null;
     },
   });
@@ -35,10 +42,15 @@ export async function action({ request }: ActionArgs) {
 
 export async function loader({ request, params }: LoaderArgs) {
   const user = await authenticator.isAuthenticated(request, {
-    failureRedirect: `/auth/saml/?returnTo=${encodeURI(request.url)}`,
+    failureRedirect: `/auth/?returnTo=${encodeURI(
+      new URL(request.url).pathname,
+    )}`,
   });
 
   const { user: slug } = params;
+
+  invariant(slug);
+
   const profile = await getUserBySlug(slug);
 
   if (!profile) {
@@ -66,8 +78,8 @@ export async function loader({ request, params }: LoaderArgs) {
 
 export default function Index() {
   const { user, profile } = useLoaderData<typeof loader>();
-  const [activeProfile, setActiveProfile] = useState<User>(profile);
-  const [activeUser, setActiveUser] = useState<User>(user);
+  const [activeProfile, setActiveProfile] = useState<FullUserFields>(profile);
+  const [activeUser, setActiveUser] = useState<SlimUserFields>(user);
 
   useEffect(() => setActiveUser(user), [user]);
   useEffect(() => setActiveProfile(profile), [profile]);
@@ -78,7 +90,7 @@ export default function Index() {
         <Sidebar profile={activeProfile} user={activeUser} />
       </div>
       <div>
-        hey {activeProfile.firstName}
+        <ComingSoon />
         <br />
       </div>
     </div>

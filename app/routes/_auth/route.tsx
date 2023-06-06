@@ -1,30 +1,25 @@
 import { type LoaderArgs, json } from '@remix-run/node';
-import { Outlet, PrefetchPageLinks, useLoaderData } from '@remix-run/react';
+import { Outlet, useLoaderData } from '@remix-run/react';
 import Nav from '~/components/nav/Nav';
-// import { json } from "@remix-run/node";
-// import type { LoaderArgs } from "@remix-run/node";
 import { getRequestTypesLite } from '~/models/config.server';
 import { authenticator } from '~/services/auth.server';
-
-// import { getSession, getUser, sessionStorage } from '~/session.server';
+import { commitSession, getSession } from '~/services/session.server';
 
 export async function loader({ request }: LoaderArgs) {
-  // const session = await getSession(request);
   const user = await authenticator.isAuthenticated(request, {
-    failureRedirect: `/auth/saml/?returnTo=${encodeURI(request.url)}`,
-
-    // or to go back to the root `/`
-    //failureRedirect: "/auth/saml/",
+    failureRedirect: `/auth/?returnTo=${encodeURI(
+      new URL(request.url).pathname,
+    )}`,
   });
-  console.log(user);
-  // return json({ user });
+
   const navRequestTypes = await getRequestTypesLite();
 
+  let session = await getSession(request.headers.get('cookie'));
+
   return json({
-    // headers: {
-    //   'Set-Cookie': await sessionStorage.commitSession(session),
-    // },
-    // user: await getUser(request),
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
     user,
     navRequestTypes,
   });
@@ -32,17 +27,10 @@ export async function loader({ request }: LoaderArgs) {
 
 const Authed = () => {
   const { user, navRequestTypes } = useLoaderData<typeof loader>();
-  console.log(user);
+
   return (
     <>
-      {/* {navRequestTypes &&
-          navRequestTypes.map((rt: RequestType) => (
-            <PrefetchPageLinks
-              key={rt.id}
-              page={`/request/new?type=${rt.name}`}
-            />
-          ))}*/}
-      {user && <Nav />}
+      {user && <Nav requestTypes={navRequestTypes} />}
       <div className="container">
         <Outlet />
       </div>

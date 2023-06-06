@@ -1,16 +1,5 @@
 import { createCookieSessionStorage } from '@remix-run/node';
-// export the whole sessionStorage object
-// you can also export the methods individually for your own usage
-// import type { User } from '@prisma/client';
-// import {
-//   type Session,
-//   createCookieSessionStorage,
-//   redirect,
-// } from '@remix-run/node';
 import invariant from 'tiny-invariant';
-
-// import { getUserById } from '~/models/user.server';
-// import { getIdp, sp } from '~/saml.server';
 
 invariant(process.env.SESSION_SECRET, 'SESSION_SECRET must be set');
 
@@ -53,64 +42,6 @@ export async function getUser(request: Request): Promise<User | null> {
 
   return null;
 }
-
-// type Policy<PolicyResult> = (
-//   request: Request,
-//   groups: undefined | [string | undefined],
-//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//   callback: (input: PolicyResult) => Promise<any>,
-//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-// ) => Promise<any>;
-
-// export const authorize: Policy<{
-//   user: User;
-//   session: Session;
-// }> = async (request, groups = undefined, callback) => {
-//   const session = await getSession(request);
-//   const redirectTo: string = new URL(request.url).pathname;
-//   const user = await getUser(request);
-//   try {
-//     // send back to login page if the user doesn't exist.
-//     if (!user) {
-//       const searchParams = new URLSearchParams([['redirectTo', redirectTo]]);
-
-//       throw redirect(`/?${searchParams}`, {
-//         headers: {
-//           'Set-Cookie': await sessionStorage.destroySession(session),
-//         },
-//       });
-//     }
-
-//     // potentially check user for required groups here.
-//   } catch {
-//     // destroy session and try to login
-//     // try again, in case the saml server is broken. Will
-//     // redirect to /login to use ldap auth as a fallback.
-//     try {
-//       const idp = await getIdp();
-//       const { context } = sp.createLoginRequest(idp, 'redirect');
-//       const url = new URL(request.url);
-//       const pathname = url.searchParams.get('redirectTo') || '/';
-//       return redirect(context + '&RelayState=' + pathname, {
-//         headers: {
-//           'Set-Cookie': await sessionStorage.destroySession(session),
-//         },
-//       });
-//     } catch {
-//       // only print error if saml is enabled.
-//       if (process.env.SAML_IDP_METADATA) {
-//         session.flash('loginError', `Could not authenticate you from SAML.`);
-//       }
-
-//       throw redirect('/login', {
-//         headers: {
-//           'Set-Cookie': await sessionStorage.commitSession(session),
-//         },
-//       });
-//     }
-//   }
-//   return callback({ user, session });
-// };
 
 export async function requireUserId(
   request: Request,

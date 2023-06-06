@@ -47,10 +47,12 @@ import { requireUser } from '~/services/session.server';
 
 export async function loader({ request, params }: LoaderArgs) {
   const user = await authenticator.isAuthenticated(request, {
-    failureRedirect: `/auth/saml/?returnTo=${encodeURI(request.url)}`,
+    failureRedirect: `/auth/?returnTo=${encodeURI(
+      new URL(request.url).pathname,
+    )}`,
 
     // or to go back to the root `/`
-    //failureRedirect: "/auth/saml/",
+    //failureRedirect: "/auth/",
   });
 
   invariant(params.requestId, 'requestId not found');

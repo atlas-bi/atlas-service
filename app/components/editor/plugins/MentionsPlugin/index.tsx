@@ -4,14 +4,26 @@ import {
   type QueryMatch,
   TypeaheadOption,
 } from '@lexical/react/LexicalTypeaheadMenuPlugin';
-import { $createTextNode, type TextNode, COMMAND_PRIORITY_LOW, FOCUS_COMMAND } from 'lexical';
+import { mergeRegister } from '@lexical/utils';
+import {
+  $createTextNode,
+  COMMAND_PRIORITY_LOW,
+  FOCUS_COMMAND,
+  type TextNode,
+} from 'lexical';
 import { type Hit, type Hits } from 'meilisearch';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Separator } from '~/components/ui/separator';
-import {mergeRegister} from '@lexical/utils'
+
 import { $createMentionNode } from '../../nodes/MentionNode';
 
 const PUNCTUATION =
@@ -236,9 +248,16 @@ export default function MentionsPlugin(): JSX.Element | null {
   const [hasFocus, setHasFocus] = useState(true);
 
   useLayoutEffect(() => {
-     return mergeRegister(
-       editor.registerCommand(FOCUS_COMMAND, () => {setHasFocus(true); return false},COMMAND_PRIORITY_LOW),
-     );
+    return mergeRegister(
+      editor.registerCommand(
+        FOCUS_COMMAND,
+        () => {
+          setHasFocus(true);
+          return false;
+        },
+        COMMAND_PRIORITY_LOW,
+      ),
+    );
   }, [editor]);
 
   const options = useMemo(
@@ -294,35 +313,37 @@ export default function MentionsPlugin(): JSX.Element | null {
       menuRenderFn={(
         anchorElementRef,
         { selectedIndex, selectOptionAndCleanUp, setHighlightedIndex },
-      ) =>
-        {
-           const handleHideDropdown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-              setHasFocus(false);
-            } else {
-              setHasFocus(true);
-            }
+      ) => {
+        const handleHideDropdown = (event: KeyboardEvent) => {
+          if (event.key === 'Escape') {
+            setHasFocus(false);
+          } else {
+            setHasFocus(true);
+          }
+        };
+
+        const handleClickOutside = (event: Event) => {
+          if (
+            editor.getRootElement() &&
+            !editor.getRootElement()?.contains(event.target as Node) &&
+            !anchorElementRef.current?.contains(event.target as Node)
+          ) {
+            setHasFocus(false);
+          } else {
+            setHasFocus(true);
+          }
+        };
+
+        useEffect(() => {
+          document.addEventListener('keydown', handleHideDropdown, true);
+          document.addEventListener('mousedown', handleClickOutside, true);
+          return () => {
+            document.removeEventListener('keydown', handleHideDropdown, true);
+            document.removeEventListener('mousedown', handleClickOutside, true);
           };
+        });
 
-          const handleClickOutside = (event: Event) => {
-            if (editor.getRootElement() && !editor.getRootElement()?.contains(event.target as Node) &&
-              !anchorElementRef.current?.contains(event.target as Node)) {
-              setHasFocus(false);
-            } else {
-              setHasFocus(true);
-            }
-          };
-
-          useEffect(() => {
-            document.addEventListener('keydown', handleHideDropdown, true);
-            document.addEventListener('mousedown', handleClickOutside, true);
-            return () => {
-              document.removeEventListener('keydown', handleHideDropdown, true);
-              document.removeEventListener('mousedown', handleClickOutside, true);
-            };
-          });
-
-          return anchorElementRef?.current && results.length && hasFocus
+        return anchorElementRef?.current && results.length && hasFocus
           ? ReactDOM.createPortal(
               <div style={{ marginTop: '25px' }}>
                 <div className="bg-white border rounded shadow w-min-[150px] w-max">
@@ -346,10 +367,9 @@ export default function MentionsPlugin(): JSX.Element | null {
               </div>,
               anchorElementRef.current,
             )
-          : null}
-      }
+          : null;
+      }}
       // anchorClassName={`${hasFocus ? '' : "!hidden h-0"}`}
-
     />
   );
 }

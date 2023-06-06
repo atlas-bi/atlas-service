@@ -1,18 +1,6 @@
-// import { faMagnifyingGlass, faXmark } from '@fortawesome/free-solid-svg-icons';
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { Group, Label, User } from '@prisma/client';
-import {
-  type ActionArgs,
-  type LoaderArgs,
-  type Session,
-  json,
-} from '@remix-run/node';
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useSubmit,
-} from '@remix-run/react';
+import { type ActionArgs, type LoaderArgs, json } from '@remix-run/node';
+import { useLoaderData, useSubmit } from '@remix-run/react';
 import { MeiliSearch } from 'meilisearch';
 import { useEffect, useRef, useState } from 'react';
 import { namedAction } from 'remix-utils';
@@ -32,10 +20,9 @@ type LabelCount = Label & { _count: { requests: number }; groups: Group[] };
 
 export async function loader({ request, params }: LoaderArgs) {
   const user = await authenticator.isAuthenticated(request, {
-    failureRedirect: `/auth/saml/?returnTo=${encodeURI(request.url)}`,
-
-    // or to go back to the root `/`
-    //failureRedirect: "/auth/saml/",
+    failureRedirect: `/auth/?returnTo=${encodeURI(
+      new URL(request.url).pathname,
+    )}`,
   });
   const labels = await getLabels();
   const client = new MeiliSearch({

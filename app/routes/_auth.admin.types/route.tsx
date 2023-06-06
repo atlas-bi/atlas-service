@@ -1,16 +1,6 @@
-import type { RequestCategory, RequestType, User } from '@prisma/client';
-import {
-  type ActionArgs,
-  type LoaderArgs,
-  type Session,
-  json,
-} from '@remix-run/node';
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useNavigation,
-} from '@remix-run/react';
+import type { RequestType } from '@prisma/client';
+import { type ActionArgs, type LoaderArgs, json } from '@remix-run/node';
+import { useActionData, useLoaderData, useNavigation } from '@remix-run/react';
 import { MeiliSearch } from 'meilisearch';
 import * as React from 'react';
 import RequestTypeEditor from '~/components/RequestTypeEditor';
@@ -34,12 +24,10 @@ type Errors = {
 
 export async function loader({ request, params }: LoaderArgs) {
   const user = await authenticator.isAuthenticated(request, {
-    failureRedirect: `/auth/saml/?returnTo=${encodeURI(request.url)}`,
-
-    // or to go back to the root `/`
-    //failureRedirect: "/auth/saml/",
+    failureRedirect: `/auth/?returnTo=${encodeURI(
+      new URL(request.url).pathname,
+    )}`,
   });
-  // should authorizeAdmin here...
 
   const client = new MeiliSearch({
     host: process.env.MEILISEARCH_URL,

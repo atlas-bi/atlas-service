@@ -1,26 +1,20 @@
-import type { Request, User } from '@prisma/client';
-import { type Session, json } from '@remix-run/node';
+import type { Request } from '@prisma/client';
+import { json } from '@remix-run/node';
 import { NavLink, useLoaderData } from '@remix-run/react';
 import type { LoaderArgs } from '@remix-run/server-runtime';
 import { Activity, AtSign, Bell, Filter, User as UserIcon } from 'lucide-react';
 import { useState } from 'react';
 import { LabelTag } from '~/components/Labels';
 import { getRequests } from '~/models/request.server';
-// import { authorize } from '~/session.server';
 import { authenticator } from '~/services/auth.server';
 
 export async function loader({ request }: LoaderArgs) {
   const user = await authenticator.isAuthenticated(request, {
-    failureRedirect: `/auth/saml/?returnTo=${encodeURI(request.url)}`,
-
-    // or to go back to the root `/`
-    //failureRedirect: "/auth/saml/",
+    failureRedirect: `/auth/?returnTo=${encodeURI(
+      new URL(request.url).pathname,
+    )}`,
   });
 
-  // return authorize(
-  // request,
-  // undefined,
-  // async ({ user, session }: { user: User; session: Session }) => {
   const myRequests = await getRequests({ userId: user.id });
   const assignedRequests = await getRequests({ assigneeId: user.id });
   const watchedRequests = await getRequests({ watcherId: user.id });
@@ -32,8 +26,6 @@ export async function loader({ request }: LoaderArgs) {
     watchedRequests,
     mentionedRequests,
   });
-  // },
-  // );
 }
 
 export default function Index() {

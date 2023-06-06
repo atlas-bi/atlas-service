@@ -4,7 +4,6 @@ import {
   type ActionArgs,
   type LinksFunction,
   type LoaderArgs,
-  type Session,
   json,
   redirect,
 } from '@remix-run/node';
@@ -26,19 +25,16 @@ import { authenticator } from '~/services/auth.server';
 import { requireUser } from '~/services/session.server';
 
 export const links: LinksFunction = () => [
-  // { rel: 'stylesheet', href: remixImageStyles },
   { rel: 'stylesheet', href: editorStyles },
-  // { rel: 'stylesheet', href: stylesheet },
 ];
 
 export async function loader({ request }: LoaderArgs) {
   const user = await authenticator.isAuthenticated(request, {
-    failureRedirect: `/auth/saml/?returnTo=${encodeURI(request.url)}`,
-
-    // or to go back to the root `/`
-    //failureRedirect: "/auth/saml/",
+    failureRedirect: `/auth/?returnTo=${encodeURI(
+      new URL(request.url).pathname,
+    )}`,
   });
-  // here we can get the data for this route and return it
+
   const requestTypes = await getRequestTypes();
 
   const url = new URL(request.url);

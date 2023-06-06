@@ -1,11 +1,41 @@
 import type { User } from '@prisma/client';
 import { authenticate } from 'ldap-authentication';
+import invariant from 'tiny-invariant';
 import { updateUserProps } from '~/models/user.server';
 
 export type { User } from '@prisma/client';
 
-export async function verifyLogin(email: User['email'], password: string) {
-  // first login with ldap
+export async function verifyLogin(
+  email: User['email'],
+  password: string,
+): Promise<User> {
+  invariant(
+    process.env.LDAP_USERNAME,
+    'process.env.LDAP_USERNAME is required.',
+  );
+  invariant(
+    process.env.LDAP_PASSWORD,
+    'process.env.LDAP_PASSWORD is required.',
+  );
+  invariant(process.env.LDAP_BASE_DN, 'process.env.LDAP_BASE_DN is required.');
+  invariant(
+    process.env.LDAP_EMAIL_FIELD,
+    'process.env.LDAP_EMAIL_FIELD is required.',
+  );
+  invariant(process.env.LDAP_BASE_DN, 'process.env.LDAP_BASE_DN is required.');
+  invariant(
+    process.env.LDAP_USER_GROUP,
+    'process.env.LDAP_USER_GROUP is required.',
+  );
+  invariant(
+    process.env.LDAP_FIRSTNAME,
+    'process.env.LDAP_FIRSTNAME is required.',
+  );
+  invariant(
+    process.env.LDAP_LASTNAME,
+    'process.env.LDAP_LASTNAME is required.',
+  );
+  invariant(process.env.LDAP_HOST, 'process.env.LDAP_HOST is required.');
 
   const options = {
     ldapOpts: {
@@ -23,7 +53,7 @@ export async function verifyLogin(email: User['email'], password: string) {
     // groupMemberAttribute: process.env.LDAP_GROUP_NAME,
     starttls: process.env.LDAP_START_TLS === 'true',
     attributes: [
-      process.env.LDAP_PHOTO_FIELD,
+      process.env.LDAP_PHOTO_FIELD ? process.env.LDAP_PHOTO_FIELD : '',
       process.env.LDAP_FIRSTNAME,
       process.env.LDAP_LASTNAME,
       'memberOf',
@@ -32,9 +62,8 @@ export async function verifyLogin(email: User['email'], password: string) {
 
   try {
     const ldapUser = await authenticate(options);
-
     if (!ldapUser) {
-      return { user: undefined, error: undefined };
+      throw 'Invalid email or password.';
     }
 
     let profilePhoto = null;
@@ -72,34 +101,27 @@ export async function verifyLogin(email: User['email'], password: string) {
     };
 
     // update user info
-    return {
-      user: await updateUserProps(
-        email,
-        process.env.LDAP_FIRSTNAME
-          ? ldapUser[process.env.LDAP_FIRSTNAME]
-          : undefined,
-        process.env.LDAP_LASTNAME
-          ? ldapUser[process.env.LDAP_LASTNAME]
-          : undefined,
-        ldapUser.groups?.map((group: Group) => group.cn),
-        profilePhoto,
-      ),
-    };
+    return await updateUserProps(
+      email,
+      process.env.LDAP_FIRSTNAME
+        ? ldapUser[process.env.LDAP_FIRSTNAME]
+        : undefined,
+      process.env.LDAP_LASTNAME
+        ? ldapUser[process.env.LDAP_LASTNAME]
+        : undefined,
+      ldapUser.groups?.map((group: Group) => group.cn),
+      profilePhoto,
+    );
   } catch (err) {
     if (err.admin?.code === 'ENOTFOUND') {
-      return { error: 'LDAP Configuration Error: LDAP server unreachable.' };
+      throw 'LDAP Configuration Error: LDAP server unreachable.';
     }
     if (err.admin) {
-      return {
-        error: 'LDAP Admin Configuration Error: ' + err.admin.lde_message,
-      };
+      throw 'LDAP Admin Configuration Error: ' + err.admin.lde_message;
     }
     if (err.lde_message) {
-      return { error: 'LDAP Configuration Error: ' + err.lde_message };
+      throw 'LDAP Configuration Error: ' + err.lde_message;
     }
-
-    console.log(err);
-
-    return { user: undefined, error: undefined };
+    throw 'Invalid email or password';
   }
 }
