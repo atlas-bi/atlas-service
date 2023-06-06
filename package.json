@@ -59,9 +59,9 @@
   "dependencies": {
     "@authenio/samlify-node-xmllint": "^2.0.0",
     "@fontsource/inter": "^4.5.14",
-    "@lexical/clipboard": "^0.10.0",
-    "@lexical/html": "^0.10.0",
-    "@lexical/react": "^0.10.0",
+    "@lexical/clipboard": "^0.11.0",
+    "@lexical/html": "^0.11.0",
+    "@lexical/react": "^0.11.0",
     "@next-boost/hybrid-disk-cache": "^0.3.0",
     "@prisma/client": "^4.13.0",
     "@radix-ui/react-accordion": "^1.1.1",
@@ -125,8 +125,8 @@
     "isbot": "^3.6.10",
     "ldap-authentication": "github:shaozi/ldap-authentication#upgrade-ldapjs-3",
     "ldapjs-promise": "^3.0.0",
-    "lexical": "^0.10.0",
-    "lucide-react": "^0.220.0",
+    "lexical": "^0.11.0",
+    "lucide-react": "^0.233.0",
     "meilisearch": "^0.32.0",
     "meilisearch-medical-synonyms": "^1.2.0",
     "meilisearch-name-synonyms": "^1.1.0",
@@ -162,9 +162,9 @@
     "@semantic-release/commit-analyzer": "9.0.2",
     "@semantic-release/exec": "6.0.3",
     "@semantic-release/git": "10.0.1",
-    "@semantic-release/github": "8.0.7",
+    "@semantic-release/github": "8.1.0",
     "@semantic-release/npm": "10.0.3",
-    "@semantic-release/release-notes-generator": "11.0.1",
+    "@semantic-release/release-notes-generator": "11.0.2",
     "@testing-library/cypress": "^9.0.0",
     "@testing-library/dom": "^9.2.0",
     "@testing-library/jest-dom": "^5.16.5",
@@ -230,5 +230,5 @@
       "npm run format"
     ]
   },
-  "version": "1.0.0-rc.33"
+  "version": "1.0.0"
 }
