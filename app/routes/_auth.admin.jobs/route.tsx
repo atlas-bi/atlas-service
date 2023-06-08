@@ -83,7 +83,7 @@ export default function Index() {
 
   return (
     <>
-      <h3 className="title is-3">Run Jobs</h3>
+      <h3 className="text-lg font-medium">Run Jobs</h3>
       <div className="buttons">
         <button
           type="button"

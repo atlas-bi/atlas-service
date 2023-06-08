@@ -29,21 +29,10 @@ export async function loader({ request, params }: LoaderArgs) {
     )}`,
   });
 
-  const client = new MeiliSearch({
-    host: process.env.MEILISEARCH_URL,
-    apiKey: process.env.MEILI_MASTER_KEY,
-  });
-  const keys = await client.getKeys();
-
   const requestTypes = await getRequestTypes();
   return json({
     requestTypes,
     user,
-    MEILISEARCH_URL: process.env.MEILISEARCH_URL,
-    MEILISEARCH_KEY: keys.results.filter(
-      (x) => x.name === 'Default Search API Key',
-    )[0].key,
-    search: { groupIndex },
   });
 }
 
@@ -170,22 +159,32 @@ export async function action({ request }: ActionArgs) {
 
       await createRequestType({
         name: name.toString(),
-        description,
-        menuText,
+        description: description.toString(),
+        menuText: menuText.toString(),
         /* groups */
-        textFieldOneGroups: formData.getAll('textFieldOneGroups'),
-        textFieldTwoGroups: formData.getAll('textFieldTwoGroups'),
-        textFieldThreeGroups: formData.getAll('textFieldThreeGroups'),
-        textFieldFourGroups: formData.getAll('textFieldFourGroups'),
-        textFieldFiveGroups: formData.getAll('textFieldFiveGroups'),
-        booleanFieldOneGroups: formData.getAll('booleanFieldOneGroups'),
-        booleanFieldTwoGroups: formData.getAll('booleanFieldTwoGroups'),
-        booleanFieldThreeGroups: formData.getAll('booleanFieldThreeGroups'),
-        userFieldOneGroups: formData.getAll('userFieldOneGroups'),
-        userFieldTwoGroups: formData.getAll('userFieldTwoGroups'),
-        userFieldThreeGroups: formData.getAll('userFieldThreeGroups'),
-        requesterGroups: formData.getAll('requesterGroups'),
-        labelsGroups: formData.getAll('labelsGroups'),
+        textFieldOneGroups: formData.getAll('textFieldOneGroups') as string[],
+        textFieldTwoGroups: formData.getAll('textFieldTwoGroups') as string[],
+        textFieldThreeGroups: formData.getAll(
+          'textFieldThreeGroups',
+        ) as string[],
+        textFieldFourGroups: formData.getAll('textFieldFourGroups') as string[],
+        textFieldFiveGroups: formData.getAll('textFieldFiveGroups') as string[],
+        booleanFieldOneGroups: formData.getAll(
+          'booleanFieldOneGroups',
+        ) as string[],
+        booleanFieldTwoGroups: formData.getAll(
+          'booleanFieldTwoGroups',
+        ) as string[],
+        booleanFieldThreeGroups: formData.getAll(
+          'booleanFieldThreeGroups',
+        ) as string[],
+        userFieldOneGroups: formData.getAll('userFieldOneGroups') as string[],
+        userFieldTwoGroups: formData.getAll('userFieldTwoGroups') as string[],
+        userFieldThreeGroups: formData.getAll(
+          'userFieldThreeGroups',
+        ) as string[],
+        requesterGroups: formData.getAll('requesterGroups') as string[],
+        labelsGroups: formData.getAll('labelsGroups') as string[],
         showTextFieldOne: values.showTextFieldOne === 'on',
         showTextFieldTwo: values.showTextFieldTwo === 'on',
         showTextFieldThree: values.showTextFieldThree === 'on',
@@ -207,19 +206,19 @@ export async function action({ request }: ActionArgs) {
         requireUserFieldOne: values.requireUserFieldOne === 'on',
         requireUserFieldTwo: values.requireUserFieldTwo === 'on',
         requireUserFieldThree: values.requireUserFieldThree === 'on',
-        textFieldOneTitle,
-        textFieldTwoTitle,
-        textFieldThreeTitle,
-        textFieldFourTitle,
-        textFieldFiveTitle,
-        booleanFieldOneTitle,
-        booleanFieldTwoTitle,
-        booleanFieldThreeTitle,
-        userFieldOneTitle,
-        userFieldTwoTitle,
-        userFieldThreeTitle,
-        labelsTitle,
-        requesterTitle,
+        textFieldOneTitle: textFieldOneTitle.toString(),
+        textFieldTwoTitle: textFieldTwoTitle.toString(),
+        textFieldThreeTitle: textFieldThreeTitle.toString(),
+        textFieldFourTitle: textFieldFourTitle.toString(),
+        textFieldFiveTitle: textFieldFiveTitle.toString(),
+        booleanFieldOneTitle: booleanFieldOneTitle.toString(),
+        booleanFieldTwoTitle: booleanFieldTwoTitle.toString(),
+        booleanFieldThreeTitle: booleanFieldThreeTitle.toString(),
+        userFieldOneTitle: userFieldOneTitle.toString(),
+        userFieldTwoTitle: userFieldTwoTitle.toString(),
+        userFieldThreeTitle: userFieldThreeTitle.toString(),
+        labelsTitle: labelsTitle.toString(),
+        requesterTitle: requesterTitle.toString(),
         userId: user.id,
       });
 
@@ -240,8 +239,7 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function Index() {
-  const { requestTypes, MEILISEARCH_URL, MEILISEARCH_KEY, search } =
-    useLoaderData<typeof loader>();
+  const { requestTypes } = useLoaderData<typeof loader>();
 
   type ActionData = { errors?: Errors } | undefined | null;
   const actionData = useActionData<ActionData>();
@@ -269,22 +267,12 @@ export default function Index() {
 
   return (
     <>
-      <h2 className="is-3 title">Request Types</h2>
+      <h3 className="text-lg font-medium">Request Types</h3>
       {requestTypes?.length > 0 &&
         requestTypes.map((rt: RequestType) => (
-          <RequestTypeEditor
-            key={rt.id}
-            rt={rt}
-            MEILISEARCH_URL={MEILISEARCH_URL}
-            MEILISEARCH_KEY={MEILISEARCH_KEY}
-            searchIndex={search.groupIndex}
-          />
+          <RequestTypeEditor key={rt.id} rt={rt} />
         ))}
-      <RequestTypeEditor
-        MEILISEARCH_URL={MEILISEARCH_URL}
-        MEILISEARCH_KEY={MEILISEARCH_KEY}
-        searchIndex={search.groupIndex}
-      />
+      <RequestTypeEditor />
     </>
   );
 }

@@ -25,9 +25,6 @@ const Field = ({
   columnRequired,
   column = '',
   type,
-  MEILISEARCH_URL,
-  MEILISEARCH_KEY,
-  searchIndex,
   callback,
 }: {
   id: number;
@@ -37,9 +34,6 @@ const Field = ({
   columnGroups: number[];
   column?: string;
   type: string;
-  MEILISEARCH_URL: string;
-  MEILISEARCH_KEY: string;
-  searchIndex: string;
   callback: () => void;
 }) => {
   const [editorColumnName, setEditorColumnName] = useState(columnName);
@@ -54,11 +48,6 @@ const Field = ({
   const [groupSearch, setGroupSearch] = useState([]);
   const [groupSearchInput, setGroupSearchInput] = useState('');
   const labelGroupsRef = useRef<HTMLInputElement>();
-
-  const client = new MeiliSearch({
-    host: MEILISEARCH_URL,
-    apiKey: MEILISEARCH_KEY,
-  });
 
   useEffect(() => {
     setEditorColumnName(columnName);
@@ -254,10 +243,10 @@ const Field = ({
                     if (e.target.value == '') {
                       setGroupSearch([]);
                     } else {
-                      const matches = await client
-                        .index(searchIndex)
-                        .search(e.target.value, { limit: 20 });
-                      setGroupSearch(matches.hits);
+                      // const matches = await client
+                      //   .index(searchIndex)
+                      //   .search(e.target.value, { limit: 20 });
+                      // setGroupSearch(matches.hits);
                     }
                   }}
                 />
@@ -312,15 +301,7 @@ const Field = ({
   );
 };
 
-const RequestTypeEditor = ({
-  rt,
-  MEILISEARCH_URL,
-  MEILISEARCH_KEY,
-  searchIndex,
-}: {
-  RequestType?;
-  any;
-}) => {
+const RequestTypeEditor = ({ rt }: { RequestType?; any }) => {
   const [name, setName] = useState(rt?.name || '');
   const [description, setDescription] = useState(rt?.description || '');
   const [menuText, setMenuText] = useState(rt?.menuText || '');
@@ -514,9 +495,6 @@ const RequestTypeEditor = ({
                 rt?.showRequester === undefined ? true : rt?.showRequester
               }
               type="requester"
-              MEILISEARCH_KEY={MEILISEARCH_KEY}
-              MEILISEARCH_URL={MEILISEARCH_URL}
-              searchIndex={searchIndex}
               callback={() => setSave(true)}
             />
             <Field
@@ -527,9 +505,6 @@ const RequestTypeEditor = ({
                 rt?.showLabels === undefined ? true : rt?.showLabels
               }
               type="labels"
-              MEILISEARCH_KEY={MEILISEARCH_KEY}
-              MEILISEARCH_URL={MEILISEARCH_URL}
-              searchIndex={searchIndex}
               callback={() => setSave(true)}
             />
           </div>
@@ -545,9 +520,6 @@ const RequestTypeEditor = ({
               columnRequired={rt?.requireTextFieldOne || false}
               column="one"
               type="text"
-              MEILISEARCH_KEY={MEILISEARCH_KEY}
-              MEILISEARCH_URL={MEILISEARCH_URL}
-              searchIndex={searchIndex}
               callback={() => setSave(true)}
             />
             <Field
@@ -560,9 +532,6 @@ const RequestTypeEditor = ({
               columnRequired={rt?.requireTextFieldTwo || false}
               column="two"
               type="text"
-              MEILISEARCH_KEY={MEILISEARCH_KEY}
-              MEILISEARCH_URL={MEILISEARCH_URL}
-              searchIndex={searchIndex}
               callback={() => setSave(true)}
             />
             <Field
@@ -577,9 +546,6 @@ const RequestTypeEditor = ({
               columnRequired={rt?.requireTextFieldThree || false}
               column="three"
               type="text"
-              MEILISEARCH_KEY={MEILISEARCH_KEY}
-              MEILISEARCH_URL={MEILISEARCH_URL}
-              searchIndex={searchIndex}
               callback={() => setSave(true)}
             />
             <Field
@@ -594,9 +560,6 @@ const RequestTypeEditor = ({
               columnRequired={rt?.requireTextFieldFour || false}
               column="four"
               type="text"
-              MEILISEARCH_KEY={MEILISEARCH_KEY}
-              MEILISEARCH_URL={MEILISEARCH_URL}
-              searchIndex={searchIndex}
               callback={() => setSave(true)}
             />
             <Field
@@ -611,9 +574,6 @@ const RequestTypeEditor = ({
               columnRequired={rt?.requireTextFieldFive || false}
               column="five"
               type="text"
-              MEILISEARCH_KEY={MEILISEARCH_KEY}
-              MEILISEARCH_URL={MEILISEARCH_URL}
-              searchIndex={searchIndex}
               callback={() => setSave(true)}
             />
           </div>
@@ -631,9 +591,6 @@ const RequestTypeEditor = ({
               columnRequired={rt?.requireBooleanFieldOne || false}
               column="one"
               type="boolean"
-              MEILISEARCH_KEY={MEILISEARCH_KEY}
-              MEILISEARCH_URL={MEILISEARCH_URL}
-              searchIndex={searchIndex}
               callback={() => setSave(true)}
             />
             <Field
@@ -648,9 +605,6 @@ const RequestTypeEditor = ({
               columnRequired={rt?.requireBooleanFieldTwo || false}
               column="two"
               type="boolean"
-              MEILISEARCH_KEY={MEILISEARCH_KEY}
-              MEILISEARCH_URL={MEILISEARCH_URL}
-              searchIndex={searchIndex}
               callback={() => setSave(true)}
             />
             <Field
@@ -665,9 +619,6 @@ const RequestTypeEditor = ({
               columnRequired={rt?.requireBooleanFieldThree || false}
               column="three"
               type="boolean"
-              MEILISEARCH_KEY={MEILISEARCH_KEY}
-              MEILISEARCH_URL={MEILISEARCH_URL}
-              searchIndex={searchIndex}
               callback={() => setSave(true)}
             />
           </div>
@@ -683,9 +634,6 @@ const RequestTypeEditor = ({
               columnRequired={rt?.requireUserFieldOne || false}
               column="one"
               type="user"
-              MEILISEARCH_KEY={MEILISEARCH_KEY}
-              MEILISEARCH_URL={MEILISEARCH_URL}
-              searchIndex={searchIndex}
               callback={() => setSave(true)}
             />
             <Field
@@ -698,9 +646,6 @@ const RequestTypeEditor = ({
               columnRequired={rt?.requireUserFieldTwo || false}
               column="two"
               type="user"
-              MEILISEARCH_KEY={MEILISEARCH_KEY}
-              MEILISEARCH_URL={MEILISEARCH_URL}
-              searchIndex={searchIndex}
               callback={() => setSave(true)}
             />
             <Field
@@ -715,9 +660,6 @@ const RequestTypeEditor = ({
               columnRequired={rt?.requireUserFieldThree || false}
               column="three"
               type="user"
-              MEILISEARCH_KEY={MEILISEARCH_KEY}
-              MEILISEARCH_URL={MEILISEARCH_URL}
-              searchIndex={searchIndex}
               callback={() => setSave(true)}
             />
           </div>

@@ -102,6 +102,7 @@ export default function Index() {
 
   return (
     <>
+      <h3 className="text-lg font-medium">Workflows</h3>
       workflow category for new requests: category for cancelled requests:
       category for closed requests:
       <h2 className="title is-2">Default Category</h2>

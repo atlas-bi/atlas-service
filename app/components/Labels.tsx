@@ -6,12 +6,12 @@
 //   faXmark,
 // } from '@fortawesome/free-solid-svg-icons';
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { SketchPicker } from '@hello-pangea/color-picker';
 import type { Label } from '@prisma/client';
 import { useNavigation, useSubmit } from '@remix-run/react';
 import { Link } from '@remix-run/react';
 import Color from 'color';
-import { Edit3 } from 'lucide-react';
-import { MeiliSearch } from 'meilisearch';
+import { Edit3, Palette } from 'lucide-react';
 import React, {
   Fragment,
   forwardRef,
@@ -19,10 +19,21 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { SketchPicker } from 'react-color';
 import { EmojiFinder } from '~/components/Emoji';
+import { Badge } from '~/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '~/components/ui/dialog';
 
 import CheckRemove from './CheckRemove';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label as UiLabel } from './ui/label';
 
 export const WhiteLabel = ({
   label,
@@ -55,25 +66,51 @@ export const LabelTag = ({
   if (label.color) {
     luminosity = Color(label.color).luminosity();
   }
+  // position: relative;
+  //   margin-right: 2px;
+  //   padding-right: 1px;
+  //   &:after {
+  //     position: absolute;
+  //     content: '';
+  //     top: 0;
+  //     bottom: 0;
+  //     @extend .has-background-white;
+  //     border-bottom-right-radius: 99999px;
+  //     border-top-right-radius: 99999px;
+  //     height: 100%;
+  //     aspect-ratio: 1 / 2;
+  //   }
+
   return (
-    <div
+    <Badge
+      className="bordered border-slate-400 space-x-1"
       onClick={onClick}
-      className="tag is-rounded"
-      style={{ backgroundColor: label.color || 'none' }}
+      style={{ backgroundColor: label.color || '#fff' }}
     >
       <span
         className={`${
-          luminosity < 0.5
-            ? 'has-text-white has-text-weight-bold'
-            : 'has-text-black'
+          luminosity < 0.5 ? 'text-white font-bold' : 'text-slate-900'
         }`}
       >
         {parts[0]}
       </span>
-      {parts[1] && <span>{parts[1]}</span>}
-    </div>
+      {parts[1] && (
+        <span
+          className="bg-white text-slate-900 pl-1 relative after:absolute after:content-[''] after:top-0 after:bottom-0
+      after:bg-white after:rounded-tr-full after:rounded-br-full after:h-full after:aspect-[1/2] after:pl-[1px] after:ml-[-1px]"
+        >
+          {parts[1]}
+        </span>
+      )}
+    </Badge>
   );
 };
+
+function isColor(strColor) {
+  var s = new Option().style;
+  s.color = strColor;
+  return s.color == strColor;
+}
 
 export const LabelCreator = ({
   action,
@@ -81,19 +118,14 @@ export const LabelCreator = ({
   show,
   onClose,
   label,
-  MEILISEARCH_URL,
-  MEILISEARCH_KEY,
-  searchIndex,
 }: {
   action: string;
   name?: string;
   show: boolean;
   label?: Label;
-  MEILISEARCH_URL: string;
-  MEILISEARCH_KEY: string;
-  searchIndex: string;
   onClose: () => void;
 }) => {
+  console.log('show', show);
   const [showNewLabelModal, setShowNewLabelModal] = useState(show);
   const [labelDescription, setLabelDescription] = useState<string>(
     label?.description || '',
@@ -104,14 +136,11 @@ export const LabelCreator = ({
   const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
   const [idValue, setIdValue] = useState<string>(label?.id || '');
   const [labelColor, setLabelColor] = useState<string>(label?.color || '');
+  const [luminosity, setLuminosity] = useState(1);
   const [labelName, setLabelName] = useState<string>(label?.name || name || '');
-  const defaultColor = {
-    r: '241',
-    g: '112',
-    b: '19',
-    a: '1',
-  };
-  const [colorPickerColor, setColorPickerColor] = useState(defaultColor);
+  const defaultColor = '#F17013';
+  const [colorPickerColor, setColorPickerColor] =
+    useState<string>(defaultColor);
   const colorPicker = useRef(null);
   const labelNameRef = useRef<HTMLInputElement>();
   const labelDescriptionRef = useRef<HTMLInputElement>();
@@ -121,10 +150,10 @@ export const LabelCreator = ({
     color: undefined,
     name,
   });
-  const client = new MeiliSearch({
-    host: MEILISEARCH_URL,
-    apiKey: MEILISEARCH_KEY,
-  });
+  // const client = new MeiliSearch({
+  //   host: MEILISEARCH_URL,
+  //   apiKey: MEILISEARCH_KEY,
+  // });
 
   const submitNewLabel = useSubmit();
   useEffect(() => {
@@ -155,8 +184,10 @@ export const LabelCreator = ({
   }, []);
 
   useEffect(() => {
+    console.log(show);
     setShowNewLabelModal(show);
   }, [show]);
+
   useEffect(() => {
     if (name) {
       setLabelName(name);
@@ -176,39 +207,28 @@ export const LabelCreator = ({
     }
   }, [label]);
 
+  useEffect(
+    () => setLuminosity(Color(colorPickerColor).luminosity()),
+    [colorPickerColor],
+  );
+
   return (
-    <div
-      className={`modal is-light is-top ${
-        showNewLabelModal ? 'is-active' : ''
-      }`}
-      ref={labelModal}
-    >
-      <div className="modal-background" onClick={() => onClose()}></div>
+    <Dialog open={showNewLabelModal} onOpenChange={onClose} ref={labelModal}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Label Builder</DialogTitle>
+          <DialogDescription>Create and edit labels.</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="space-y-2">
+            <UiLabel className="block">Preview</UiLabel>
+            <div>{previewLabel.name && <LabelTag label={previewLabel} />}</div>
+          </div>
 
-      <div className="modal-card ">
-        <header className="modal-card-head ">
-          <p className="modal-card-title is-size-6">
-            <strong>Create a new label</strong>
-          </p>
-          <button
-            type="button"
-            className="delete is-light is-medium"
-            aria-label="close"
-            onClick={() => onClose()}
-          ></button>
-        </header>
-        <section className="modal-card-body">
-          {previewLabel.name && (
-            <div className="field">
-              <label className="label">Preview</label>
-              <LabelTag label={previewLabel} />
-            </div>
-          )}
-
-          <div className="field">
-            <label className="label">Label name</label>
-            <div className="control">
-              <input
+          <div className="space-y-2">
+            <UiLabel>Label name</UiLabel>
+            <div>
+              <Input
                 ref={labelNameRef}
                 className="input semi-disabled"
                 placeholder="label name"
@@ -228,12 +248,12 @@ export const LabelCreator = ({
               />
             </div>
           </div>
-          <div className="field">
-            <label className="label">Description</label>
+
+          <div className="space-y-2">
+            <UiLabel>Description</UiLabel>
             <div className="control">
-              <input
+              <Input
                 ref={labelDescriptionRef}
-                className="input semi-disabled"
                 placeholder="optional description"
                 value={labelDescription}
                 onChange={(e) => {
@@ -247,9 +267,10 @@ export const LabelCreator = ({
               />
             </div>
           </div>
-          <div className="field">
-            <label className="label">Visible To</label>
-            <small className="is-block pb-2">
+
+          <div className="space-y-2">
+            <UiLabel>Visible To</UiLabel>
+            <small className="block text-muted-foreground">
               Limit visiblity to users in specific groups.
             </small>
             {labelGroups?.length > 0 && (
@@ -272,9 +293,8 @@ export const LabelCreator = ({
               </div>
             )}
             <div className="control is-relative">
-              <input
+              <Input
                 ref={labelGroupsRef}
-                className="input semi-disabled"
                 placeholder="type to search.."
                 value={groupSearchInput}
                 onChange={async (e) => {
@@ -283,10 +303,10 @@ export const LabelCreator = ({
                   if (e.target.value == '') {
                     setGroupSearch([]);
                   } else {
-                    const matches = await client
-                      .index(searchIndex)
-                      .search(e.target.value, { limit: 20 });
-                    setGroupSearch(matches.hits);
+                    // const matches = await client
+                    //   .index(searchIndex)
+                    //   .search(e.target.value, { limit: 20 });
+                    // setGroupSearch(matches.hits);
                   }
                 }}
               />
@@ -325,10 +345,10 @@ export const LabelCreator = ({
             </div>
           </div>
 
-          <div className="field  is-relative">
+          <div className="space-y-2 relative">
             {showColorPicker && (
               <div
-                style={{ position: 'absolute', top: '73px', zIndex: 2 }}
+                style={{ position: 'absolute', top: '75px', zIndex: 2 }}
                 ref={colorPicker}
               >
                 <div style={{ position: 'fixed' }}>
@@ -337,7 +357,7 @@ export const LabelCreator = ({
                     disableAlpha={true}
                     onChange={(color) => {
                       setLabelColor(color.hex);
-                      setColorPickerColor(color);
+                      setColorPickerColor(color.hex);
                       setPreviewLabel({
                         ...previewLabel,
                         color: color.hex,
@@ -348,45 +368,44 @@ export const LabelCreator = ({
               </div>
             )}
             <label className="label">Color</label>
-            <div className="field is-grouped">
-              <div className="control">
-                <button
-                  className={`button ${
-                    labelColor ? '' : 'has-background-light'
-                  } `}
-                  type="button"
-                  style={{ backgroundColor: labelColor || 'initial' }}
-                  onClick={() => setShowColorPicker(true)}
-                >
-                  <span className="icon">
-                    {/*<FontAwesomeIcon icon={faPalette} />*/}
-                  </span>
-                </button>
-              </div>
-              <div className="control">
-                <input
-                  className="input semi-disabled"
-                  placeholder="#1b1"
-                  value={labelColor}
-                  onChange={(e) => {
-                    setLabelColor(e.target.value);
-                    setPreviewLabel({
-                      ...previewLabel,
-                      color: e.target.value,
-                    });
-                    setColorPickerColor(e.target.value);
-                  }}
-                  onClick={() => setShowColorPicker(false)}
-                />
-              </div>
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                className={`px-2 ${
+                  luminosity < 0.5
+                    ? 'text-slate-100 hover:text-slate-200'
+                    : 'text-slate-800 hover:text-slate-900'
+                }`}
+                type="button"
+                style={{ backgroundColor: colorPickerColor || 'initial' }}
+                onClick={() => setShowColorPicker(true)}
+              >
+                <Palette />
+              </Button>
+
+              <Input
+                className="input semi-disabled"
+                placeholder="#1b1"
+                value={labelColor}
+                onChange={(e) => {
+                  setLabelColor(e.target.value);
+                  const color = isColor(e.target.value) ? e.target.value : '';
+
+                  setPreviewLabel({
+                    ...previewLabel,
+                    color,
+                  });
+                  setColorPickerColor(color || '#fff');
+                }}
+                onClick={() => setShowColorPicker(false)}
+              />
             </div>
           </div>
-        </section>
-        <hr className="m-0" />
-        <section className="modal-card-body">
+
           <div className="p-0 my-auto">
-            <button
-              className="button is-success is-short"
+            <Button
+              variant="secondary"
+              className=""
               type="button"
               onClick={() => {
                 const formData = new FormData();
@@ -415,11 +434,11 @@ export const LabelCreator = ({
               }}
             >
               Save
-            </button>
+            </Button>
           </div>
-        </section>
-      </div>
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
@@ -428,20 +447,12 @@ export const LabelSelector = forwardRef(
     {
       labels,
       actionData,
-      MEILISEARCH_URL,
-      MEILISEARCH_KEY,
       onChange,
-      searchIndex,
-      groupIndex,
       action,
     }: {
       labels?: Label[];
       actionData: any;
-      MEILISEARCH_URL: string;
-      MEILISEARCH_KEY: string;
       onChange?: React.ChangeEvent<HTMLInputElement>;
-      searchIndex: string;
-      groupIndex: string;
       action: string;
     },
     ref,
@@ -452,10 +463,6 @@ export const LabelSelector = forwardRef(
     const [showLabelSearch, setShowLabelSearch] = useState(false);
     const labelPopout = useRef<HTMLDivElement>();
 
-    const client = new MeiliSearch({
-      host: MEILISEARCH_URL,
-      apiKey: MEILISEARCH_KEY,
-    });
     const [labelSearchResults, setLabelSearchResults] = useState(null);
 
     const inputReference = useRef<HTMLInputElement>(null);
@@ -463,26 +470,26 @@ export const LabelSelector = forwardRef(
     const [labelName, setLabelName] = useState('');
 
     const resetLabelSearch = async () => {
-      const matches = await client.index(searchIndex).search('', { limit: 10 });
+      // const matches = await client.index(searchIndex).search('', { limit: 10 });
 
-      setLabelSearchResults(
-        <>
-          {matches &&
-            matches.hits.map((label) => (
-              <WhiteLabel
-                key={label.id}
-                label={label}
-                onClick={() => {
-                  if (labelList.filter((x) => x.id === label.id).length === 0) {
-                    setLabelList([...labelList, label]);
-                  }
+      // setLabelSearchResults(
+      //   <>
+      //     {matches &&
+      //       matches.hits.map((label) => (
+      //         <WhiteLabel
+      //           key={label.id}
+      //           label={label}
+      //           onClick={() => {
+      //             if (labelList.filter((x) => x.id === label.id).length === 0) {
+      //               setLabelList([...labelList, label]);
+      //             }
 
-                  setLabelName('');
-                }}
-              />
-            ))}
-        </>,
-      );
+      //             setLabelName('');
+      //           }}
+      //         />
+      //       ))}
+      //   </>,
+      // );
       return;
     };
 
@@ -599,35 +606,34 @@ export const LabelSelector = forwardRef(
                       if (searchInput.value === '') {
                         await resetLabelSearch();
                       } else {
-                        const matches = await client
-                          .index(searchIndex)
-                          .search(searchInput.value, { limit: 20 });
-
-                        if (matches.hits.length > 0) {
-                          setLabelSearchResults(
-                            <>
-                              {matches.hits.map((label) => (
-                                <WhiteLabel
-                                  key={label.id}
-                                  label={label}
-                                  onClick={() => {
-                                    if (!labelList.includes(label)) {
-                                      setLabelList([...labelList, label]);
-                                    }
-                                    setLabelSearchResults(null);
-                                    setLabelName('');
-                                  }}
-                                />
-                              ))}
-                            </>,
-                          );
-                        } else {
-                          setLabelSearchResults(
-                            <strong className="py-2 px-3 is-block ">
-                              No matches.
-                            </strong>,
-                          );
-                        }
+                        // const matches = await client
+                        //   .index(searchIndex)
+                        //   .search(searchInput.value, { limit: 20 });
+                        // if (matches.hits.length > 0) {
+                        //   setLabelSearchResults(
+                        //     <>
+                        //       {matches.hits.map((label) => (
+                        //         <WhiteLabel
+                        //           key={label.id}
+                        //           label={label}
+                        //           onClick={() => {
+                        //             if (!labelList.includes(label)) {
+                        //               setLabelList([...labelList, label]);
+                        //             }
+                        //             setLabelSearchResults(null);
+                        //             setLabelName('');
+                        //           }}
+                        //         />
+                        //       ))}
+                        //     </>,
+                        //   );
+                        // } else {
+                        //   setLabelSearchResults(
+                        //     <strong className="py-2 px-3 is-block ">
+                        //       No matches.
+                        //     </strong>,
+                        //   );
+                        // }
                       }
                     }}
                   />
@@ -718,9 +724,6 @@ export const LabelSelector = forwardRef(
           action={action}
           name={labelName}
           show={showNewLabelModal}
-          MEILISEARCH_URL={MEILISEARCH_URL}
-          MEILISEARCH_KEY={MEILISEARCH_KEY}
-          searchIndex={groupIndex}
           onClose={() => {
             setShowNewLabelModal(false);
             setShowLabelSearch(true);

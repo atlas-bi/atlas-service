@@ -1,8 +1,8 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import {
   LexicalTypeaheadMenuPlugin,
-  type QueryMatch,
-  TypeaheadOption,
+  MenuOption,
+  type MenuTextMatch,
 } from '@lexical/react/LexicalTypeaheadMenuPlugin';
 import emoji from 'emojilib';
 import { $createTextNode, type TextNode } from 'lexical';
@@ -139,7 +139,7 @@ function useEmojiLookupService(queryString: string | null) {
 function checkForColonEmoji(
   text: string,
   minMatchLength: number,
-): QueryMatch | null {
+): MenuTextMatch | null {
   let match = ColonEmojiRegex.exec(text);
 
   if (match === null) {
@@ -162,12 +162,12 @@ function checkForColonEmoji(
   return null;
 }
 
-function getPossibleQueryMatch(text: string): QueryMatch | null {
+function getPossibleQueryMatch(text: string): MenuTextMatch | null {
   const match = checkForColonEmoji(text, 1);
   return match; // === null ? checkForCapitalizedNameEmoji(text, 3) : match;
 }
 
-class EmojiTypeaheadOption extends TypeaheadOption {
+class EmojiMenuOption extends MenuOption {
   name: string;
   picture: JSX.Element;
 
@@ -190,7 +190,7 @@ function EmojiTypeaheadMenuItem({
   isSelected: boolean;
   onClick: () => void;
   onMouseEnter: () => void;
-  option: EmojiTypeaheadOption;
+  option: EmojiMenuOption;
   size: number;
 }) {
   let className = 'group cursor-pointer text-sm p-2 my-0 flex space-x-2';
@@ -232,14 +232,14 @@ export default function EmojiPlugin(): JSX.Element | null {
   const options = useMemo(
     () =>
       results
-        .map((result) => new EmojiTypeaheadOption(result, <i />))
+        .map((result) => new EmojiMenuOption(result, <i />))
         .slice(0, SUGGESTION_LIST_LENGTH_LIMIT),
     [results],
   );
 
   const onSelectOption = useCallback(
     (
-      selectedOption: EmojiTypeaheadOption,
+      selectedOption: EmojiMenuOption,
       nodeToReplace: TextNode | null,
       closeMenu: () => void,
     ) => {
@@ -263,7 +263,7 @@ export default function EmojiPlugin(): JSX.Element | null {
   );
 
   return (
-    <LexicalTypeaheadMenuPlugin<EmojiTypeaheadOption>
+    <LexicalTypeaheadMenuPlugin<EmojiMenuOption>
       onQueryChange={setQueryString}
       onSelectOption={onSelectOption}
       triggerFn={checkForEmojiMatch}

@@ -147,7 +147,7 @@ export default function Index() {
           ))}
         </div>
       )}
-      <h2 className="title is-2">Categories</h2>
+      <h3 className="text-lg font-medium">Categories</h3>
       <Form method="post" className="form" ref={formCategoryAddRef}>
         <div className="field">
           <label className="label">New Request Category</label>
