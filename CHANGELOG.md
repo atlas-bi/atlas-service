@@ -1,3 +1,13 @@
+## 1.0.0-rc.34 (2023-06-08)
+
+* feat(ui): updated login and labels ([8391084](https://github.com/atlas-bi/atlas-requests/commit/8391084))
+* chore(deps) Update all non-major dependencies ([60516fe](https://github.com/atlas-bi/atlas-requests/commit/60516fe))
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([08b913f](https://github.com/atlas-bi/atlas-requests/commit/08b913f))
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([9ddd304](https://github.com/atlas-bi/atlas-requests/commit/9ddd304))
+* Merge pull request #37 from atlas-bi/renovate/all-minor-patch ([df9a574](https://github.com/atlas-bi/atlas-requests/commit/df9a574)), closes [#37](https://github.com/atlas-bi/atlas-requests/issues/37)
+* chore(editor): hide typeahead when editor looses focus ([97fa0fd](https://github.com/atlas-bi/atlas-requests/commit/97fa0fd))
+* chore(typescript): cleaned up types ([db2005e](https://github.com/atlas-bi/atlas-requests/commit/db2005e))
+
 ## 1.0.0-rc.33 (2023-06-01)
 
 * feat(ui): added profile, ([1c91e93](https://github.com/atlas-bi/atlas-requests/commit/1c91e93))
