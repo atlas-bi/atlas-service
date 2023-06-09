@@ -1,5 +1,5 @@
-import { faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// import { faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState } from 'react';
 
 export default function CheckRemove({
@@ -14,15 +14,15 @@ export default function CheckRemove({
     <div
       className="is-flex has-background-white is-clickable"
       onMouseEnter={() => {
-        setCheck(faXmark);
+        // setCheck(faXmark);
       }}
       onMouseLeave={() => {
-        setCheck(faCheck);
+        // setCheck(faCheck);
       }}
       onClick={onClick}
     >
       <span className="icon my-auto has-text-grey mx-2">
-        <FontAwesomeIcon icon={check} />
+        {/*<FontAwesomeIcon icon={check} />*/}
       </span>
       {children}
     </div>

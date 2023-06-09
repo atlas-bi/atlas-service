@@ -1,12 +1,12 @@
-import {
-  faCheck,
-  faCircleNotch,
-  faPencil,
-  faXmark,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// import {
+//   faCheck,
+//   faCircleNotch,
+//   faXmark,
+// } from '@fortawesome/free-solid-svg-icons';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { User } from '@prisma/client';
-import { useTransition } from '@remix-run/react';
+import { useNavigation } from '@remix-run/react';
+import { Edit3 } from 'lucide-react';
 import { MeiliSearch } from 'meilisearch';
 import React, {
   Fragment,
@@ -87,16 +87,16 @@ export const AssigneeSelector = forwardRef(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [assigneeList]);
 
-    const transition = useTransition();
+    const transition = useNavigation();
 
     const isSaving =
       transition.state === 'submitting' &&
-      transition.submission.formData.get('_action') === action;
+      transition.formData?.get('_action') === action;
 
     const hasSaved =
       (transition.state === 'loading' || transition.state === 'idle') &&
-      transition.submission &&
-      transition.submission.formData.get('_action') === action;
+      transition &&
+      transition.formData?.get('_action') === action;
 
     useEffect(() => {
       inputReference.current?.focus();
@@ -113,7 +113,7 @@ export const AssigneeSelector = forwardRef(
           >
             <span>Assigned Analysts</span>
             <span className="icon mr-2">
-              <FontAwesomeIcon icon={faPencil} />
+              <Edit3 size={16} />
             </span>
           </label>
           {showAssigneeSearch && (
@@ -125,7 +125,7 @@ export const AssigneeSelector = forwardRef(
                   </strong>
                   {isSaving ? (
                     <span className="icon has-text-warning my-auto is-pulled-right">
-                      <FontAwesomeIcon icon={faCircleNotch} size="lg" spin />
+                      {/*<FontAwesomeIcon icon={faCircleNotch} size="lg" spin />*/}
                     </span>
                   ) : (
                     <span
@@ -136,7 +136,7 @@ export const AssigneeSelector = forwardRef(
                         opacity: hasSaved ? '1' : '0',
                       }}
                     >
-                      <FontAwesomeIcon icon={faCheck} size="lg" />
+                      {/*<FontAwesomeIcon icon={faCheck} size="lg" />*/}
                     </span>
                   )}
                 </div>
@@ -195,7 +195,7 @@ export const AssigneeSelector = forwardRef(
                       style={{ height: '35px' }}
                     >
                       <span className="icon my-auto has-text-grey mx-2">
-                        <FontAwesomeIcon icon={faXmark} />
+                        {/*<FontAwesomeIcon icon={faXmark} />*/}
                       </span>
                       <span className="my-auto">Clear List</span>
                     </div>

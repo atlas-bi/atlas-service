@@ -215,14 +215,14 @@ DATABASE_URL="postgresql://$PG_USER:$DATABASE_PASS@$PG_HOSTNAME:$PG_PORT/$PG_DAT
 SESSION_SECRET=$SESSION_SECRET
 PASSPHRASES=$PASSPHRASES
 MEILI_ENV=production
-MEILI_DB_PAT=$INSTALL_DIR/data.js/
+MEILI_DB_PAT=$INSTALL_DIR/data.ms/
 MEILI_MASTER_KEY=$MEILI_MASTER_KEY
 MEILISEARCH_URL=$( if [ "$SSL_CERTIFICATE" ]; then echo "https://"; else echo "http://"; fi )$SERVER_NAME:$SEARCH_PUBLIC_PORT
 MEILI_HTTP_ADDR=$SEARCH_HOSTNAME:$SEARCH_INTERNAL_PORT
 HOSTNAME=$HOSTNAME:$PORT
 REDIS_URL=redis://$REDIS_HOSTNAME:$REDIS_PORT/0
 QUIRREL_API_URL=$QUIRREL_HOSTNAME
-QUIRREL_BASE_URL=$( if [ "$SSL_CERTIFICATE" ]; then echo "https://"; else echo "http://"; fi )$SERVER_NAME:
+QUIRREL_BASE_URL=$( if [ "$SSL_CERTIFICATE" ]; then echo "https://"; else echo "http://"; fi )$SERVER_NAME
 EOT
 
   # this can only be accessed after the quirrel service is running.
@@ -264,9 +264,15 @@ start_quirrel(){
   fi
 
   quirrel_online
-  cd "$INSTALL_DIR" || exit 1
-  # load cron jobs
-  npm run quirrel:ci
+
+  # if configured, we can try to load cron jobs
+  QUIRREL_TOKEN=$({ grep QUIRREL_TOKEN= || true; } <  $INSTALL_DIR/.env  | sed 's/^.*=//')
+
+  if [ "$QUIRREL_TOKEN" ]; then
+    cd "$INSTALL_DIR" || exit 1
+    # load cron jobs
+    npm run quirrel:ci
+  fi
 }
 
 start_services(){
@@ -405,7 +411,7 @@ EOF
 quirrel_service() {
   cat <<EOT > "/etc/systemd/system/$QUIRREL_SERVICE"
 [Unit]
-Description=Atlas Requests / Querrel
+Description=Atlas Requests / Quirrel
 After=network.target
 
 [Service]
@@ -513,4 +519,22 @@ server {
   }
 }
 EOT
+}
+
+npm_install_full(){
+  cd "$INSTALL_DIR" || exit;
+  fmt_blue "Installing packages"
+  npm install --save-dev --loglevel silent --no-fund --no-audit
+}
+
+npm_build(){
+  cd "$INSTALL_DIR" || exit;
+  fmt_blue "Building site"
+  npm run build
+}
+
+npm_migrate(){
+  cd "$INSTALL_DIR" || exit;
+  fmt_blue "Applying database migrations"
+  npx prisma migrate deploy
 }

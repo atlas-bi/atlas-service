@@ -1,10 +1,7 @@
-import {
-  faCheck,
-  faCircleNotch,
-  faPencil,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useTransition } from '@remix-run/react';
+// import { faCheck, faCircleNotch } from '@fortawesome/free-solid-svg-icons';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useNavigation } from '@remix-run/react';
+import { Edit3 } from 'lucide-react';
 import { MeiliSearch } from 'meilisearch';
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 
@@ -75,16 +72,15 @@ export const RequesterSelector = forwardRef(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [requester]);
 
-    const transition = useTransition();
+    const transition = useNavigation();
 
     const isSaving =
       transition.state === 'submitting' &&
-      transition.submission.formData.get('_action') === action;
+      transition.formData?.get('_action') === action;
 
     const hasSaved =
       (transition.state === 'loading' || transition.state === 'idle') &&
-      transition.submission &&
-      transition.submission.formData.get('_action') === action;
+      transition.formData?.get('_action') === action;
 
     useEffect(() => {
       inputReference.current?.focus();
@@ -101,7 +97,7 @@ export const RequesterSelector = forwardRef(
           >
             <span>Requester</span>
             <span className="icon mr-2">
-              <FontAwesomeIcon icon={faPencil} />
+              <Edit3 size={16} />
             </span>
           </label>
           {showRequesterSearch && (
@@ -200,7 +196,7 @@ export const RequesterSelector = forwardRef(
 
               {isSaving ? (
                 <span className="icon has-text-warning my-auto is-pulled-right">
-                  <FontAwesomeIcon icon={faCircleNotch} size="lg" spin />
+                  {/*<FontAwesomeIcon icon={faCircleNotch} size="lg" spin />*/}
                 </span>
               ) : (
                 <span
@@ -211,7 +207,7 @@ export const RequesterSelector = forwardRef(
                     opacity: hasSaved ? '1' : '0',
                   }}
                 >
-                  <FontAwesomeIcon icon={faCheck} size="lg" />
+                  {/*<FontAwesomeIcon icon={faCheck} size="lg" />*/}
                 </span>
               )}
             </>

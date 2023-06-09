@@ -19,31 +19,25 @@ export const EmojiSearch = (name) => {
 };
 
 export const EmojiLookupService = (name: string) => {
-  console.log('name', name);
   const [results, setResults] = useState<Array<string>>([]);
 
   useEffect(() => {
-    console.log(emojiCache);
     const cachedResults = emojiCache.get(name);
 
-    console.log('cached', cachedResults);
     if (name == null) {
       setResults([]);
       return;
     }
 
     if (cachedResults === null) {
-      console.log('no cached result');
       return;
     } else if (cachedResults !== undefined) {
-      console.log('found result');
       setResults(cachedResults);
       return;
     }
 
     emojiCache.set(name, null);
     const matches = EmojiSearch(name);
-    console.log('getting matches', matches);
     emojiCache.set(name, matches);
     setResults[matches];
   }, [name]);
@@ -120,12 +114,6 @@ export const EmojiFinder = ({ input, value, setter }) => {
                           onMouseDown={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
-                            console.log('clicked!');
-                            console.log(
-                              inputValue.replace(':' + name, x[0]),
-                              name,
-                              x[0],
-                            );
                             setter(inputValue.replace(':' + name, x[0]));
                             // input.focus()
                           }}

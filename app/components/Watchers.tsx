@@ -1,8 +1,8 @@
-import { faBell } from '@fortawesome/free-regular-svg-icons';
-import { faCheck, faCircleNotch } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// import { faCheck, faCircleNotch } from '@fortawesome/free-solid-svg-icons';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { User } from '@prisma/client';
-import { useSubmit, useTransition } from '@remix-run/react';
+import { useNavigation, useSubmit } from '@remix-run/react';
+import { Bell, BellOff } from 'lucide-react';
 import React, { Fragment, forwardRef, useEffect, useState } from 'react';
 
 import { MiniUser } from './User';
@@ -33,16 +33,15 @@ export const WatcherList = forwardRef(
       setWatching((watchers || []).filter((x) => x.id === me.id).length > 0);
     }, [watchers, me]);
 
-    const transition = useTransition();
+    const transition = useNavigation();
 
     const isSaving =
       transition.state === 'submitting' &&
-      transition.submission.formData.get('_action') === action;
+      transition.formData?.get('_action') === action;
 
     const hasSaved =
       (transition.state === 'loading' || transition.state === 'idle') &&
-      transition.submission &&
-      transition.submission.formData.get('_action') === action;
+      transition.formData?.get('_action') === action;
 
     return (
       <>
@@ -50,7 +49,7 @@ export const WatcherList = forwardRef(
           Watchers
           {isSaving ? (
             <span className="icon has-text-warning my-auto is-pulled-right">
-              <FontAwesomeIcon icon={faCircleNotch} size="lg" spin />
+              {/*<FontAwesomeIcon icon={faCircleNotch} size="lg" spin />*/}
             </span>
           ) : (
             <span
@@ -61,7 +60,7 @@ export const WatcherList = forwardRef(
                 opacity: hasSaved ? '1' : '0',
               }}
             >
-              <FontAwesomeIcon icon={faCheck} size="lg" />
+              {/*<FontAwesomeIcon icon={faCheck} size="lg" />*/}
             </span>
           )}
         </strong>
@@ -89,7 +88,7 @@ export const WatcherList = forwardRef(
           }}
         >
           <span className="icon">
-            <FontAwesomeIcon icon={faBell} size="lg" />
+            {watching ? <BellOff size={16} /> : <Bell size={16} />}
           </span>
           <span>{watching && 'un'}subscribe</span>
         </button>

@@ -83,6 +83,7 @@ $block-spacing: 1rem;
 @import '../node_modules/bulma/bulma';
 @import '../node_modules/bulma-switch/src/sass';
 @import '../node_modules/bulma-list/sass/bulma-list';
+@import '../node_modules/@creativebulma/bulma-tooltip/src/sass';
 
 html {
   height: 100%;
@@ -407,7 +408,7 @@ figure.is-20x20 {
     content: '';
     position: absolute;
     border-left: 2px solid $grey-lighter;
-    top: 0;
+    top: 2px;
     bottom: 0;
     z-index: -1;
     left: 90px;
@@ -448,4 +449,28 @@ article.media.thread {
   & + .media.thread {
     @extend .pt-5;
   }
+}
+
+.has-background-hover-white-bis {
+  &:hover {
+    @extend .has-background-white-bis;
+  }
+}
+
+.columns.is-bordered {
+  > .column {
+    border-right: 1px solid $grey-lighter;
+    &:last-of-type {
+      border-right: none;
+    }
+  }
+}
+@media print, screen and (min-width: 769px) {
+  .field-body.is-normal {
+    padding-top: 0.375em;
+  }
+}
+
+*[data-tooltip] {
+  border-bottom: none !important;
 }

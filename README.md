@@ -2,7 +2,7 @@
 
 **Website Features**
 
-- [ ] User-friendly, atlas style
+- [x] User-friendly, atlas style
 - [ ] Search for all requests and request history
 - [x] SAML2 single sign on
 - [x] LDAP/database user information fetching
@@ -15,16 +15,15 @@
 - [ ] Renovate the ranking query
 - [ ] Request due date/estimated duration <- do we have this now and are we sure we want this?
 - [ ] Button to share request
-- [ ] Create tickets for other users
+- [x] Create tickets for other users
 - [ ] Ticket filtering
 - [ ] see if someone else is reading the same ticket
 - [ ] see if someone else is already replying to a ticket
-- [ ] option for other users to "watch" a ticket
-- [ ] option for ticket tagging
+- [x] option for other users to "watch" a ticket
 - [ ] option for adding attachments
 - [ ] option to take a screen shot directly
-- [ ] allow multiple people to be assigned to a single ticket
-- [ ] ticket labeling with scoped labels
+- [x] allow multiple people to be assigned to a single ticket
+- [x] ticket labeling with scoped labels
 - [ ] allow tickets to be grouped into projects
 - [ ] allow tickets inside a project to be split
 
@@ -46,7 +45,7 @@
 **Requests**
 
 - [ ] Request history tracking
-- [ ] Remove unused fields from form, make request process easier
+- [x] Remove unused fields from form, make request process easier
 - [ ] Better git integration
 
 **UI**
@@ -74,27 +73,23 @@
 
 - [ ] Category (department)
 - [ ] Report name (or deep linked from atlas)
-- [ ] Content
-- [ ] Purpose
+- [x] Content
+- [x] Purpose
 - [ ] Columns
-- [ ] Criteria
-- [ ] Parameters
+- [x] Criteria
+- [x] Parameters
 - [ ] Registries ???
 - [ ] Similar reports
 - [ ] Additional info
-- [ ] Scheduled report?
-- [ ] Who to send to?
-- [ ] Frequency
-- [ ] Export to excel?
-- [ ] Data is regulatory
-- [ ] Is this for a major initiative
-- [ ] Attach files
-- [ ] Description
+- [x] Scheduled report?
+- [x] Who to send to?
+- [x] Frequency
+- [x] Export to excel?
+- [x] Data is regulatory
+- [x] Is this for a major initiative
+- [x] Attach files
+- [x] Description
 - [ ] Notes (added by developer)
-
-## Notes
-
-- currently requiring Node 18 for remix-image > ... > node-gyp + better sqlite3
 
 ## Development
 
