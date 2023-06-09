@@ -67,7 +67,7 @@ backup(){
 configure(){
     fmt_blue "Configuring Atlas requests."
     fmt_yellow "Stopping services"
-
+    systemctl daemon-reload
     stop_services
 
     fmt_yellow "Verifying secrets"
@@ -77,6 +77,11 @@ configure(){
 
     install_configuration
     load_configuration
+
+    fmt_yellow "Building"
+    npm_install_full
+    npm_build
+    npm_migrate
 
     fmt_yellow "Configuring Nginx"
     nginx_init

@@ -1,0 +1,6 @@
+/* This file was sourced from Github (MIT License)
+   https://github.com/facebook/lexical/blob/main/packages/lexical-playground/src/plugins/TableCellResizer/index.css
+*/
+.TableCellResizer__resizer {
+  position: absolute;
+}

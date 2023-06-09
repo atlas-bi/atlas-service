@@ -11,8 +11,8 @@ name
 
 cd "$BASE_DIR" || exit;
 
-fmt_blue "Updating npm"
-npm install -g npm@latest dotenv-cli --loglevel silent
+fmt_blue "Updating npm, dotenv-cli, and pm2"
+npm install -g npm@latest dotenv-cli pm2 --loglevel silent
 
 fmt_blue "Downloading $NAME v$VERSION"
 wget "https://github.com/atlas-bi/$APP/archive/refs/tags/v$VERSION.tar.gz" -q --show-progress -O app.tar.gz
@@ -35,21 +35,13 @@ postgres_init
 
 cd "$INSTALL_DIR" || exit;
 
-fmt_blue "Installing packages"
-npm install --loglevel silent --no-fund --no-audit
-
-fmt_blue "Building site"
-npm run build
-
-fmt_blue "Applying database migrations"
-npx prisma migrate deploy
-
-fmt_blue "Cleaning up install"
-npm install --omit=dev --loglevel silent --no-fund --no-audit
+npm_install_full
+npm_build
+npm_migrate
 
 # stop services if running
 fmt_blue "Stopping services"
-# stop_services
+stop_services
 
 fmt_blue "Installing Meilisearch"
 wget -O - https://install.meilisearch.com -q --show-progress | sh

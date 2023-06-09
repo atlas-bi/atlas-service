@@ -1,0 +1,20 @@
+/* This file was sourced from Github (MIT License)
+   https://github.com/facebook/lexical/blob/main/packages/lexical-playground/src/ui/Dialog.css
+*/
+.DialogActions {
+  display: flex;
+  flex-direction: row;
+  justify-content: right;
+  margin-top: 20px;
+}
+
+.DialogButtonsList {
+  display: flex;
+  flex-direction: column;
+  justify-content: right;
+  margin-top: 20px;
+}
+
+.DialogButtonsList button {
+  margin-bottom: 20px;
+}
