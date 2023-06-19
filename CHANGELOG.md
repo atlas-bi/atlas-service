@@ -1,3 +1,9 @@
+## <small>1.4.1 (2023-06-19)</small>
+
+* Merge pull request #82 from atlas-bi/dev ([a2013e6](https://github.com/atlas-bi/Service/commit/a2013e6)), closes [#82](https://github.com/atlas-bi/Service/issues/82)
+* Merge pull request #83 from atlas-bi/alpha ([62b39a5](https://github.com/atlas-bi/Service/commit/62b39a5)), closes [#83](https://github.com/atlas-bi/Service/issues/83)
+* fix(paths): fixed release tar paths ([1dd6200](https://github.com/atlas-bi/Service/commit/1dd6200))
+
 ## 1.4.0 (2023-06-19)
 
 * Merge pull request #80 from atlas-bi/dev ([004ebe4](https://github.com/atlas-bi/Service/commit/004ebe4)), closes [#80](https://github.com/atlas-bi/Service/issues/80)
