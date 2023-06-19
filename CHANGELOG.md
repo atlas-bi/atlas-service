@@ -1,3 +1,9 @@
+## 1.4.0 (2023-06-19)
+
+* Merge pull request #80 from atlas-bi/dev ([004ebe4](https://github.com/atlas-bi/Service/commit/004ebe4)), closes [#80](https://github.com/atlas-bi/Service/issues/80)
+* Merge pull request #81 from atlas-bi/alpha ([f179aa6](https://github.com/atlas-bi/Service/commit/f179aa6)), closes [#81](https://github.com/atlas-bi/Service/issues/81)
+* feat(release): fixed filename to load to assets ([5426ee7](https://github.com/atlas-bi/Service/commit/5426ee7))
+
 ## 1.3.0 (2023-06-19)
 
 * fixed name ([d9c271f](https://github.com/atlas-bi/Service/commit/d9c271f))
