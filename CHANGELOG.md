@@ -1,4 +1,18 @@
-## 1.0.0 (2023-03-30)
+## 1.0.0-rc.35 (2023-06-19)
+
+* chore(deps) Update dependency @fontsource/inter to v5 ([e7c7ae7](https://github.com/atlas-bi/Service/commit/e7c7ae7))
+* Merge branch 'alpha' into dev ([40f40db](https://github.com/atlas-bi/Service/commit/40f40db))
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([2800dc5](https://github.com/atlas-bi/Service/commit/2800dc5))
+* Merge branch 'dev' of github.com:atlas-bi/atlas-requests into dev ([2b4999a](https://github.com/atlas-bi/Service/commit/2b4999a))
+* Merge pull request #38 from atlas-bi/renovate/fontsource-inter-5.x ([40447db](https://github.com/atlas-bi/Service/commit/40447db)), closes [#38](https://github.com/atlas-bi/Service/issues/38)
+* Merge pull request #5 from atlas-bi/dev ([d3330eb](https://github.com/atlas-bi/Service/commit/d3330eb)), closes [#5](https://github.com/atlas-bi/Service/issues/5)
+* renamed ([72ffa3e](https://github.com/atlas-bi/Service/commit/72ffa3e))
+* renamed back ([d127b29](https://github.com/atlas-bi/Service/commit/d127b29))
+* feat(build): added build to release ([df75f96](https://github.com/atlas-bi/Service/commit/df75f96))
+* feat(release): make a release ([a8efb89](https://github.com/atlas-bi/Service/commit/a8efb89))
+* chore(release): 1.0.0-alpha.2 [skip ci] ([31afd00](https://github.com/atlas-bi/Service/commit/31afd00)), closes [#5](https://github.com/atlas-bi/Service/issues/5)
+
+## 1.0.0-alpha.2 (2023-03-30)
 
 * added cd ([839faaa](https://github.com/atlas-bi/atlas-requests/commit/839faaa))
 * added in lintian ([26187eb](https://github.com/atlas-bi/atlas-requests/commit/26187eb))
