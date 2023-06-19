@@ -24,19 +24,7 @@ const config = {
     [
       '@semantic-release/github',
       {
-        assets: [
-          [
-            'package.json',
-            'build',
-            'app',
-            'lib',
-            'prisma',
-            'public',
-            'style',
-            '.env.example',
-            '*.{json,ts,js,md}',
-          ],
-        ],
+        assets: [{ path: 'release.zip', name: 'release.zip' }],
       },
     ],
   ],
