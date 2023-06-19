@@ -22,12 +22,6 @@ const config = {
       },
     ],
     [
-      '@semantic-release/git',
-      {
-        assets: ['package.json', 'CHANGELOG.md'],
-      },
-    ],
-    [
       '@semantic-release/github',
       {
         assets: [
@@ -56,16 +50,9 @@ if (
   config.plugins.push('@semantic-release/changelog', [
     '@semantic-release/git',
     {
-      assets: ['CHANGELOG.md'],
+      assets: ['CHANGELOG.md', 'package.json'],
       message:
         'chore(release): ${nextRelease.version} \n\n${nextRelease.notes}',
-    },
-  ]);
-} else {
-  config.plugins.push([
-    '@semantic-release/git',
-    {
-      assets: ['package.json'],
     },
   ]);
 }
