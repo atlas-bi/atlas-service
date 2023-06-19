@@ -1,3 +1,10 @@
+## 1.3.0 (2023-06-19)
+
+* fixed name ([d9c271f](https://github.com/atlas-bi/Service/commit/d9c271f))
+* Merge pull request #78 from atlas-bi/dev ([6d36f19](https://github.com/atlas-bi/Service/commit/6d36f19)), closes [#78](https://github.com/atlas-bi/Service/issues/78)
+* Merge pull request #79 from atlas-bi/alpha ([1902076](https://github.com/atlas-bi/Service/commit/1902076)), closes [#79](https://github.com/atlas-bi/Service/issues/79)
+* feat(release): build a tar, not zip ([4b7a780](https://github.com/atlas-bi/Service/commit/4b7a780))
+
 ## 1.2.0 (2023-06-19)
 
 * Merge branch 'alpha' into dev ([98ecebe](https://github.com/atlas-bi/Service/commit/98ecebe))
