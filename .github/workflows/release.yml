@@ -31,26 +31,7 @@ jobs:
           useLockFile: false
 
       - run: npm run build
-      - uses: vimtor/action-zip@v1
-        with:
-          files: |
-            package.json
-            build/
-            app/
-            lib/
-            prisma/
-            public/
-            style/
-            .env.example
-            CHANGELOG.md
-            package-lock.json
-            README.md
-            remix.config.js
-            remix.env.d.ts
-            server.ts
-            tailwind.config.js
-            tsconfig.json
-          dest: build.zip
+      - run: zip -r build.zip package.json build/ app/ lib/ prisma/ public/ style/ .env.example CHANGELOG.md package-lock.json README.md remix.config.js remix.env.d.ts server.ts tailwind.config.js tsconfig.json
 
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v3
