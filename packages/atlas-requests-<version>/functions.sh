@@ -60,6 +60,7 @@ fmt_error() {
   echo "${RED}Error: $1${RESET}" >&2
 }
 
+
 fmt_install() {
   echo "${YELLOW}Installing: $1${RESET}"
 }

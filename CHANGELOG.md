@@ -1,4 +1,4 @@
-## 1.1.0-alpha.1 (2023-06-19)
+## 1.1.0-rc.1 (2023-06-19)
 
 * added form ([b10730a](https://github.com/atlas-bi/Service/commit/b10730a))
 * chore(deps) Update all non-major dependencies ([60516fe](https://github.com/atlas-bi/Service/commit/60516fe))
@@ -67,7 +67,6 @@
 * Merge pull request #36 from atlas-bi/renovate/all-minor-patch ([d30cd59](https://github.com/atlas-bi/Service/commit/d30cd59)), closes [#36](https://github.com/atlas-bi/Service/issues/36)
 * Merge pull request #37 from atlas-bi/renovate/all-minor-patch ([df9a574](https://github.com/atlas-bi/Service/commit/df9a574)), closes [#37](https://github.com/atlas-bi/Service/issues/37)
 * Merge pull request #38 from atlas-bi/renovate/fontsource-inter-5.x ([40447db](https://github.com/atlas-bi/Service/commit/40447db)), closes [#38](https://github.com/atlas-bi/Service/issues/38)
-* Merge pull request #74 from atlas-bi/dev ([0f74518](https://github.com/atlas-bi/Service/commit/0f74518)), closes [#74](https://github.com/atlas-bi/Service/issues/74)
 * merged ([b2d2256](https://github.com/atlas-bi/Service/commit/b2d2256))
 * merged ([fd390aa](https://github.com/atlas-bi/Service/commit/fd390aa))
 * merged ([043f691](https://github.com/atlas-bi/Service/commit/043f691))
