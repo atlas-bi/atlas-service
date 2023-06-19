@@ -1,3 +1,9 @@
+## <small>1.4.2 (2023-06-19)</small>
+
+* Merge pull request #84 from atlas-bi/dev ([cc4c782](https://github.com/atlas-bi/Service/commit/cc4c782)), closes [#84](https://github.com/atlas-bi/Service/issues/84)
+* Merge pull request #85 from atlas-bi/alpha ([2db4089](https://github.com/atlas-bi/Service/commit/2db4089)), closes [#85](https://github.com/atlas-bi/Service/issues/85)
+* fix(metric): remove metrics from server ([a80a8a2](https://github.com/atlas-bi/Service/commit/a80a8a2))
+
 ## <small>1.4.1 (2023-06-19)</small>
 
 * Merge pull request #82 from atlas-bi/dev ([a2013e6](https://github.com/atlas-bi/Service/commit/a2013e6)), closes [#82](https://github.com/atlas-bi/Service/issues/82)
