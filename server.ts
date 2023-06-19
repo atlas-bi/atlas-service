@@ -2,19 +2,11 @@
 import { createRequestHandler } from '@remix-run/express';
 import compression from 'compression';
 import express from 'express';
-import prom from 'express-prometheus-middleware';
 import morgan from 'morgan';
 import path from 'path';
 
 const app = express();
 const metricsApp = express();
-app.use(
-  prom({
-    metricsPath: '/metrics',
-    collectDefaultMetrics: true,
-    metricsApp,
-  }),
-);
 
 app.use((req, res, next) => {
   // helpful headers:
@@ -100,11 +92,11 @@ app.listen(port, () => {
   console.log(`✅ app ready: http://localhost:${port}`);
 });
 
-const metricsPort = process.env.METRICS_PORT || 3001;
+// const metricsPort = process.env.METRICS_PORT || 3001;
 
-metricsApp.listen(metricsPort, () => {
-  console.log(`✅ metrics ready: http://localhost:${metricsPort}/metrics`);
-});
+// metricsApp.listen(metricsPort, () => {
+//   console.log(`✅ metrics ready: http://localhost:${metricsPort}/metrics`);
+// });
 
 function purgeRequireCache() {
   // purge require cache on requests for "server side HMR" this won't let
