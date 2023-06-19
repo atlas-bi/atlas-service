@@ -121,7 +121,6 @@
     "dotenv-cli": "^7.2.1",
     "emojilib": "^3.0.10",
     "express": "^4.18.2",
-    "express-prometheus-middleware": "^1.2.0",
     "imap": "^0.8.19",
     "isbot": "^3.6.10",
     "ldap-authentication": "github:shaozi/ldap-authentication#upgrade-ldapjs-3",
