@@ -24,7 +24,7 @@ const config = {
     [
       '@semantic-release/github',
       {
-        assets: [{ path: 'build.zip', name: 'build.zip' }],
+        assets: [{ path: 'build.tar.gz', name: 'build.tar.gz' }],
       },
     ],
   ],
