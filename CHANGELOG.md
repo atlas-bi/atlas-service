@@ -1,3 +1,8 @@
+## 1.5.0 (2023-06-20)
+
+* Merge pull request #86 from atlas-bi/dev ([0b34386](https://github.com/atlas-bi/Service/commit/0b34386)), closes [#86](https://github.com/atlas-bi/Service/issues/86)
+* feat(env): updated env vars ([cbd541f](https://github.com/atlas-bi/Service/commit/cbd541f))
+
 ## <small>1.4.2 (2023-06-19)</small>
 
 * Merge pull request #84 from atlas-bi/dev ([cc4c782](https://github.com/atlas-bi/Service/commit/cc4c782)), closes [#84](https://github.com/atlas-bi/Service/issues/84)
