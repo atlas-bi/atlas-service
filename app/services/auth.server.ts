@@ -13,9 +13,7 @@ import { verifyLogin } from './ldap.server';
 // strategies will return and will store in the session
 export let authenticator = new Authenticator<User>(sessionStorage);
 
-const host =
-  (process.env.SSL_CERTIFICATE ? 'https://' : 'http://') +
-  process.env.EXTERNAL_URL;
+const host = process.env.HOSTNAME;
 
 let metadata = {};
 

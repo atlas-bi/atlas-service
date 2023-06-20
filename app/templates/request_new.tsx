@@ -14,8 +14,6 @@ import invariant from 'tiny-invariant';
 export function Email(props) {
   const { request, type } = props;
 
-  invariant(process.env.EXTERNAL_URL, 'EXTERNAL_URL must be set');
-
   return (
     <Html lang="en">
       <Head>
@@ -28,11 +26,7 @@ export function Email(props) {
         <Column>B</Column>
         <Column>C</Column>
       </Section>
-      <Link
-        href={`${process.env.SSL_CERTIFICATE ? 'https://' : 'http://'}${
-          process.env.HOSTNAME
-        }/request/${request.id}`}
-      >
+      <Link href={`${process.env.HOSTNAME}/request/${request.id}`}>
         View Request
       </Link>
       <Text>
