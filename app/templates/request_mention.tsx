@@ -14,19 +14,13 @@ import invariant from 'tiny-invariant';
 export function Email(props) {
   const { request, type, user, mention } = props;
 
-  invariant(process.env.EXTERNAL_URL, 'EXTERNAL_URL must be set');
-
   return (
     <Html lang="en">
       <Head>
         <title>request mention</title>
       </Head>
       <Preview>Email preview text request mention</Preview>;
-      <Link
-        href={`${process.env.SSL_CERTIFICATE ? 'https://' : 'http://'}${
-          process.env.HOSTNAME
-        }/request/${request.id}`}
-      >
+      <Link href={`${process.env.HOSTNAME}/request/${request.id}`}>
         View Request
       </Link>
       <Text>
