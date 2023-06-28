@@ -1,4 +1,0 @@
-maintainer-script-lacks-debhelper-token
-malformed-debian-changelog-version
-debhelper-but-no-misc-depends
-bad-distribution-in-changes-file

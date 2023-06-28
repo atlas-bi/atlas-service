@@ -6,7 +6,6 @@ import morgan from 'morgan';
 import path from 'path';
 
 const app = express();
-const metricsApp = express();
 
 app.use((req, res, next) => {
   // helpful headers:
@@ -91,12 +90,6 @@ app.listen(port, () => {
   require(BUILD_DIR);
   console.log(`✅ app ready: http://localhost:${port}`);
 });
-
-// const metricsPort = process.env.METRICS_PORT || 3001;
-
-// metricsApp.listen(metricsPort, () => {
-//   console.log(`✅ metrics ready: http://localhost:${metricsPort}/metrics`);
-// });
 
 function purgeRequireCache() {
   // purge require cache on requests for "server side HMR" this won't let
