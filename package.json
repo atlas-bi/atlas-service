@@ -64,7 +64,7 @@
     "@lexical/html": "^0.11.0",
     "@lexical/react": "^0.11.0",
     "@next-boost/hybrid-disk-cache": "^0.3.0",
-    "@prisma/client": "^4.13.0",
+    "@prisma/client": "^5.0.0",
     "@radix-ui/react-accordion": "^1.1.1",
     "@radix-ui/react-alert-dialog": "^1.0.3",
     "@radix-ui/react-aspect-ratio": "^1.0.2",
@@ -132,7 +132,7 @@
     "meilisearch-name-synonyms": "^1.1.0",
     "morgan": "^1.10.0",
     "nodemailer": "^6.9.0",
-    "prisma": "^4.13.0",
+    "prisma": "^5.0.0",
     "prom-client": "^14.2.0",
     "quirrel": "^1.13.4",
     "react": "18.2.0",
@@ -229,5 +229,5 @@
       "npm run format"
     ]
   },
-  "version": "1.1.2"
+  "version": "1.1.3"
 }
