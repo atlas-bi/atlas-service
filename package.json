@@ -163,7 +163,7 @@
     "@semantic-release/git": "10.0.1",
     "@semantic-release/github": "9.0.6",
     "@semantic-release/npm": "10.0.6",
-    "@semantic-release/release-notes-generator": "11.0.7",
+    "@semantic-release/release-notes-generator": "12.1.0",
     "@testing-library/cypress": "^10.0.0",
     "@testing-library/dom": "^9.2.0",
     "@testing-library/jest-dom": "^6.0.0",
@@ -229,5 +229,5 @@
       "npm run format"
     ]
   },
-  "version": "1.1.7"
+  "version": "1.1.8"
 }
