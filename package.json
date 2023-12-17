@@ -108,7 +108,7 @@
     "@remix-run/server-runtime": "2.3.1",
     "autoprefixer": "^10.4.14",
     "bcryptjs": "^2.4.3",
-    "better-sqlite3": "^8.3.0",
+    "better-sqlite3": "^9.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "cmdk": "^0.2.0",
@@ -229,5 +229,5 @@
       "npm run format"
     ]
   },
-  "version": "1.1.11"
+  "version": "1.1.12"
 }
