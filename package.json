@@ -143,7 +143,7 @@
     "remix-auth-saml": "^1.1.0",
     "remix-image": "^1.4.0",
     "remix-image-sharp": "^0.1.4",
-    "remix-utils": "^6.1.0",
+    "remix-utils": "^7.0.0",
     "samlify": "^2.8.10",
     "sharp": "^0.33.0",
     "slugify": "^1.6.6",
@@ -229,5 +229,5 @@
       "npm run format"
     ]
   },
-  "version": "1.1.11"
+  "version": "1.1.12"
 }
