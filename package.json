@@ -116,7 +116,7 @@
     "compression": "^1.7.4",
     "cookie": "^0.6.0",
     "cross-env": "^7.0.3",
-    "date-fns": "^2.30.0",
+    "date-fns": "^3.0.0",
     "dotenv": "^16.0.3",
     "dotenv-cli": "^7.2.1",
     "emojilib": "^3.0.10",
@@ -229,5 +229,5 @@
       "npm run format"
     ]
   },
-  "version": "1.1.14"
+  "version": "1.1.15"
 }
